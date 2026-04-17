@@ -233,9 +233,9 @@ interface AppStore {
   notifications: Notification[];
   savedViews: SavedView[];
   // UI State
-  activeApp: 'desktop' | 'workspace' | 'contador';
+  activeApp: 'desktop' | 'workspace';
   activeProjectId: string;
-  activePage: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team' | 'balance' | 'osv' | 'pnl' | 'journal' | 'counterparties' | 'settings';
+  activePage: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team';
   projectTab: 'list' | 'kanban' | 'gantt';
   activeSavedViewId: string | 'default';
   currentUserId: string;
@@ -255,9 +255,9 @@ interface AppStore {
   editingTaskId: string | null;
   selectedTaskIds: string[];
   // Actions
-  setActiveApp: (app: 'desktop' | 'workspace' | 'contador') => void;
+  setActiveApp: (app: 'desktop' | 'workspace') => void;
   setActiveProject: (id: string) => void;
-  setActivePage: (p: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team' | 'balance' | 'osv' | 'pnl' | 'journal' | 'counterparties' | 'settings') => void;
+  setActivePage: (p: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team') => void;
   setProjectTab: (t: 'list' | 'kanban' | 'gantt') => void;
   setActiveSavedViewId: (id: string | 'default') => void;
   saveView: (view: Omit<SavedView, 'id'>) => void;

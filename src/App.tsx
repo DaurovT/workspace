@@ -22,8 +22,6 @@ import Analytics from './services/workspace/components/Analytics';
 import TeamPage from './services/workspace/components/TeamPage';
 import { BulkActionsBar } from './services/workspace/components/BulkActionsBar';
 
-import ContadorApp from './services/contador/ContadorApp';
-
 function App() {
   const { activeApp, activePage, projectTab, theme, setActivePage, setActiveApp } = useStore();
 
@@ -48,9 +46,6 @@ function App() {
     return <OSDesktop />;
   }
 
-  if (activeApp === 'contador') {
-    return <ContadorApp />;
-  }
 
   // Fallback / Default: WorkSpace Pro
   const isKanban   = activePage === 'project' && projectTab === 'kanban';

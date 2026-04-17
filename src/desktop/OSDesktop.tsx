@@ -23,13 +23,6 @@ const OSDesktop: React.FC = () => {
       onClick: () => { setActiveApp('workspace'); setActivePage('dashboard'); }
     },
     {
-      id: 'contador',
-      name: 'Contador',
-      icon: <img src="/contador-icon.svg" alt="Contador SVG" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '22.5%' }} />,
-      color: 'transparent',
-      onClick: () => { setActiveApp('contador'); setActivePage('dashboard'); }
-    },
-    {
       id: 'kidsplate',
       name: 'Kids Plate',
       icon: <ShoppingBag size={32} color="#fff" />,
