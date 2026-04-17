@@ -27,6 +27,7 @@ export interface User {
   jobTitle?: string;
   isActive: boolean;
   joinedAt: string;
+  allowedApps?: string[]; // e.g. ['arcana', 'kidsplate', 'lms']
 }
 
 export interface Task {
@@ -91,7 +92,7 @@ export interface KanbanColumn {
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
 
 const USERS: User[] = [
-  { id: 'u1', name: 'Тимур Дауров', email: 'timur@ws.pro', avatar: 'ТД', color: '#6366f1', role: 'owner', jobTitle: 'Product Manager', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 90).toISOString() },
+  { id: 'u1', name: 'Тимур Дауров', email: 'maylantim@gmail.com', avatar: 'ТД', color: '#6366f1', role: 'owner', jobTitle: 'Владелец компании', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 90).toISOString() },
   { id: 'u2', name: 'Алина Смирнова', email: 'alina@ws.pro', avatar: 'АС', color: '#22c55e', role: 'admin', jobTitle: 'UI/UX Designer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 60).toISOString() },
   { id: 'u3', name: 'Даниил Парк', email: 'daniil@ws.pro', avatar: 'ДП', color: '#f59e0b', role: 'member', jobTitle: 'Frontend Developer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 45).toISOString() },
   { id: 'u4', name: 'Кира Иванова', email: 'kira@ws.pro', avatar: 'КИ', color: '#ef4444', role: 'member', jobTitle: 'Backend Developer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 30).toISOString() },
@@ -99,7 +100,7 @@ const USERS: User[] = [
 ];
 
 const PROJECTS: Project[] = [
-  { id: 'p1', name: 'WorkSpace Pro', color: '#654ef1', icon: '🚀', description: 'Разработка основного продукта', members: [{userId:'u1',role:'admin'},{userId:'u2',role:'member'},{userId:'u3',role:'member'},{userId:'u4',role:'member'},{userId:'u5',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
+  { id: 'p1', name: 'Arcana', color: '#654ef1', icon: '🌀', description: 'Разработка основного продукта', members: [{userId:'u1',role:'admin'},{userId:'u2',role:'member'},{userId:'u3',role:'member'},{userId:'u4',role:'member'},{userId:'u5',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
   { id: 'p2', name: 'Сайт компании', color: '#22c55e', icon: '🌐', description: 'Лендинг и блог', members: [{userId:'u2',role:'admin'},{userId:'u3',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
   { id: 'p3', name: 'Мобильное приложение', color: '#f97316', icon: '📱', description: 'iOS и Android приложение', members: [{userId:'u1',role:'admin'},{userId:'u4',role:'member'},{userId:'u5',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
 ];
@@ -233,7 +234,7 @@ interface AppStore {
   notifications: Notification[];
   savedViews: SavedView[];
   // UI State
-  activeApp: 'desktop' | 'workspace';
+  activeApp: 'desktop' | 'workspace' | 'login' | 'settings';
   activeProjectId: string;
   activePage: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team';
   projectTab: 'list' | 'kanban' | 'gantt';
@@ -255,7 +256,7 @@ interface AppStore {
   editingTaskId: string | null;
   selectedTaskIds: string[];
   // Actions
-  setActiveApp: (app: 'desktop' | 'workspace') => void;
+  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings') => void;
   setActiveProject: (id: string) => void;
   setActivePage: (p: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team') => void;
   setProjectTab: (t: 'list' | 'kanban' | 'gantt') => void;
@@ -296,24 +297,31 @@ interface AppStore {
   // Team actions
   createUser: (u: Partial<User>) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
+  deleteUser: (id: string) => void;
   addProjectMember: (projectId: string, userId: string, role: ProjectMemberRole) => void;
   removeProjectMember: (projectId: string, userId: string) => void;
   updateProjectMemberRole: (projectId: string, userId: string, role: ProjectMemberRole) => void;
 }
 
 // Initial state loading mechanism
+const STATE_VERSION = 3; // bump to clear stale localStorage
 const savedStateStr = localStorage.getItem('workspace_pro_state');
 let loadedState: Partial<AppStore> = {};
 if (savedStateStr) {
   try {
-    loadedState = JSON.parse(savedStateStr);
+    const parsed = JSON.parse(savedStateStr);
+    if (parsed.__version !== STATE_VERSION) {
+      localStorage.removeItem('workspace_pro_state');
+    } else {
+      loadedState = parsed;
+    }
   } catch (e) {
     console.error('Failed to parse saved state', e);
   }
 }
 
 export const useStore = create<AppStore>()((set, get) => ({
-  users: loadedState.users || USERS,
+  users: USERS, // always use fresh code data, never stale localStorage
   projects: (() => {
     const saved = loadedState.projects;
     if (!saved) return PROJECTS;
@@ -368,7 +376,7 @@ export const useStore = create<AppStore>()((set, get) => ({
   ],
   savedViews: loadedState.savedViews || [],
   activeProjectId: loadedState.activeProjectId || 'p1',
-  activeApp: loadedState.activeApp || 'desktop',
+  activeApp: loadedState.activeApp || 'login',
   activePage: loadedState.activePage || 'dashboard',
   projectTab: loadedState.projectTab || 'list',
   activeSavedViewId: loadedState.activeSavedViewId || 'default',
@@ -691,6 +699,15 @@ export const useStore = create<AppStore>()((set, get) => ({
     users: s.users.map(u => u.id === id ? { ...u, ...updates } : u)
   })),
 
+  deleteUser: (id) => set((s) => ({
+    users: s.users.filter(u => u.id !== id),
+    // Also remove from all projects
+    projects: s.projects.map(p => ({
+      ...p,
+      members: p.members.filter(m => m.userId !== id)
+    }))
+  })),
+
   addProjectMember: (projectId, userId, role) => set((s) => ({
     projects: s.projects.map(p => {
       if (p.id !== projectId) return p;
@@ -775,7 +792,8 @@ useStore.subscribe((state) => {
     activeSavedViewId: state.activeSavedViewId,
     activeApp: state.activeApp,
     activePage: state.activePage,
-    projectTab: state.projectTab
+    projectTab: state.projectTab,
+    __version: STATE_VERSION
   };
   localStorage.setItem('workspace_pro_state', JSON.stringify(stateToSave));
 });

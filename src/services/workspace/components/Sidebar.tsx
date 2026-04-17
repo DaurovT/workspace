@@ -3,7 +3,7 @@ import { useStore } from '../../../store';
 import {
   LayoutGrid, List, BarChart2, Bell, Settings,
   Plus, Home, Calendar, TrendingUp, Inbox,
-  ChevronRight, Search, Users
+  ChevronRight, Search, Users, Aperture
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -23,11 +23,9 @@ const Sidebar: React.FC = () => {
       {/* Лого */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-          </svg>
+          <Aperture size={16} color="white" strokeWidth={2.2} />
         </div>
-        <span className="sidebar-logo-text">Work<span>Space</span></span>
+        <span className="sidebar-logo-text">Arcana</span>
       </div>
 
       {/* Поиск / command palette */}

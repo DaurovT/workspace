@@ -5,6 +5,10 @@ import { useStore } from './store';
 // Desktop
 import OSDesktop from './desktop/OSDesktop';
 
+// Public Pages
+import LoginPage from './pages/LoginPage';
+import SettingsApp from './pages/SettingsApp';
+
 // WorkSpace Pro — Tracker
 import Sidebar from './services/workspace/components/Sidebar';
 import Header from './services/workspace/components/Header';
@@ -44,6 +48,14 @@ function App() {
 
   if (activeApp === 'desktop') {
     return <OSDesktop />;
+  }
+
+  if (activeApp === 'login') {
+    return <LoginPage />;
+  }
+
+  if (activeApp === 'settings') {
+    return <SettingsApp />;
   }
 
 
