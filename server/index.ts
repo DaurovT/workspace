@@ -45,6 +45,11 @@ import payrollRouter from './routes/payroll';
 import procurementRouter from './routes/procurement';
 import serviceTicketsRouter from './routes/serviceTickets';
 import path from 'path';
+import { requireWriteAccess } from './middleware/rbac';
+import { requireProjectMember } from './middleware/arcanaAuth';
+import arcanaProjectsRouter from './routes/arcanaProjects';
+import arcanaTasksRouter from './routes/arcanaTasks';
+import arcanaCommentsRouter from './routes/arcanaComments';
 
 import { initTelegramBot } from './services/telegramBot';
 import { JWT_SECRET } from './config';
@@ -106,7 +111,6 @@ app.use((req, res, next) => {
 // ── Finance REST API ─────────────────────────────
 app.use('/api/auth', authRouter);
 
-import { requireWriteAccess } from './middleware/rbac';
 
 // Global RBAC Middleware: Protect all subsequent routes from write operations based on specific roles
 app.use((req, res, next) => {
@@ -130,10 +134,6 @@ app.use('/api/bpmn/diagrams', bpmnDiagramsRouter);
 app.use('/api/bpmn/chats', bpmnAiChatsRouter);
 
 // ── Arcana REST API (no auth required for MVP) ──────
-import arcanaProjectsRouter from './routes/arcanaProjects';
-import arcanaTasksRouter from './routes/arcanaTasks';
-import arcanaCommentsRouter from './routes/arcanaComments';
-import { requireProjectMember } from './middleware/arcanaAuth';
 
 app.use('/api/arcana/projects', requireProjectMember, arcanaProjectsRouter);
 app.use('/api/arcana/tasks', requireProjectMember, arcanaTasksRouter);
