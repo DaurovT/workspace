@@ -300,8 +300,8 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-httpServer.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT as string, 10) || 3000;
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`✅  Finance API + BPMN WS Server running on http://localhost:${PORT}`);
   console.log(`   REST API: http://localhost:${PORT}/api/health`);
   initTelegramBot();
