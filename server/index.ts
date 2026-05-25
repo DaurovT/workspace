@@ -185,7 +185,7 @@ app.use((req, res, next) => {
 // ── BPMN WebSocket (existing) ────────────────────
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: '*', methods: ['GET', 'POST'] },
+  cors: { origin: process.env.CORS_ORIGIN || '*', methods: ['GET', 'POST'] },
 });
 setSocketServer(io);
 
