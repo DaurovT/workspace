@@ -1,0 +1,733 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String
+  status       String   @default("active")
+  permissions  String   // JSON string of permissions array
+  allowedApps  String?  // JSON string of allowed app IDs, null = unrestricted
+  avatar       String?
+  color        String?
+  jobTitle     String?
+  isActive     Boolean  @default(true)
+  joinedAt     String?
+  createdAt    DateTime @default(now())
+  employee     Employee?
+  telegramProfile TelegramProfile?
+  telegramBindCode String? @unique
+}
+
+
+model LegalEntity {
+  id            String   @id @default(cuid())
+  name          String
+  shortName     String
+  inn           String
+  kpp           String?
+  ogrn          String?
+  pinfl         String?
+  type          String   // 'МЧЖ' | 'ЯТТ' | 'АЖ' | 'ДК' | 'ХК'
+  isMain        Boolean  @default(false)
+  legalAddress  String?
+  actualAddress String?
+  phone         String?
+  email         String?
+  bankName      String?
+  bankMfo       String?
+  bankAccount   String?
+  vatMode       String?  // 'ОСН' | 'УСН 6%' | 'УСН 15%'
+  currency      String   @default("UZS")
+  createdAt     DateTime @default(now())
+}
+
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // 'income' | 'expense' | 'transfer' | 'accrual' | 'asset' | 'liability' | 'equity'
+  activity    String?  // 'operating' | 'investing' | 'financing'
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
+  transactions Transaction[]
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  name              String
+  balance           Decimal
+  currency          String
+  type              String?
+  bankName          String?
+  blockchainNetwork String?
+  publicAddress     String?
+  transactions      Transaction[]
+}
+
+model Contractor {
+  id            String   @id @default(cuid())
+  name          String
+  shortName     String?
+  legalForm     String?
+  type          String?
+  group         String?
+  inn           String?
+  nds           Boolean? @default(false)
+  okved         String?
+  bankName      String?
+  bankMfo       String?
+  bankAccount   String?
+  legalAddress  String?
+  actualAddress String?
+  phone         String?
+  email         String?
+  contactPerson String?
+  comment       String?
+  transactions  Transaction[]
+  deals         Deal[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  status      String?
+  group       String?
+  dateStart   String?
+  dateEnd     String?
+  budget      Decimal?
+  description String?
+  transactions Transaction[]
+  deals       Deal[]
+}
+
+model Deal {
+  id            String   @id @default(cuid())
+  name          String
+  type          String   // 'sale' | 'purchase'
+  status        String
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id])
+  projectId     String?
+  project       Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  amount        Decimal
+  paidAmount    Decimal
+  shippedAmount Decimal
+  currency      String
+  dateStart     String
+  dateDeadline  String?
+  attachments   String[]  @default([])
+  transactions  Transaction[]
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  parentId        String?
+  date            String
+  amount          Decimal
+  exchangeRate    Decimal?    // The exchange rate to base currency at the time
+  baseAmount      Decimal?    // amount * exchangeRate
+  type            String   // 'income' | 'expense' | 'transfer' | 'accrual' | 'shipment' | 'delivery'
+  
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  accountId       String?
+  account         Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  
+  projectId       String?
+  project         Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  dealId          String?
+  deal            Deal?     @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  
+  contractorId    String?
+  contractor      Contractor? @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  
+  loanId          String?
+  loan            Loan?       @relation(fields: [loanId], references: [id], onDelete: SetNull)
+  
+  description     String?
+  isPaidConfirmed Boolean   @default(true)
+  attachments     String[]  @default([])
+  paymentRequestId String?
+  paymentRequest  PaymentRequest? @relation(fields: [paymentRequestId], references: [id])
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  @@index([date])
+  @@index([accountId])
+  @@index([projectId])
+  @@index([categoryId])
+}
+
+model Fund {
+  id             String   @id @default(cuid())
+  name           String
+  targetAmount   Decimal
+  currentBalance Decimal
+  currency       String
+  type           String   @default("reserve") // "reserve" or "savings"
+  accountId      String?  // Optional link to a physical account where this fund is held
+}
+
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  currency  String   @unique
+  rate      Decimal
+  updatedAt DateTime @updatedAt
+}
+
+model PlannedOperation {
+  id         String   @id @default(cuid())
+  date       String
+  amount     Decimal
+  type       String   // 'income' | 'expense'
+  categoryId String?
+  accountId  String?
+}
+
+model Asset {
+  id               String   @id @default(cuid())
+  name             String
+  category         String   // 'Основное средство' | 'НМА' | 'Запас'
+  type             String   // 'Транспорт' | 'Оборудование' | 'Недвижимость' | 'ПО' | 'Прочее'
+  acquisitionDate  String
+  initialCost      Decimal
+  usefulLifeMonths Int
+  salvageValue     Decimal
+  status           String   // 'В эксплуатации' | 'На складе' | 'Списан' | 'Продан'
+}
+
+model Loan {
+  id              String   @id @default(cuid())
+  bankName        String
+  name            String
+  principalAmount Decimal
+  interestRate    Decimal
+  termMonths      Int
+  startDate       String
+  type            String   // 'Кредит' | 'Лизинг' | 'Займ' | 'Овердрафт'
+  transactions    Transaction[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  type         String   // 'Товар' | 'Услуга'
+  name         String
+  sku          String
+  category     String
+  unit         String
+  price        Decimal
+  vatRate      Decimal
+  costPrice    Decimal
+  stockBalance Decimal
+  status       String   // 'Активен' | 'В архиве'
+}
+
+model PaymentRequest {
+  id                  String   @id @default(cuid())
+  number              String
+  dateStr             String
+  amount              Decimal
+  purpose             String
+  contractorId        String?
+  categoryId          String?
+  projectId           String?
+  status              String   // 'pending_manager' | 'pending_ceo' | 'approved' | 'rejected' | 'paid'
+  authorId            String
+  linkedTransactionId String?
+  transactions        Transaction[]
+}
+
+model ImportRule {
+  id                String   @id @default(cuid())
+  name              String
+  conditionField    String   // 'description' | 'contractorId'
+  conditionOperator String   // 'contains' | 'equals'
+  conditionValue    String
+  actionType        String   // 'set_category' | 'set_contractor'
+  actionValue       String
+  isActive          Boolean  @default(true)
+}
+
+model BdrBudget {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // 'БДР' | 'БДДС'
+  currency    String
+  entityId    String
+  projectId   String
+  periodStart String
+  periodEnd   String
+  updatedAt   String
+  updatedBy   String
+  scenarioId  String?
+}
+
+model BddsBudget {
+  id          String   @id @default(cuid())
+  name        String
+  currency    String
+  entityId    String
+  projectId   String
+  periodStart String
+  periodEnd   String
+  updatedAt   String
+  updatedBy   String
+  scenarioId  String?
+}
+
+model BudgetScenario {
+  id          String   @id @default(cuid())
+  name        String
+  year        Int
+  isApproved  Boolean  @default(false)
+  parentId    String?
+  createdAt   String
+  budgetLines BudgetLine[]
+}
+
+model BudgetLine {
+  id         String   @id @default(cuid())
+  scenarioId String
+  scenario   BudgetScenario @relation(fields: [scenarioId], references: [id])
+  categoryId String
+  month      Int
+  year       Int
+  amount     Decimal
+}
+
+model AuditLogEntry {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  userId    String
+  userName  String
+  action    String   // 'CREATE' | 'UPDATE' | 'DELETE'
+  entity    String
+  details   String?
+  oldValue  String?  // JSON stringified old state
+  newValue  String?  // JSON stringified new state
+}
+
+model FinanceAlert {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  type      String   // danger, warning, info
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  userId    String?  // Optional, if targeted at a specific user
+}
+
+model Invoice {
+  id           String   @id @default(cuid())
+  number       String
+  dealId       String?
+  contractorId String
+  amount       Decimal
+  paidAmount   Decimal
+  status       String   // 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled'
+  issuedDate   String
+  dueDate      String
+  description  String
+  vatAmount    Decimal
+}
+
+model Purchase {
+  id             String   @id @default(cuid())
+  number         String
+  name           String
+  contractorId   String
+  amount         Decimal
+  paidAmount     Decimal
+  status         String   // 'new' | 'in_work' | 'delivered' | 'cancelled'
+  category       String
+  startDate      String
+  dueDate        String
+  deliveryStatus String   // 'pending' | 'partial' | 'done'
+}
+
+model FinanceDocument {
+  id          String   @id @default(cuid())
+  dealId      String
+  type        String   // 'invoice' | 'act' | 'upd'
+  status      String   // 'draft' | 'issued' | 'paid' | 'cancelled'
+  number      String
+  date        String
+  items       String   // JSON stringified DocumentLineItem[]
+  totalAmount Decimal
+  vatAmount   Decimal
+}
+
+model AppSettings {
+  id                  String @id @default("global") // Single row pattern
+  companyName         String @default("WorkSpace Pro")
+  baseCurrency        String @default("RUB")
+  pnlMode             String @default("direct_indirect") // 'direct_indirect' | 'fixed_variable'
+  lockDate            String? // YYYY-MM-DD
+  domain              String @default("workspace.local")
+  timezone            String @default("Asia/Tashkent")
+  language            String @default("ru")
+  workWeekStart       String @default("Понедельник")
+  sessionTimeout      String @default("480")
+  forceLogoutOnClose  Boolean @default(false)
+  passwordMinLength   String @default("8")
+  requireNumbers      Boolean @default(true)
+  requireSpecialChars Boolean @default(false)
+  twoFactor           Boolean @default(false)
+  ipWhitelist         Boolean @default(false)
+  ipWhitelistText     String @default("")
+  emailAssign         Boolean @default(true)
+  emailMention        Boolean @default(true)
+  emailDue            Boolean @default(true)
+  pushAll             Boolean @default(true)
+  digestFreq          String @default("daily")
+}
+
+model CopilotConversation {
+  id        String   @id @default(cuid())
+  title     String
+  updatedAt String
+  messages  String   // JSON stringified CopilotMessage[]
+}
+
+model BpmnDiagram {
+  id        String   @id @default(cuid())
+  name      String
+  xml       String   // XML content
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model BpmnAiChat {
+  id        String   @id @default(cuid())
+  title     String
+  messages  String   // JSON stringified Message[]
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+// ─── ARCANA (Task Tracker) ─────────────────────────────────────────────────
+
+model ArcanaProject {
+  id          String   @id @default(cuid())
+  name        String
+  color       String   @default("#654ef1")
+  icon        String   @default("📁")
+  description String   @default("")
+  status      String   @default("active") // 'active' | 'archived'
+  createdAt   DateTime @default(now())
+  members     ArcanaProjectMember[]
+  tasks       ArcanaTask[]
+}
+
+model ArcanaProjectMember {
+  id        String @id @default(cuid())
+  projectId String
+  project   ArcanaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  role      String @default("member") // 'admin' | 'member' | 'viewer'
+
+  @@unique([projectId, userId])
+}
+
+model ArcanaTask {
+  id             String   @id @default(cuid())
+  projectId      String
+  project        ArcanaProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId       String?
+  title          String
+  description    String   @default("")
+  priority       String   @default("medium") // 'urgent' | 'high' | 'medium' | 'low'
+  status         String   @default("todo")    // 'todo' | 'in_progress' | 'review' | 'done' | 'blocked'
+  assigneeId     String?
+  reporterId     String   @default("u1")
+  startDate      String
+  dueDate        String
+  tags           String   @default("[]") // JSON array
+  estimatedHours Decimal    @default(0)
+  loggedHours    Decimal    @default(0)
+  position       Int      @default(0)
+  progress       Int      @default(0)
+  dependencies   String   @default("[]") // JSON array of {taskId, type, lag?}
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  comments       ArcanaComment[]
+  timeLogs       TimeLog[]
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+}
+
+model ArcanaComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      ArcanaTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String
+  text      String
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model TimeLog {
+  id        String      @id @default(cuid())
+  userId    String
+  taskId    String?    
+  task      ArcanaTask? @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  date      String      // YYYY-MM-DD
+  hours     Decimal
+  notes     String?
+  createdAt DateTime    @default(now())
+
+  @@index([userId, date])
+}
+
+// ─── HR & Payroll ──────────────────────────────────────────────────────────
+
+model Employee {
+  id              String   @id @default(cuid())
+  userId          String   @unique  // Link to User
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department      String?
+  position        String?
+  hireDate        String
+  salary          Decimal
+  salaryType      String   @default("monthly") // monthly | hourly
+  currency        String   @default("UZS")
+  contractorId    String?  // Link to Contractor for financial ops
+  status          String   @default("active") // active | on_leave | terminated
+  terminationDate String?
+  bankAccount     String?
+  notes           String?
+  taxProfile      String   @default("standard")
+  advancePct      Decimal    @default(40)
+  createdAt       DateTime @default(now())
+  absences        Absence[]
+  payrollEntries  PayrollEntry[]
+  salaryHistory   SalaryHistory[]
+}
+
+model Absence {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  type        String   // vacation | sick | personal | maternity
+  startDate   String
+  endDate     String
+  status      String   @default("pending") // pending | approved | rejected
+  approvedBy  String?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+}
+
+model PayrollRun {
+  id          String   @id @default(cuid())
+  month       Int
+  year        Int
+  type        String   @default("final") // advance, final
+  status      String   @default("draft") // draft | calculated | approved | paid
+  totalGross  Decimal    @default(0)
+  totalNet    Decimal    @default(0)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  entries     PayrollEntry[]
+
+  @@unique([month, year, type])
+}
+
+model PayrollEntry {
+  id            String   @id @default(cuid())
+  payrollRunId  String
+  payrollRun    PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employeeId    String
+  employee      Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  baseSalary    Decimal
+  bonus         Decimal    @default(0)
+  deductions    Decimal    @default(0)
+  netAmount     Decimal
+  transactionId String?  // Link to Transaction when paid
+  createdAt     DateTime @default(now())
+  details       PayrollDetail[]
+
+  @@index([payrollRunId])
+  @@index([employeeId])
+}
+
+model SalaryHistory {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  amount      Decimal
+  reason      String   // promotion | review | correction
+  effectiveDate String
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+}
+
+model PayrollDetail {
+  id              String   @id @default(cuid())
+  payrollEntryId  String
+  payrollEntry    PayrollEntry @relation(fields: [payrollEntryId], references: [id], onDelete: Cascade)
+  type            String   // ndfl | inps | bonus_kpi | bonus_project | advance | penalty | overtime
+  label           String   // "НДФЛ 12%", "KPI бонус Q2"
+  amount          Decimal    // positive = accrual, negative = deduction
+  createdAt       DateTime @default(now())
+
+  @@index([payrollEntryId])
+}
+
+// ─── Procurement (Закупки) ──────────────────────────────────────────────────
+
+model ProcurementRequest {
+  id              String   @id @default(cuid())
+  number          String?
+  dateStr         String
+  initiator       String?
+  department      String?
+  comment         String?
+  status          String   @default("new")
+  tenderAmount    Decimal  @default(0)
+  netAmount       Decimal  @default(0)
+  items           ProcurementItem[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ProcurementItem {
+  id              String   @id @default(cuid())
+  requestId       String
+  request         ProcurementRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  tenderId        String?
+  tender          Tender?            @relation(fields: [tenderId], references: [id], onDelete: SetNull)
+  productName     String
+  category        String?
+  unit            String
+  quantity        Decimal
+  tenderPrice     Decimal  @default(0)
+  supplierPrice   Decimal  @default(0)
+  currency        String   @default("UZS")
+  exchangeRate    Decimal  @default(1)
+  logisticsCost   Decimal  @default(0)
+  brokerPct       Decimal  @default(0)
+  brokerAmount    Decimal  @default(0)
+  certification   Decimal  @default(0)
+  customs         Decimal  @default(0)
+  otherExpenses   Decimal  @default(0)
+  vatRate         Decimal  @default(0)
+  companyId       String?
+  plannedDate     String?
+  actualDate      String?
+  status          String   @default("new")
+  comment         String?
+  documents       ProcurementDocument[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([requestId])
+  @@index([status])
+}
+
+model Tender {
+  id              String   @id @default(cuid())
+  number          String?
+  startDate       String?
+  endDate         String?
+  status          String   @default("draft")
+  winnerId        String?
+  totalAmount     Decimal  @default(0)
+  comment         String?
+  items           ProcurementItem[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ProcurementDocument {
+  id              String   @id @default(cuid())
+  itemId          String
+  item            ProcurementItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  type            String
+  number          String?
+  dateStr         String?
+  fileUrl         String
+  uploadedBy      String?
+  status          String   @default("uploaded")
+  comment         String?
+  createdAt       DateTime @default(now())
+  
+  @@index([itemId])
+}
+
+// ─── Service Desk ──────────────────────────────────────────────────────────
+
+model TelegramProfile {
+  chatId       String   @id
+  phone        String
+  firstName    String
+  lastName     String?
+  jobTitle     String?
+  username     String?
+  language     String   @default("ru")
+  registeredAt DateTime @default(now())
+  
+  userId       String?  @unique
+  user         User?    @relation(fields: [userId], references: [id])
+  
+  serviceTickets ServiceTicket[]
+}
+
+model TelegramSession {
+  chatId       String   @id
+  step         String   @default("IDLE")
+  language     String   @default("ru")
+  category     String?
+  location     String?
+  description  String?
+  phone        String?
+  name         String?
+  updatedAt    DateTime @updatedAt
+}
+
+model ServiceTicket {
+  id             String   @id @default(cuid())
+  number         Int      @default(autoincrement())
+  title          String
+  description    String
+  status         String   @default("new")
+  priority       String   @default("medium")
+  category       String   @default("general")
+  assigneeId     String?
+  telegramChatId String?  
+  telegramProfile TelegramProfile? @relation(fields: [telegramChatId], references: [chatId])
+  telegramUsername String?
+  reporterName   String?
+  location       String?
+  photoUrl       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  comments       ServiceTicketComment[]
+}
+
+model ServiceTicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    ServiceTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  text      String
+  authorId  String?
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

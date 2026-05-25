@@ -6,37 +6,109 @@ import { useStore } from './store';
 import OSDesktop from './desktop/OSDesktop';
 
 // Public Pages
-import LoginPage from './pages/LoginPage';
-import SettingsApp from './pages/SettingsApp';
+import LoginPage, { type AuthUser } from './modules/auth/LoginPage';
+import SettingsApp from './modules/settings/SettingsApp';
+import BpmnApp from './modules/bpmn/BpmnApp';
+import FinanceApp from './modules/finance/FinanceApp';
+import HRApp from './modules/hr/HRApp';
+import TMSApp from './modules/tms/TMSApp';
+import ProcurementApp from './modules/procurement/ProcurementApp';
+import ServiceApp from './modules/service/ServiceApp';
+import { NotificationsModal } from './components/NotificationsModal';
 
 // WorkSpace Pro — Tracker
-import Sidebar from './services/workspace/components/Sidebar';
-import Header from './services/workspace/components/Header';
-import ViewsTabBar from './services/workspace/components/ViewsTabBar';
-import TaskList from './services/workspace/components/TaskList';
-import KanbanBoard from './services/workspace/components/KanbanBoard';
-import GanttChart from './services/workspace/components/GanttChart';
-import CalendarView from './services/workspace/components/CalendarView';
-import Dashboard from './services/workspace/components/Dashboard';
-import TaskModal from './services/workspace/components/TaskModal';
-import CommandPalette from './services/workspace/components/CommandPalette';
-import InboxView from './services/workspace/components/InboxView';
-import ProjectModal from './services/workspace/components/ProjectModal';
-import Analytics from './services/workspace/components/Analytics';
-import TeamPage from './services/workspace/components/TeamPage';
-import { BulkActionsBar } from './services/workspace/components/BulkActionsBar';
+import Sidebar from './modules/workspace/Sidebar';
+import Header from './modules/workspace/Header';
+import ViewsTabBar from './modules/workspace/ViewsTabBar';
+import TaskList from './modules/workspace/TaskList';
+import KanbanBoard from './modules/workspace/KanbanBoard';
+import GanttChart from './modules/workspace/GanttChart';
+import CalendarView from './modules/workspace/CalendarView';
+import Dashboard from './modules/workspace/Dashboard';
+import TaskModal from './modules/workspace/TaskModal';
+import CommandPalette from './components/CommandPalette';
+import InboxView from './modules/workspace/InboxView';
+import ProjectModal from './modules/workspace/ProjectModal';
+import { GlobalAICopilot } from './components/GlobalAICopilot';
+import Analytics from './modules/workspace/Analytics';
+import TeamPage from './modules/workspace/TeamPage';
+import { BulkActionsBar } from './modules/workspace/BulkActionsBar';
 
 function App() {
-  const { activeApp, activePage, projectTab, theme, setActivePage, setActiveApp } = useStore();
+  const activeApp = useStore(state => state.activeApp);
+      const activePage = useStore(state => state.activePage);
+      const projectTab = useStore(state => state.projectTab);
+      const theme = useStore(state => state.theme);
+      const setActiveApp = useStore(state => state.setActiveApp);
+      const loadArcanaData = useStore(state => state.loadArcanaData);
+      const loadSettings = useStore(state => state.loadSettings);
+      const setCurrentUser = useStore(state => state.setCurrentUser);
+
+  // Load Arcana data from backend when workspace is activated
+  useEffect(() => {
+    if (activeApp === 'workspace' || activeApp === 'settings' || activeApp === 'finance' || activeApp === 'hr' || activeApp === 'tms') {
+      loadArcanaData();
+    }
+  }, [activeApp, loadArcanaData]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // Check saved JWT token on startup
+  useEffect(() => {
+    const hasSession = localStorage.getItem('has_session');
+    if (hasSession === '1') {
+      // Validate session with server via http-only cookie
+      fetch('/api/auth/me', { credentials: 'include' })
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(user => {
+          setCurrentUser(user.id, user.name, user.email, user.role, user.avatar);
+          loadSettings();
+          
+          // Deep link support
+          const params = new URLSearchParams(window.location.search);
+          const urlApp = params.get('app');
+          const urlPage = params.get('page');
+          
+          if (urlApp && ['desktop', 'workspace', 'settings', 'bpmn', 'finance', 'hr', 'tms', 'procurement', 'service'].includes(urlApp)) {
+            setActiveApp(urlApp as any);
+            if (urlPage && urlApp === 'workspace') {
+               useStore.getState().setActivePage(urlPage as any);
+            }
+          } else {
+            setActiveApp('desktop');
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('has_session');
+          localStorage.removeItem('auth_user');
+          if (activeApp !== 'login') {
+            window.location.href = '/'; // Redirect to clear URL parameters
+          }
+        });
+    } else if (activeApp !== 'login') {
+      setActiveApp('login');
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
+  // URL Sync
+  useEffect(() => {
+    if (activeApp === 'login') return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('app', activeApp);
+    if (activeApp === 'workspace' && activePage) {
+      url.searchParams.set('page', activePage);
+    } else {
+      url.searchParams.delete('page');
+    }
+    window.history.replaceState({}, '', url);
+  }, [activeApp, activePage]);
+
   // Global Shortcut for Command+M to open OS Desktop
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Command (Mac) or Ctrl (Windows) + M
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         setActiveApp('desktop');
@@ -46,53 +118,80 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setActiveApp]);
 
+  const handleLoginSuccess = (user: AuthUser, _token: string) => {
+    setCurrentUser(user.id, user.name, user.email, user.role, user.avatar);
+    loadSettings();
+    setActiveApp('desktop');
+  };
+
+  let content = null;
+
   if (activeApp === 'desktop') {
     return <OSDesktop />;
   }
 
   if (activeApp === 'login') {
-    return <LoginPage />;
+    return <LoginPage onSuccess={handleLoginSuccess} />;
   }
 
   if (activeApp === 'settings') {
-    return <SettingsApp />;
-  }
+    content = <SettingsApp />;
+  } else if (activeApp === 'bpmn') {
+    content = <BpmnApp />;
+  } else if (activeApp === 'finance') {
+    content = <FinanceApp />;
+  } else if (activeApp === 'hr') {
+    content = <HRApp />;
+  } else if (activeApp === 'tms') {
+    content = <TMSApp />;
+  } else if (activeApp === 'procurement') {
+    content = <ProcurementApp />;
+  } else if (activeApp === 'service') {
+    content = <ServiceApp />;
+  } else {
+    // Fallback / Default: WorkSpace Pro
+    const isKanban   = activePage === 'project' && projectTab === 'kanban';
+    const isCalendar = activePage === 'calendar';
+    const isTeam     = activePage === 'team';
 
-
-  // Fallback / Default: WorkSpace Pro
-  const isKanban   = activePage === 'project' && projectTab === 'kanban';
-  const isCalendar = activePage === 'calendar';
-  const isTeam     = activePage === 'team';
-
-  return (
-    <div className="app-shell">
-      <Sidebar />
-      <div className="main-content">
-        <Header />
-        {activePage === 'project' && <ViewsTabBar />}
-        <div
-          className="page-body"
-          style={{
-            padding: (isKanban || isTeam) ? '0' : '16px',
-            overflow: (isKanban || isCalendar || isTeam) ? 'hidden' : 'auto',
-          }}
-        >
-          {activePage === 'dashboard' && <Dashboard />}
-          {activePage === 'project'   && projectTab === 'list'   && <TaskList />}
-          {activePage === 'project'   && projectTab === 'kanban' && <KanbanBoard />}
-          {activePage === 'project'   && projectTab === 'gantt'  && <GanttChart />}
-          {activePage === 'calendar'  && <CalendarView />}
-          {activePage === 'analytics' && <Analytics />}
-          {activePage === 'inbox' && <InboxView />}
-          {activePage === 'my_tasks' && <TaskList />}
-          {activePage === 'team' && <TeamPage />}
+    content = (
+      <div className="app-shell">
+        <Sidebar />
+        <div className="main-content">
+          <Header />
+          {activePage === 'project' && <ViewsTabBar />}
+          <div
+            className="page-body"
+            style={{
+              padding: (isKanban || isTeam) ? '0' : '16px',
+              overflow: (isKanban || isCalendar || isTeam) ? 'hidden' : 'auto',
+            }}
+          >
+            {activePage === 'dashboard' && <Dashboard />}
+            {activePage === 'project'   && projectTab === 'list'   && <TaskList />}
+            {activePage === 'project'   && projectTab === 'kanban' && <KanbanBoard />}
+            {activePage === 'project'   && projectTab === 'gantt'  && <GanttChart />}
+            {activePage === 'calendar'  && <CalendarView />}
+            {activePage === 'analytics' && <Analytics />}
+            {activePage === 'inbox' && <InboxView />}
+            {activePage === 'my_tasks' && <TaskList />}
+            {activePage === 'team' && <TeamPage />}
+          </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <>
+      {content}
       <TaskModal />
       <CommandPalette />
       <ProjectModal />
       <BulkActionsBar />
-    </div>
+      <NotificationsModal />
+      <GlobalAICopilot />
+    </>
   );
 }
 

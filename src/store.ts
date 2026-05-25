@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { addDays, subDays } from 'date-fns';
-import type { DependencyType, GanttDep } from './services/workspace/utils/ganttDeps';
-import { wouldCreateCycle, cascadeRecalculate } from './services/workspace/utils/ganttDeps';
+import { api, apiHeaders } from './services/api';
+
+import type { DependencyType, GanttDep } from './modules/workspace/utils/ganttDeps';
+import { wouldCreateCycle } from './modules/workspace/utils/ganttDeps';
 
 export type Priority = 'urgent' | 'high' | 'medium' | 'low';
 export type StatusId = 'todo' | 'in_progress' | 'review' | 'done' | 'blocked';
@@ -9,7 +10,7 @@ export type StatusId = 'todo' | 'in_progress' | 'review' | 'done' | 'blocked';
 export const PRIORITY_LABELS: Record<Priority, string> = { urgent: 'Срочно', high: 'Высокий', medium: 'Средний', low: 'Низкий' };
 export const STATUS_LABELS: Record<StatusId, string> = { todo: 'К выполнению', in_progress: 'В работе', review: 'На проверке', done: 'Готово', blocked: 'Заблокировано' };
 
-export type UserRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type UserRole = 'owner' | 'admin' | 'member' | 'viewer' | 'cfo' | 'accountant';
 export type ProjectMemberRole = 'admin' | 'member' | 'viewer';
 
 export interface ProjectMember {
@@ -27,7 +28,9 @@ export interface User {
   jobTitle?: string;
   isActive: boolean;
   joinedAt: string;
-  allowedApps?: string[]; // e.g. ['arcana', 'kidsplate', 'lms']
+  allowedApps?: string[]; // e.g. ['arcana', 'bpmn', 'kidsplate', 'tms']
+  password?: string;
+  telegramBindCode?: string;
 }
 
 export interface Task {
@@ -89,119 +92,7 @@ export interface KanbanColumn {
   wipLimit: number | null;
 }
 
-// ─── MOCK DATA ───────────────────────────────────────────────────────────────
-
-const USERS: User[] = [
-  { id: 'u1', name: 'Тимур Дауров', email: 'maylantim@gmail.com', avatar: 'ТД', color: '#6366f1', role: 'owner', jobTitle: 'Владелец компании', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 90).toISOString() },
-  { id: 'u2', name: 'Алина Смирнова', email: 'alina@ws.pro', avatar: 'АС', color: '#22c55e', role: 'admin', jobTitle: 'UI/UX Designer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 60).toISOString() },
-  { id: 'u3', name: 'Даниил Парк', email: 'daniil@ws.pro', avatar: 'ДП', color: '#f59e0b', role: 'member', jobTitle: 'Frontend Developer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 45).toISOString() },
-  { id: 'u4', name: 'Кира Иванова', email: 'kira@ws.pro', avatar: 'КИ', color: '#ef4444', role: 'member', jobTitle: 'Backend Developer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 30).toISOString() },
-  { id: 'u5', name: 'Макс Орлов', email: 'max@ws.pro', avatar: 'МО', color: '#38bdf8', role: 'member', jobTitle: 'Full-Stack Developer', isActive: true, joinedAt: new Date(Date.now() - 86400000 * 20).toISOString() },
-];
-
-const PROJECTS: Project[] = [
-  { id: 'p1', name: 'Arcana', color: '#654ef1', icon: '🌀', description: 'Разработка основного продукта', members: [{userId:'u1',role:'admin'},{userId:'u2',role:'member'},{userId:'u3',role:'member'},{userId:'u4',role:'member'},{userId:'u5',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
-  { id: 'p2', name: 'Сайт компании', color: '#22c55e', icon: '🌐', description: 'Лендинг и блог', members: [{userId:'u2',role:'admin'},{userId:'u3',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
-  { id: 'p3', name: 'Мобильное приложение', color: '#f97316', icon: '📱', description: 'iOS и Android приложение', members: [{userId:'u1',role:'admin'},{userId:'u4',role:'member'},{userId:'u5',role:'member'}], createdAt: new Date().toISOString(), status: 'active' },
-];
-
-const now = new Date();
-
-const TASKS: Task[] = [
-  {
-    id: 't1', projectId: 'p1', title: 'Дизайн UI-потока авторизации', description: 'Создать вайрфреймы и хай-фай макеты для экранов входа, регистрации и сброса пароля.', priority: 'high', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-    startDate: subDays(now, 14).toISOString(), dueDate: subDays(now, 7).toISOString(),
-    tags: ['дизайн', 'авторизация'], estimatedHours: 16, loggedHours: 14, createdAt: subDays(now, 20).toISOString(), updatedAt: subDays(now, 7).toISOString(), position: 0, progress: 100,
-    dependencies: [],  // t1 is predecessor to t2 (t2 carries the dep)
-  },
-  {
-    id: 'st1', projectId: 'p1', parentId: 't1', title: 'Вайрфреймы', description: '', priority: 'high', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-    startDate: subDays(now, 14).toISOString(), dueDate: subDays(now, 10).toISOString(),
-    tags: [], estimatedHours: 8, loggedHours: 8, createdAt: subDays(now, 20).toISOString(), updatedAt: subDays(now, 7).toISOString(), position: 0, progress: 100,
-  },
-  {
-    id: 'st2', projectId: 'p1', parentId: 't1', title: 'Хай-фай макеты', description: '', priority: 'high', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-    startDate: subDays(now, 10).toISOString(), dueDate: subDays(now, 7).toISOString(),
-    tags: [], estimatedHours: 8, loggedHours: 6, createdAt: subDays(now, 20).toISOString(), updatedAt: subDays(now, 7).toISOString(), position: 1, progress: 100,
-  },
-  {
-    id: 't2', projectId: 'p1', title: 'Реализация drag-and-drop в Канбане', description: 'Построить Канбан-доску с полной поддержкой перетаскивания карточек.', priority: 'urgent', status: 'in_progress', assigneeId: 'u1', reporterId: 'u1',
-    startDate: subDays(now, 5).toISOString(), dueDate: addDays(now, 3).toISOString(),
-    tags: ['фронтенд', 'канбан'], estimatedHours: 24, loggedHours: 12, createdAt: subDays(now, 10).toISOString(), updatedAt: subDays(now, 1).toISOString(), position: 0, progress: 45,
-    dependencies: [{ type: 'FS', taskId: 't1' }],  // t2 starts after t1 finishes
-  },
-  {
-    id: 'st3', projectId: 'p1', parentId: 't2', title: 'DnD колонок', description: '', priority: 'urgent', status: 'done', assigneeId: 'u1', reporterId: 'u1',
-    startDate: subDays(now, 5).toISOString(), dueDate: subDays(now, 2).toISOString(),
-    tags: [], estimatedHours: 8, loggedHours: 8, createdAt: subDays(now, 10).toISOString(), updatedAt: subDays(now, 1).toISOString(), position: 0, progress: 100,
-  },
-  {
-    id: 'st4', projectId: 'p1', parentId: 't2', title: 'DnD карточек', description: '', priority: 'urgent', status: 'in_progress', assigneeId: 'u1', reporterId: 'u1',
-    startDate: subDays(now, 2).toISOString(), dueDate: addDays(now, 1).toISOString(),
-    tags: [], estimatedHours: 10, loggedHours: 4, createdAt: subDays(now, 10).toISOString(), updatedAt: subDays(now, 1).toISOString(), position: 1, progress: 40,
-  },
-  {
-    id: 't3', projectId: 'p1', title: 'Движок рендеринга диаграммы Ганта', description: 'Кастомная диаграмма Ганта с масштабами день/неделя/месяц и интерактивным изменением размеров.', priority: 'urgent', status: 'in_progress', assigneeId: 'u3', reporterId: 'u1',
-    startDate: subDays(now, 3).toISOString(), dueDate: addDays(now, 7).toISOString(),
-    tags: ['фронтенд', 'гант'], estimatedHours: 40, loggedHours: 10, createdAt: subDays(now, 8).toISOString(), updatedAt: now.toISOString(), position: 1, progress: 25,
-    dependencies: [{ type: 'FS', taskId: 't2' }],  // t3 starts after t2 finishes
-  },
-  {
-    id: 't4', projectId: 'p1', title: 'Проектирование схемы базы данных', description: 'Разработать нормализованную схему для задач, проектов, пользователей, комментариев и зависимостей.', priority: 'high', status: 'done', assigneeId: 'u5', reporterId: 'u1',
-    startDate: subDays(now, 20).toISOString(), dueDate: subDays(now, 10).toISOString(),
-    tags: ['бэкенд', 'база данных'], estimatedHours: 12, loggedHours: 10, createdAt: subDays(now, 25).toISOString(), updatedAt: subDays(now, 10).toISOString(), position: 0, progress: 100,
-    dependencies: [],  // t4 is predecessor to t5
-  },
-  {
-    id: 't5', projectId: 'p1', title: 'WebSocket синхронизация в реальном времени', description: 'Реализовать socket.io сервер для мгновенного обновления задач у всех подключённых клиентов.', priority: 'high', status: 'review', assigneeId: 'u5', reporterId: 'u1',
-    startDate: subDays(now, 7).toISOString(), dueDate: addDays(now, 2).toISOString(),
-    tags: ['бэкенд', 'реалтайм'], estimatedHours: 20, loggedHours: 18, createdAt: subDays(now, 12).toISOString(), updatedAt: subDays(now, 1).toISOString(), position: 0, progress: 80,
-    dependencies: [{ type: 'FS', taskId: 't4' }],  // t5 starts after t4 finishes
-  },
-  {
-    id: 't6', projectId: 'p1', title: 'Система уведомлений (email + внутренние)', description: 'Построить пайплайн уведомлений о назначении задач, упоминаниях и напоминаниях о сроках.', priority: 'medium', status: 'todo', assigneeId: 'u4', reporterId: 'u1',
-    startDate: addDays(now, 3).toISOString(), dueDate: addDays(now, 14).toISOString(),
-    tags: ['бэкенд', 'уведомления'], estimatedHours: 16, loggedHours: 0, createdAt: subDays(now, 5).toISOString(), updatedAt: subDays(now, 5).toISOString(), position: 0, progress: 0,
-    dependencies: [{ type: 'FS', taskId: 't5' }],  // t6 starts after t5 finishes
-  },
-  {
-    id: 't7', projectId: 'p1', title: 'Дизайн-система и библиотека компонентов', description: 'Создать переиспользуемые React-компоненты на основе токенов дизайн-системы.', priority: 'medium', status: 'in_progress', assigneeId: 'u2', reporterId: 'u1',
-    startDate: subDays(now, 10).toISOString(), dueDate: addDays(now, 5).toISOString(),
-    tags: ['фронтенд', 'дизайн'], estimatedHours: 30, loggedHours: 20, createdAt: subDays(now, 15).toISOString(), updatedAt: subDays(now, 2).toISOString(), position: 2, progress: 65,
-  },
-  {
-    id: 'st7', projectId: 'p1', parentId: 't7', title: 'Кнопки', description: '', priority: 'medium', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-    startDate: subDays(now, 10).toISOString(), dueDate: subDays(now, 8).toISOString(),
-    tags: [], estimatedHours: 5, loggedHours: 5, createdAt: subDays(now, 15).toISOString(), updatedAt: subDays(now, 2).toISOString(), position: 0, progress: 100,
-  },
-  {
-    id: 't8', projectId: 'p1', title: 'Написание документации API', description: 'Задокументировать все REST-эндпоинты в формате OpenAPI/Swagger.', priority: 'low', status: 'todo', assigneeId: null, reporterId: 'u1',
-    startDate: addDays(now, 10).toISOString(), dueDate: addDays(now, 20).toISOString(),
-    tags: ['документация'], estimatedHours: 8, loggedHours: 0, createdAt: subDays(now, 3).toISOString(), updatedAt: subDays(now, 3).toISOString(), position: 1, progress: 0,
-  },
-  {
-    id: 't9', projectId: 'p1', title: 'Настройка CI/CD пайплайна', description: 'GitHub Actions для автоматического тестирования, сборки и деплоя на staging и production.', priority: 'medium', status: 'todo', assigneeId: 'u1', reporterId: 'u1',
-    startDate: addDays(now, 5).toISOString(), dueDate: addDays(now, 10).toISOString(),
-    tags: ['devops'], estimatedHours: 12, loggedHours: 0, createdAt: subDays(now, 2).toISOString(), updatedAt: subDays(now, 2).toISOString(), position: 2, progress: 0,
-    dependencies: [],  // t9 is predecessor to t10
-  },
-  {
-    id: 't10', projectId: 'p1', title: 'Интеграционные тесты (E2E)', description: 'Написать комплексные E2E-тесты на Playwright для критичных пользовательских сценариев.', priority: 'low', status: 'blocked', assigneeId: 'u4', reporterId: 'u1',
-    startDate: addDays(now, 15).toISOString(), dueDate: addDays(now, 25).toISOString(),
-    tags: ['qa', 'тестирование'], estimatedHours: 24, loggedHours: 0, createdAt: subDays(now, 1).toISOString(), updatedAt: subDays(now, 1).toISOString(), position: 0, progress: 0,
-    dependencies: [{ type: 'FS', taskId: 't9' }, { type: 'relates_to', taskId: 't8' }],
-  },
-  {
-    id: 't11', projectId: 'p2', title: 'Главный экран (Hero) лендинга', description: 'Спроектировать и разработать hero-секцию с анимированным градиентом и кнопкой призыва к действию.', priority: 'high', status: 'in_progress', assigneeId: 'u2', reporterId: 'u2',
-    startDate: subDays(now, 4).toISOString(), dueDate: addDays(now, 3).toISOString(),
-    tags: ['фронтенд', 'дизайн'], estimatedHours: 12, loggedHours: 8, createdAt: subDays(now, 6).toISOString(), updatedAt: subDays(now, 1).toISOString(), position: 0, progress: 60,
-  },
-  {
-    id: 't12', projectId: 'p2', title: 'SEO оптимизация и мета-теги', description: 'Реализовать структурированные данные, og-теги и карту сайта.', priority: 'medium', status: 'todo', assigneeId: 'u3', reporterId: 'u2',
-    startDate: addDays(now, 4).toISOString(), dueDate: addDays(now, 8).toISOString(),
-    tags: ['seo'], estimatedHours: 6, loggedHours: 0, createdAt: subDays(now, 3).toISOString(), updatedAt: subDays(now, 3).toISOString(), position: 0, progress: 0,
-  },
-];
+// ─── KANBAN COLUMNS (structural config) ──────────────────────────────────────
 
 const COLUMNS: KanbanColumn[] = [
   { id: 'todo', name: 'К выполнению', color: '#5a6278', wipLimit: null },
@@ -224,6 +115,30 @@ export interface SavedView {
   kanbanGroupBy: 'none' | 'assignee';
 }
 
+// ── API helper for background persistence ──────────────────────────────────────
+// API moved to src/services/api.ts
+
+export interface AppSettings {
+  companyName: string;
+  domain: string;
+  timezone: string;
+  language: string;
+  workWeekStart: string;
+  sessionTimeout: string;
+  forceLogoutOnClose: boolean;
+  passwordMinLength: string;
+  requireNumbers: boolean;
+  requireSpecialChars: boolean;
+  twoFactor: boolean;
+  ipWhitelist: boolean;
+  ipWhitelistText: string;
+  emailAssign: boolean;
+  emailMention: boolean;
+  emailDue: boolean;
+  pushAll: boolean;
+  digestFreq: string;
+}
+
 interface AppStore {
   // Data
   users: User[];
@@ -233,8 +148,10 @@ interface AppStore {
   comments: Comment[];
   notifications: Notification[];
   savedViews: SavedView[];
+  _arcanaLoaded: boolean;
+  settings: AppSettings;
   // UI State
-  activeApp: 'desktop' | 'workspace' | 'login' | 'settings';
+  activeApp: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service';
   activeProjectId: string;
   activePage: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team';
   projectTab: 'list' | 'kanban' | 'gantt';
@@ -249,18 +166,28 @@ interface AppStore {
   theme: 'dark' | 'light';
   isNotifPanelOpen: boolean;
   isCommandPaletteOpen: boolean;
+  isSidebarMobileOpen: boolean;
   isProjectModalOpen: boolean;
+  isGlobalNotificationsOpen: boolean;
+  isGlobalAIOpen: boolean;
   projectModalMode: 'create' | 'edit';
   // Modal & Selection
   isTaskModalOpen: boolean;
   editingTaskId: string | null;
   selectedTaskIds: string[];
   // Actions
-  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings') => void;
+  loadSettings: () => Promise<void>;
+  updateSettings: (updates: Partial<AppSettings>) => void;
+  loadArcanaData: () => Promise<void>;
+  loadTasksForProject: (projectId: string) => Promise<void>;
+  loadCommentsForTask: (taskId: string) => Promise<void>;
+  setCurrentUser: (userId: string, name: string, email: string, role: string, avatar?: string) => void;
+  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service') => void;
   setActiveProject: (id: string) => void;
   setActivePage: (p: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team') => void;
   setProjectTab: (t: 'list' | 'kanban' | 'gantt') => void;
   setActiveSavedViewId: (id: string | 'default') => void;
+  logout: () => void;
   saveView: (view: Omit<SavedView, 'id'>) => void;
   updateSavedView: (id: string, updates: Partial<Omit<SavedView, 'id'>>) => void;
   deleteSavedView: (id: string) => void;
@@ -273,6 +200,10 @@ interface AppStore {
   toggleTheme: () => void;
   toggleNotifPanel: () => void;
   toggleCommandPalette: () => void;
+  toggleSidebarMobile: () => void;
+  setSidebarMobileOpen: (open: boolean) => void;
+  setGlobalNotificationsOpen: (open: boolean) => void;
+  setGlobalAIOpen: (open: boolean) => void;
   openProjectModal: (mode: 'create' | 'edit') => void;
   closeProjectModal: () => void;
   markAllRead: () => void;
@@ -293,11 +224,12 @@ interface AppStore {
   toggleTaskSelection: (id: string, selectAll?: boolean, taskIds?: string[]) => void;
   clearTaskSelection: () => void;
   bulkUpdateTasks: (updates: Partial<Task>) => void;
-  logTime: (taskId: string, hours: number) => void;
+  logTime: (taskId: string, hours: number, date?: string, notes?: string) => void;
   // Team actions
   createUser: (u: Partial<User>) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
   deleteUser: (id: string) => void;
+  generateTelegramBindCode: (id: string) => Promise<string | null>;
   addProjectMember: (projectId: string, userId: string, role: ProjectMemberRole) => void;
   removeProjectMember: (projectId: string, userId: string) => void;
   updateProjectMemberRole: (projectId: string, userId: string, role: ProjectMemberRole) => void;
@@ -321,62 +253,36 @@ if (savedStateStr) {
 }
 
 export const useStore = create<AppStore>()((set, get) => ({
-  users: USERS, // always use fresh code data, never stale localStorage
-  projects: (() => {
-    const saved = loadedState.projects;
-    if (!saved) return PROJECTS;
-    // Migrate old memberIds format to new members format
-    return saved.map((p: Project & { memberIds?: string[] }) => {
-      if (p.memberIds && !p.members) {
-        return { ...p, members: p.memberIds.map((uid: string) => ({ userId: uid, role: 'member' as ProjectMemberRole })), memberIds: undefined };
-      }
-      return p;
-    });
-  })(),
-  tasks: (() => {
-    const raw: Task[] = loadedState.tasks
-      ? loadedState.tasks.map((t: Task) => {
-          const initTask = TASKS.find(it => it.id === t.id);
-          if (initTask && initTask.dependencies && (!t.dependencies || t.dependencies.length === 0)) {
-            return { ...t, dependencies: initTask.dependencies };
-          }
-          return t;
-        })
-      : TASKS;
-
-    // Migrate old blocks/blocked_by to new FS model
-    // Old: predecessor had {type:'blocks', taskId: successorId}
-    //      successor had {type:'blocked_by', taskId: predecessorId}
-    // New: only successor has {type:'FS', taskId: predecessorId}
-    return raw.map(t => {
-      if (!t.dependencies || t.dependencies.length === 0) return t;
-      const migratedDeps = t.dependencies
-        // Remove 'blocks' (predecessor-side pointer — no longer used)
-        .filter((d: GanttDep & { type: string }) => d.type !== 'blocks')
-        // Convert 'blocked_by' → 'FS'
-        .map((d: GanttDep & { type: string }) =>
-          d.type === 'blocked_by' ? { ...d, type: 'FS' as const } : d
-        );
-      if (migratedDeps.length === t.dependencies.length &&
-          migratedDeps.every((d, i) => d.type === t.dependencies![i].type)) return t;
-      return { ...t, dependencies: migratedDeps };
-    });
-  })(),
+  users: [],
+  projects: [],
+  settings: loadedState.settings || {
+    companyName: 'WorkSpace Pro',
+    domain: 'workspace.local',
+    timezone: 'Asia/Tashkent',
+    language: 'ru',
+    workWeekStart: 'Понедельник',
+    sessionTimeout: '480',
+    forceLogoutOnClose: false,
+    passwordMinLength: '8',
+    requireNumbers: true,
+    requireSpecialChars: false,
+    twoFactor: false,
+    ipWhitelist: false,
+    ipWhitelistText: '',
+    emailAssign: true,
+    emailMention: true,
+    emailDue: true,
+    pushAll: true,
+    digestFreq: 'daily'
+  },
+  tasks: [],
   columns: COLUMNS,
-  comments: loadedState.comments || [
-    { id: 'c1', taskId: 't2', authorId: 'u1', text: 'Начали работу над колонками, drag внутри колонки готов.', createdAt: new Date(Date.now() - 3600000 * 5).toISOString() },
-    { id: 'c2', taskId: 't2', authorId: 'u2', text: 'Проверила — анимация работает хорошо, можно переходить к карточкам.', createdAt: new Date(Date.now() - 3600000 * 2).toISOString() },
-    { id: 'c3', taskId: 't3', authorId: 'u3', text: 'Базовая шкала готова, работаю над масштабированием недели.', createdAt: new Date(Date.now() - 3600000 * 1).toISOString() },
-  ],
-  notifications: loadedState.notifications || [
-    { id: 'n1', type: 'assigned', title: 'Вам назначена задача', body: 'Настройка CI/CD пайплайна', taskId: 't9', read: false, createdAt: new Date(Date.now() - 1800000).toISOString() },
-    { id: 'n2', type: 'due_soon', title: 'Срок истекает завтра', body: 'WebSocket синхронизация', taskId: 't5', read: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
-    { id: 'n3', type: 'mention', title: 'Алина упомянула вас', body: 'В задаче «Дизайн-система»', taskId: 't7', read: true, createdAt: new Date(Date.now() - 7200000).toISOString() },
-    { id: 'n4', type: 'completed', title: 'Задача выполнена', body: 'Проектирование схемы БД завершено', taskId: 't4', read: true, createdAt: new Date(Date.now() - 86400000).toISOString() },
-  ],
+  comments: [],
+  notifications: [],
   savedViews: loadedState.savedViews || [],
+  _arcanaLoaded: false,
   activeProjectId: loadedState.activeProjectId || 'p1',
-  activeApp: loadedState.activeApp || 'login',
+  activeApp: (loadedState.activeApp && localStorage.getItem('has_session')) ? loadedState.activeApp : 'login',
   activePage: loadedState.activePage || 'dashboard',
   projectTab: loadedState.projectTab || 'list',
   activeSavedViewId: loadedState.activeSavedViewId || 'default',
@@ -390,14 +296,116 @@ export const useStore = create<AppStore>()((set, get) => ({
   theme: loadedState.theme || ('dark' as const),
   isNotifPanelOpen: false,
   isCommandPaletteOpen: false,
+  isSidebarMobileOpen: false,
   isProjectModalOpen: false,
+  isGlobalNotificationsOpen: false,
+  isGlobalAIOpen: false,
   projectModalMode: 'create',
   isTaskModalOpen: false,
   editingTaskId: null,
   selectedTaskIds: [],
 
-  setActiveApp: (app) => set({ activeApp: app }),
-  setActiveProject: (id) => set({ activeProjectId: id }),
+  loadArcanaData: async () => {
+    if (get()._arcanaLoaded) return;
+    try {
+      const [projects, usersList] = await Promise.all([
+        api.fetchProjects(),
+        fetch('/api/users', { headers: apiHeaders(), credentials: 'include' }).then(r => r.ok ? r.json() : []).catch(() => [])
+      ]);
+      
+      set({
+        projects,
+        users: usersList,
+        _arcanaLoaded: true,
+      });
+      
+      // Load tasks for active project if one exists
+      const activeProjectId = get().activeProjectId;
+      if (activeProjectId) {
+        get().loadTasksForProject(activeProjectId);
+      }
+    } catch (e) {
+      console.error('Failed to load Arcana data from API:', e);
+      set({ _arcanaLoaded: true });
+    }
+  },
+
+  loadTasksForProject: async (projectId: string) => {
+    try {
+      const r = await fetch(`/api/arcana/tasks?projectId=${projectId}`, { headers: apiHeaders(), credentials: 'include' });
+      if (r.ok) {
+        const tasks = await r.json();
+        
+        set(st => {
+           // Keep tasks of other projects, merge new ones
+           const otherTasks = st.tasks.filter(t => t.projectId !== projectId);
+           return { tasks: [...otherTasks, ...tasks] };
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load tasks for project', e);
+    }
+  },
+
+  loadCommentsForTask: async (taskId: string) => {
+    try {
+      const r = await fetch(`/api/arcana/comments?taskId=${taskId}`, { headers: apiHeaders(), credentials: 'include' });
+      if (r.ok) {
+        const taskComments = await r.json();
+        set(st => {
+           // Remove existing comments for this task, then add fresh ones
+           const otherComments = st.comments.filter(c => c.taskId !== taskId);
+           return { comments: [...otherComments, ...taskComments] };
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load comments for task', e);
+    }
+  },
+
+  updateSettings: (updates) => {
+    set(st => ({ settings: { ...st.settings, ...updates } }));
+    api.put('/api/settings', updates);
+  },
+
+  loadSettings: async () => {
+    const s = await api.fetchSettings();
+    if (Object.keys(s).length > 0) {
+      set(st => ({ settings: { ...st.settings, ...s } }));
+    }
+  },
+
+  setCurrentUser: (userId, name, email, role, avatar) => set(st => {
+    // Update currentUserId so all Arcana actions are done on behalf of the real user
+    const existingUser = st.users.find(u => u.id === userId);
+    const updatedUsers = existingUser
+      ? st.users.map(u => u.id === userId ? { ...u, name, email, role: role as any, avatar: avatar || u.avatar } : u)
+      : [...st.users, {
+          id: userId, name, email, avatar: avatar || name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
+          color: '#6366f1', role: role as any, isActive: true, joinedAt: new Date().toISOString()
+        }];
+    return { currentUserId: userId, users: updatedUsers };
+  }),
+
+  setActiveApp: (app) => set((st) => {
+    if (app !== 'login' && !localStorage.getItem('has_session')) {
+      return { activeApp: 'login' };
+    }
+    if (app !== 'login' && app !== 'desktop') {
+      const currentUser = st.users.find(u => u.id === st.currentUserId);
+      if (currentUser && currentUser.allowedApps && currentUser.allowedApps.length > 0) {
+        if (!currentUser.allowedApps.includes(app)) {
+          alert('У вас нет доступа к этому приложению.');
+          return { activeApp: 'desktop' };
+        }
+      }
+    }
+    return { activeApp: app };
+  }),
+  setActiveProject: (id) => {
+    set({ activeProjectId: id });
+    get().loadTasksForProject(id);
+  },
   setActivePage: (p) => set({ activePage: p }),
   setProjectTab: (t) => set({ projectTab: t }),
   
@@ -419,6 +427,17 @@ export const useStore = create<AppStore>()((set, get) => ({
     }
     return { activeSavedViewId: id };
   }),
+
+  logout: () => {
+    localStorage.removeItem('has_session');
+    localStorage.removeItem('auth_user');
+    set({
+      activeApp: 'login',
+      currentUserId: '',
+      _arcanaLoaded: false,
+    });
+  },
+
   saveView: (viewData) => set((st) => {
     const newView: SavedView = { ...viewData, id: `view_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` };
     return {
@@ -445,8 +464,12 @@ export const useStore = create<AppStore>()((set, get) => ({
     document.documentElement.setAttribute('data-theme', next);
     return { theme: next };
   }),
-  toggleNotifPanel: () => set((s) => ({ isNotifPanelOpen: !s.isNotifPanelOpen, isCommandPaletteOpen: false })),
-  toggleCommandPalette: () => set((s) => ({ isCommandPaletteOpen: !s.isCommandPaletteOpen, isNotifPanelOpen: false })),
+  toggleNotifPanel: () => set(st => ({ isNotifPanelOpen: !st.isNotifPanelOpen })),
+  toggleCommandPalette: () => set(st => ({ isCommandPaletteOpen: !st.isCommandPaletteOpen })),
+  toggleSidebarMobile: () => set(st => ({ isSidebarMobileOpen: !st.isSidebarMobileOpen })),
+  setSidebarMobileOpen: (open: boolean) => set({ isSidebarMobileOpen: open }),
+  setGlobalNotificationsOpen: (open) => set({ isGlobalNotificationsOpen: open }),
+  setGlobalAIOpen: (open) => set({ isGlobalAIOpen: open }),
   openProjectModal: (mode) => set({ isProjectModalOpen: true, projectModalMode: mode }),
   closeProjectModal: () => set({ isProjectModalOpen: false }),
   markAllRead: () => set(st => ({ notifications: st.notifications.map(n => ({ ...n, read: true })) })),
@@ -455,8 +478,9 @@ export const useStore = create<AppStore>()((set, get) => ({
   openEditTask: (id) => set({ isTaskModalOpen: true, editingTaskId: id }),
   closeModal: () => set({ isTaskModalOpen: false, editingTaskId: null }),
 
-  createTask: (t) => set(st => {
-    const newTask = {
+  createTask: async (t) => {
+    const st = get();
+    const tempTask = {
       ...t,
       id: `task_${Date.now()}`,
       createdAt: new Date().toISOString(),
@@ -467,18 +491,38 @@ export const useStore = create<AppStore>()((set, get) => ({
       dependencies: t.dependencies || [],
     } as Task;
     
-    return {
-      tasks: [...st.tasks, newTask],
+    // Add temp task for UI
+    set({
+      tasks: [...st.tasks, tempTask],
       notifications: [
         ...st.notifications,
-        { id: `notif_${Date.now()}`, type: 'assigned', title: 'Новая задача', body: `Создана задача: ${t.title}`, taskId: newTask.id, read: false, createdAt: new Date().toISOString() }
+        { id: `notif_${Date.now()}`, type: 'assigned', title: 'Новая задача', body: `Создана задача: ${t.title}`, taskId: tempTask.id, read: false, createdAt: new Date().toISOString() }
       ]
-    };
-  }),
+    });
+    
+    // Create on backend
+    try {
+      const response = await fetch('/api/arcana/tasks', {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify(tempTask)
+      });
+      if (response.ok) {
+        const realTask = await response.json();
+        set(s => ({
+          tasks: s.tasks.map(task => task.id === tempTask.id ? realTask : task)
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to create task on backend', e);
+      // Optional: Remove temp task or show error
+    }
+  },
 
-  updateTask: (id, updates) => set(st => {
+  updateTask: (id, updates) => {
+    const st = get();
     const oldTask = st.tasks.find(t => t.id === id);
-    if (!oldTask) return {};
+    if (!oldTask) return;
 
     const newComments: Comment[] = [];
     const addSysLog = (text: string) => {
@@ -503,14 +547,13 @@ export const useStore = create<AppStore>()((set, get) => ({
       addSysLog(`Исполнитель изменён ➔ "${uName}"`);
     }
 
-    let newNotifs: Notification[] = [];
+    const newNotifs: Notification[] = [];
     if (updates.description && updates.description !== oldTask.description) {
       const mentions = updates.description.match(/@\[(.*?)\]/g);
       if (mentions) {
         mentions.forEach(m => {
           const mentionedName = m.replace('@', '').replace('[', '').replace(']', '');
           const mentionedUser = st.users.find(u => u.name === mentionedName);
-          // Simple verification
           if (mentionedUser) {
             newNotifs.push({
                id: `notif_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -529,10 +572,8 @@ export const useStore = create<AppStore>()((set, get) => ({
     const isDone = updates.status === 'done';
     const progressUpdate = isDone ? { progress: 100 } : {};
 
-    // Merge full updated task
     let merged = { ...oldTask, ...updates, ...progressUpdate, updatedAt: new Date().toISOString() };
 
-    // If subtask — clamp dates to parent bounds
     if (merged.parentId) {
       const parent = st.tasks.find(t => t.id === merged.parentId);
       if (parent && parent.startDate && parent.dueDate) {
@@ -548,17 +589,39 @@ export const useStore = create<AppStore>()((set, get) => ({
       }
     }
 
-    return {
-      tasks: st.tasks.map(t => t.id === id ? merged : t),
-      comments: [...st.comments, ...newComments],
-      notifications: [...st.notifications, ...newNotifs]
-    };
-  }),
+    // Apply optimistically
+    set(currentSt => ({
+      tasks: currentSt.tasks.map(t => t.id === id ? merged : t),
+      comments: [...currentSt.comments, ...newComments],
+      notifications: [...currentSt.notifications, ...newNotifs]
+    }));
 
-  deleteTask: (id) => set(st => ({
-    tasks: st.tasks.filter(t => t.id !== id && t.parentId !== id),
-    selectedTaskIds: st.selectedTaskIds.filter(tid => tid !== id)
-  })),
+    // Persist system comments
+    newComments.forEach(c => api.post('/api/arcana/comments', c).catch(console.error));
+
+    // Persist task with rollback (pass expectedVersion for OCC)
+    const payload = { ...merged, expectedVersion: oldTask.updatedAt };
+    api.put(`/api/arcana/tasks/${id}`, payload)
+      .then(r => { if (!r || !r.ok) throw new Error(r?.status === 409 ? 'Conflict' : 'API Error'); })
+      .catch(err => {
+        console.error('Task update failed, rolling back:', err);
+        if (err.message === 'Conflict') {
+           alert('Конфликт: задача была изменена другим пользователем. Пожалуйста, обновите страницу.');
+        }
+        // Rollback state to oldTask
+        set(currentSt => ({
+          tasks: currentSt.tasks.map(t => t.id === id ? oldTask : t)
+        }));
+      });
+  },
+
+  deleteTask: (id) => {
+    set(st => ({
+      tasks: st.tasks.filter(t => t.id !== id && t.parentId !== id),
+      selectedTaskIds: st.selectedTaskIds.filter(tid => tid !== id)
+    }));
+    api.del(`/api/arcana/tasks/${id}`);
+  },
 
   addDependency: (succId, predId, type, lag) => {
     const st = get();
@@ -575,28 +638,53 @@ export const useStore = create<AppStore>()((set, get) => ({
       tasks: s.tasks.map(t => {
         if (t.id === succId) {
           const deps = t.dependencies || [];
-          // Replace if same predecessor already linked
           const filtered = deps.filter(d => d.taskId !== predId);
           return { ...t, dependencies: [...filtered, { taskId: predId, type, lag }] };
         }
         return t;
       })
     }));
+    // Persist updated deps
+    const updated = get().tasks.find(t => t.id === succId);
+    if (updated) api.put(`/api/arcana/tasks/${succId}`, { dependencies: updated.dependencies });
     return { ok: true };
   },
 
-  removeDependency: (taskId, predId) => set(st => ({
-    tasks: st.tasks.map(t => {
-      if (t.id !== taskId) return t;
-      return { ...t, dependencies: (t.dependencies || []).filter(d => d.taskId !== predId) };
-    })
-  })),
+  removeDependency: (taskId, predId) => {
+    set(st => ({
+      tasks: st.tasks.map(t => {
+        if (t.id !== taskId) return t;
+        return { ...t, dependencies: (t.dependencies || []).filter(d => d.taskId !== predId) };
+      })
+    }));
+    const updated = get().tasks.find(t => t.id === taskId);
+    if (updated) api.put(`/api/arcana/tasks/${taskId}`, { dependencies: updated.dependencies });
+  },
 
-  cascadeUpdate: (movedTaskId, deltaDays) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updated = cascadeRecalculate(movedTaskId, deltaDays, get().tasks as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    set({ tasks: updated as any });
+  cascadeUpdate: async (movedTaskId, deltaDays) => {
+    if (deltaDays <= 0) return;
+    try {
+      const r = await fetch(`/api/arcana/tasks/${movedTaskId}/cascade`, {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify({ deltaDays })
+      });
+      if (r.ok) {
+        const { updated } = await r.json();
+        if (updated && updated.length > 0) {
+          // Update the local tasks with the new dates from the server
+          set(st => ({
+            tasks: st.tasks.map(t => {
+              const u = updated.find((upd: any) => upd.id === t.id);
+              if (u) return { ...t, startDate: u.startDate, dueDate: u.dueDate };
+              return t;
+            })
+          }));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to cascade update on backend', e);
+    }
   },
 
   moveTask: (taskId, newStatus, newPosition) => {
@@ -607,6 +695,7 @@ export const useStore = create<AppStore>()((set, get) => ({
     set((s) => ({
       tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, status: newStatus, position: newPosition, updatedAt: new Date().toISOString() }),
     }));
+    api.put(`/api/arcana/tasks/${taskId}`, { status: newStatus, position: newPosition });
   },
 
   addComment: (taskId, text, isSystem = false, authorId) => {
@@ -621,7 +710,7 @@ export const useStore = create<AppStore>()((set, get) => ({
       isSystem,
     };
 
-    let newNotifs: Notification[] = [];
+    const newNotifs: Notification[] = [];
     if (!isSystem) {
       const mentions = text.match(/@\[(.*?)\]/g);
       if (mentions) {
@@ -644,9 +733,10 @@ export const useStore = create<AppStore>()((set, get) => ({
     }
 
     set((s) => ({ comments: [...s.comments, comment], notifications: [...s.notifications, ...newNotifs] }));
+    api.post('/api/arcana/comments', comment);
   },
 
-  logTime: (taskId, hours) => {
+  logTime: (taskId, hours, date, notes) => {
     if (hours <= 0) return;
     const task = get().tasks.find(t => t.id === taskId);
     if (!task) return;
@@ -654,30 +744,48 @@ export const useStore = create<AppStore>()((set, get) => ({
     // Считаем округленные часы для отображения формата
     const h = Number(hours.toFixed(1));
 
-    get().addComment(taskId, `Списано время: +${h} ч`, true, 'system');
+    get().addComment(taskId, `Списано время: +${h} ч (${date})`, true, 'system');
     set((st) => ({
       tasks: st.tasks.map(t => t.id === taskId ? { ...t, loggedHours: (t.loggedHours || 0) + h, updatedAt: new Date().toISOString() } : t)
     }));
+    // Use the new endpoint to ensure TimeLog is created for HR Pulse
+    api.post(`/api/arcana/tasks/${taskId}/time`, { hours: h, date, notes });
   },
 
-  createProject: (partial) => {
-    const project: Project = {
-      id: `p${Date.now()}`,
-      name: 'Новый проект',
-      color: '#654ef1',
-      icon: '📁',
-      description: '',
-      members: [{ userId: get().currentUserId, role: 'admin' }],
-      createdAt: new Date().toISOString(),
-      status: 'active',
-      ...partial,
-    };
-    set((s) => ({ projects: [...s.projects, project], activeProjectId: project.id, isProjectModalOpen: false }));
+  createProject: async (partial) => {
+    // 1. Optimistic UI is fine for opening the modal, but let's actually create it on the backend and use the real ID
+    try {
+      const response = await fetch('/api/arcana/projects', {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify({
+          name: partial.name || 'Новый проект',
+          color: partial.color || '#654ef1',
+          icon: partial.icon || '📁',
+          description: partial.description || '',
+          status: partial.status || 'active',
+          members: [{ userId: get().currentUserId, role: 'admin' }]
+        })
+      });
+      if (response.ok) {
+        const project = await response.json();
+        set((s) => ({ 
+          projects: [...s.projects, project], 
+          activeProjectId: project.id, 
+          isProjectModalOpen: false 
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to create project', e);
+    }
   },
 
-  updateProject: (id, updates) => set((s) => ({
-    projects: s.projects.map(p => p.id === id ? { ...p, ...updates } : p)
-  })),
+  updateProject: (id, updates) => {
+    set((s) => ({
+      projects: s.projects.map(p => p.id === id ? { ...p, ...updates } : p)
+    }));
+    api.put(`/api/arcana/projects/${id}`, updates);
+  },
 
   createUser: (partial) => {
     const newUser: User = {
@@ -693,42 +801,81 @@ export const useStore = create<AppStore>()((set, get) => ({
       ...partial,
     };
     set((s) => ({ users: [...s.users, newUser] }));
+    // Persist to backend (passwords set separately)
+    api.post('/api/users', { ...newUser });
   },
 
-  updateUser: (id, updates) => set((s) => ({
-    users: s.users.map(u => u.id === id ? { ...u, ...updates } : u)
-  })),
+  updateUser: (id, updates) => {
+    set((s) => ({
+      users: s.users.map(u => u.id === id ? { ...u, ...updates } : u)
+    }));
+    // Persist to backend — includes allowedApps changes from Settings
+    api.put(`/api/users/${id}`, updates);
+  },
 
-  deleteUser: (id) => set((s) => ({
-    users: s.users.filter(u => u.id !== id),
-    // Also remove from all projects
-    projects: s.projects.map(p => ({
-      ...p,
-      members: p.members.filter(m => m.userId !== id)
-    }))
-  })),
+  generateTelegramBindCode: async (id) => {
+    try {
+      const response = await fetch(`/api/users/${id}/bind-code`, {
+        method: 'POST',
+        headers: apiHeaders()
+      });
+      if (response.ok) {
+        const res = await response.json();
+        if (res && res.code) {
+          set((s) => ({
+            users: s.users.map(u => u.id === id ? { ...u, telegramBindCode: res.code } : u)
+          }));
+          return res.code as string;
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('Failed to generate bind code', e);
+      return null;
+    }
+  },
 
-  addProjectMember: (projectId, userId, role) => set((s) => ({
-    projects: s.projects.map(p => {
-      if (p.id !== projectId) return p;
-      if (p.members.some(m => m.userId === userId)) return p;
-      return { ...p, members: [...p.members, { userId, role }] };
-    })
-  })),
+  deleteUser: (id) => {
+    set((s) => ({
+      users: s.users.filter(u => u.id !== id),
+      projects: s.projects.map(p => ({
+        ...p,
+        members: p.members.filter(m => m.userId !== id)
+      }))
+    }));
+    api.del(`/api/users/${id}`);
+  },
 
-  removeProjectMember: (projectId, userId) => set((s) => ({
-    projects: s.projects.map(p => {
-      if (p.id !== projectId) return p;
-      return { ...p, members: p.members.filter(m => m.userId !== userId) };
-    })
-  })),
+  addProjectMember: (projectId, userId, role) => {
+    set((s) => ({
+      projects: s.projects.map(p => {
+        if (p.id !== projectId) return p;
+        if (p.members.some(m => m.userId === userId)) return p;
+        return { ...p, members: [...p.members, { userId, role }] };
+      })
+    }));
+    api.post(`/api/arcana/projects/${projectId}/members`, { userId, role });
+  },
 
-  updateProjectMemberRole: (projectId, userId, role) => set((s) => ({
-    projects: s.projects.map(p => {
-      if (p.id !== projectId) return p;
-      return { ...p, members: p.members.map(m => m.userId === userId ? { ...m, role } : m) };
-    })
-  })),
+  removeProjectMember: (projectId, userId) => {
+    set((s) => ({
+      projects: s.projects.map(p => {
+        if (p.id !== projectId) return p;
+        return { ...p, members: p.members.filter(m => m.userId !== userId) };
+      })
+    }));
+    api.del(`/api/arcana/projects/${projectId}/members/${userId}`);
+  },
+
+  updateProjectMemberRole: (projectId, userId, role) => {
+    set((s) => ({
+      projects: s.projects.map(p => {
+        if (p.id !== projectId) return p;
+        return { ...p, members: p.members.map(m => m.userId === userId ? { ...m, role } : m) };
+      })
+    }));
+    api.put(`/api/arcana/projects/${projectId}/members/${userId}`, { role });
+  },
 
   toggleTaskSelection: (id, selectAll = false, taskIds = []) => set((s) => {
     if (selectAll) return { selectedTaskIds: taskIds };
@@ -774,16 +921,15 @@ export const useStore = create<AppStore>()((set, get) => ({
       comments: [...s.comments, ...newComments],
       selectedTaskIds: [],
     }));
+    // Persist bulk update & system comments
+    ids.forEach(id => api.put(`/api/arcana/tasks/${id}`, { ...updates, ...progressUpdate }));
+    newComments.forEach(c => api.post('/api/arcana/comments', c));
   },
 }));
 
-// Auto-save important state to localStorage
+// Auto-save UI-only state to localStorage (data lives in DB now)
 useStore.subscribe((state) => {
   const stateToSave = {
-    tasks: state.tasks,
-    projects: state.projects,
-    users: state.users,
-    comments: state.comments,
     notifications: state.notifications,
     activeProjectId: state.activeProjectId,
     theme: state.theme,
@@ -793,6 +939,7 @@ useStore.subscribe((state) => {
     activeApp: state.activeApp,
     activePage: state.activePage,
     projectTab: state.projectTab,
+    settings: state.settings,
     __version: STATE_VERSION
   };
   localStorage.setItem('workspace_pro_state', JSON.stringify(stateToSave));

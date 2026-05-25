@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function test() { const run = await prisma.payrollRun.findFirst({ include: { entries: { include: { details: true } } } }); console.log(JSON.stringify(run, null, 2)); } test().finally(() => prisma.$disconnect());

@@ -26,3 +26,7 @@ dist-ssr
 # Backend
 backend-contador/dev.db
 backend-contador/.env
+
+/src/generated/prisma
+.env
+uploads/
