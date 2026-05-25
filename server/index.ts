@@ -42,6 +42,7 @@ import bpmnAiChatsRouter from './routes/bpmnAiChats';
 import employeesRouter from './routes/employees';
 import absencesRouter from './routes/absences';
 import payrollRouter from './routes/payroll';
+import procurementRouter from './routes/procurement';
 import serviceTicketsRouter from './routes/serviceTickets';
 import path from 'path';
 
