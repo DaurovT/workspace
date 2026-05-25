@@ -42,9 +42,7 @@ import bpmnAiChatsRouter from './routes/bpmnAiChats';
 import employeesRouter from './routes/employees';
 import absencesRouter from './routes/absences';
 import payrollRouter from './routes/payroll';
-import procurementRouter from './routes/procurement';
 import serviceTicketsRouter from './routes/serviceTickets';
-import knowledgeRouter from './routes/knowledge';
 import path from 'path';
 
 import { initTelegramBot } from './services/telegramBot';
@@ -172,7 +170,6 @@ app.use('/api/absences', absencesRouter);
 app.use('/api/payroll', payrollRouter);
 app.use('/api/procurement', procurementRouter);
 app.use('/api/service-tickets', serviceTicketsRouter);
-app.use('/api/knowledge', knowledgeRouter);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(express.static(path.join(process.cwd(), 'dist')));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

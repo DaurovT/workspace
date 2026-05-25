@@ -151,7 +151,7 @@ interface AppStore {
   _arcanaLoaded: boolean;
   settings: AppSettings;
   // UI State
-  activeApp: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service' | 'knowledge';
+  activeApp: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service';
   activeProjectId: string;
   activePage: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team';
   projectTab: 'list' | 'kanban' | 'gantt';
@@ -182,7 +182,7 @@ interface AppStore {
   loadTasksForProject: (projectId: string) => Promise<void>;
   loadCommentsForTask: (taskId: string) => Promise<void>;
   setCurrentUser: (userId: string, name: string, email: string, role: string, avatar?: string) => void;
-  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service' | 'knowledge') => void;
+  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service') => void;
   setActiveProject: (id: string) => void;
   setActivePage: (p: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team') => void;
   setProjectTab: (t: 'list' | 'kanban' | 'gantt') => void;
