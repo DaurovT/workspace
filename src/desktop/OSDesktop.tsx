@@ -69,6 +69,14 @@ const OSDesktop: React.FC = () => {
       onClick: () => tryOpenApp('bpmn', () => setActiveApp('bpmn'))
     },
     {
+      id: 'hr',
+      name: 'HR Pulse',
+      description: 'Кадры, зарплата, отсутствия',
+      icon: (size: number) => <UserPlus size={size} color="#fff" />,
+      color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+      onClick: () => tryOpenApp('hr', () => setActiveApp('hr'))
+    },
+    {
       id: 'finance',
       name: 'Manor',
       description: 'Управленческий учет',
@@ -77,12 +85,12 @@ const OSDesktop: React.FC = () => {
       onClick: () => tryOpenApp('finance', () => setActiveApp('finance'))
     },
     {
-      id: 'hr',
-      name: 'HR Pulse',
-      description: 'Кадры, зарплата, отсутствия',
-      icon: (size: number) => <UserPlus size={size} color="#fff" />,
-      color: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-      onClick: () => tryOpenApp('hr', () => setActiveApp('hr'))
+      id: 'service',
+      name: 'Service Desk',
+      description: 'Ремонт и сервис',
+      icon: (size: number) => <Wrench size={size} color="#fff" />,
+      color: 'linear-gradient(135deg, #0ea5e9, #0369a1)',
+      onClick: () => tryOpenApp('service', () => setActiveApp('service'))
     },
     {
       id: 'tms',
@@ -93,14 +101,6 @@ const OSDesktop: React.FC = () => {
       onClick: () => tryOpenApp('tms', () => setActiveApp('tms'))
     },
     {
-      id: 'settings',
-      name: 'Настройки',
-      description: 'Управление системой',
-      icon: (size: number) => <Settings size={size} color="#fff" />,
-      color: 'linear-gradient(135deg, #475569, #1e293b)',
-      onClick: () => tryOpenApp('settings', () => setActiveApp('settings'))
-    },
-    {
       id: 'procurement',
       name: 'Закупки',
       description: 'Закупочный контроль',
@@ -109,12 +109,12 @@ const OSDesktop: React.FC = () => {
       onClick: () => tryOpenApp('procurement', () => setActiveApp('procurement'))
     },
     {
-      id: 'service',
-      name: 'Service Desk',
-      description: 'Ремонт и сервис',
-      icon: (size: number) => <Wrench size={size} color="#fff" />,
-      color: 'linear-gradient(135deg, #0ea5e9, #0369a1)',
-      onClick: () => tryOpenApp('service', () => setActiveApp('service'))
+      id: 'settings',
+      name: 'Настройки',
+      description: 'Управление системой',
+      icon: (size: number) => <Settings size={size} color="#fff" />,
+      color: 'linear-gradient(135deg, #475569, #1e293b)',
+      onClick: () => tryOpenApp('settings', () => setActiveApp('settings'))
     }
   ];
 
