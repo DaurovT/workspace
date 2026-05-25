@@ -20,8 +20,8 @@ const NoteTreeItem: React.FC<{ note: KnowledgeNote, allNotes: KnowledgeNote[], d
           paddingLeft: depth * 12 + 8,
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '6px', cursor: 'pointer',
-          background: isActive ? 'rgba(99,102,241,0.15)' : 'transparent',
-          color: isActive ? '#fff' : 'rgba(255,255,255,0.7)',
+          background: isActive ? 'var(--primary-color, rgba(99,102,241,0.15))' : 'transparent',
+          color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
           borderRadius: 6,
           marginBottom: 2
         }}
@@ -80,24 +80,24 @@ export const KnowledgeSidebar: React.FC = () => {
       borderRight: '1px solid var(--border-color)',
       display: 'flex',
       flexDirection: 'column',
-      background: 'rgba(255,255,255,0.02)'
+      background: 'var(--bg-secondary)'
     }}>
       <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, fontSize: 16, color: '#fff' }}>База знаний</h3>
+        <h3 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>База знаний</h3>
         <div style={{ display: 'flex', gap: 8 }}>
           <button 
             className="btn btn-icon btn-ghost" 
             title="Новая заметка"
             onClick={() => createNote(null)}
           >
-            <FilePlus size={16} />
+            <FilePlus size={16} color="var(--text-secondary)" />
           </button>
         </div>
       </div>
       
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
         {rootNotes.length === 0 ? (
-          <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 20 }}>
+          <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, marginTop: 20 }}>
             Нет заметок. Создайте первую!
           </div>
         ) : (

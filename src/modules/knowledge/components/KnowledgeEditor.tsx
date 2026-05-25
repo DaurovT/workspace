@@ -33,7 +33,7 @@ export const KnowledgeEditor: React.FC = () => {
 
   if (!activeNoteId) {
     return (
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
         Выберите заметку в меню слева или создайте новую
       </div>
     );
@@ -53,11 +53,11 @@ export const KnowledgeEditor: React.FC = () => {
             outline: 'none',
             fontSize: 28,
             fontWeight: 700,
-            color: '#fff',
+            color: 'var(--text-primary)',
             fontFamily: 'inherit'
           }}
         />
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 8 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
           Изменения сохраняются автоматически
         </div>
       </div>
