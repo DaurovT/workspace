@@ -9,7 +9,8 @@ router.get('/', async (_req: Request, res: Response) => {
     const projects = await prisma.project.findMany();
     res.json(projects);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -47,7 +48,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json(proj);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -73,7 +75,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     });
     res.json(proj);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -92,7 +95,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     });
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

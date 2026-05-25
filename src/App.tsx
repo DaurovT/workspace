@@ -14,6 +14,7 @@ import HRApp from './modules/hr/HRApp';
 import TMSApp from './modules/tms/TMSApp';
 import ProcurementApp from './modules/procurement/ProcurementApp';
 import ServiceApp from './modules/service/ServiceApp';
+import KnowledgeApp from './modules/knowledge/KnowledgeApp';
 import { NotificationsModal } from './components/NotificationsModal';
 
 // WorkSpace Pro — Tracker
@@ -71,7 +72,7 @@ function App() {
           const urlApp = params.get('app');
           const urlPage = params.get('page');
           
-          if (urlApp && ['desktop', 'workspace', 'settings', 'bpmn', 'finance', 'hr', 'tms', 'procurement', 'service'].includes(urlApp)) {
+          if (urlApp && ['desktop', 'workspace', 'settings', 'bpmn', 'finance', 'hr', 'tms', 'procurement', 'service', 'knowledge'].includes(urlApp)) {
             setActiveApp(urlApp as any);
             if (urlPage && urlApp === 'workspace') {
                useStore.getState().setActivePage(urlPage as any);
@@ -148,6 +149,8 @@ function App() {
     content = <ProcurementApp />;
   } else if (activeApp === 'service') {
     content = <ServiceApp />;
+  } else if (activeApp === 'knowledge') {
+    content = <KnowledgeApp />;
   } else {
     // Fallback / Default: WorkSpace Pro
     const isKanban   = activePage === 'project' && projectTab === 'kanban';

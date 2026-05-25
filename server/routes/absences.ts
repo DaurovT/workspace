@@ -59,7 +59,8 @@ router.get('/', async (req: Request, res: Response) => {
     const absences = await prisma.absence.findMany({ where, orderBy: { startDate: 'desc' } });
     res.json(absences);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -74,7 +75,8 @@ router.post('/', async (req: Request, res: Response) => {
     await logAudit('CREATE', 'Absence', `Создано отсутствие: ${data.type} для ${data.employeeId}`, null, absence);
     res.status(201).json(absence);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -93,7 +95,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     await logAudit('UPDATE', 'Absence', `Обновлено отсутствие: ${absence.id}`, old, absence);
     res.json(absence);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -105,7 +108,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     await logAudit('DELETE', 'Absence', `Удалено отсутствие: ${req.params.id}`, old, null);
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

@@ -6,15 +6,12 @@ import { useServiceStore } from './modules/service/serviceStore';
 const socket = io(import.meta.env.PROD ? '/' : 'http://localhost:3001');
 
 socket.on('db_mutation', (data: { model: string, action: string, userId: string, resultId: string, data?: any }) => {
-  console.log('WS: db_mutation', data);
   const currentUserId = useStore.getState().currentUserId;
-  
-  // Если мутация инициирована текущим пользователем, Zustand уже применил оптимистичный апдейт
+
   if (data.userId === currentUserId && data.userId !== 'system') {
     return;
   }
 
-  // Обновляем нужный стор в зависимости от модели
   const financeModels = [
     'Transaction', 'Account', 'Category', 'Project', 'Contractor',
     'LegalEntity', 'Deal', 'Fund', 'Asset', 'Loan', 'Invoice', 'PaymentRequest'
@@ -24,8 +21,7 @@ socket.on('db_mutation', (data: { model: string, action: string, userId: string,
     const payload = data.data;
     if (payload) {
       const st = useStore.getState();
-      
-      // Map prisma data to frontend format
+
       if (data.model === 'ArcanaTask') {
         const t = payload;
         const taskObj = {
@@ -33,7 +29,7 @@ socket.on('db_mutation', (data: { model: string, action: string, userId: string,
           tags: t.tags ? (typeof t.tags === 'string' ? JSON.parse(t.tags) : t.tags) : [],
           dependencies: t.dependencies ? (typeof t.dependencies === 'string' ? JSON.parse(t.dependencies) : t.dependencies) : []
         };
-        
+
         if (data.action === 'CREATE') {
           useStore.setState({ tasks: [...st.tasks.filter(x => x.id !== taskObj.id), taskObj] });
         } else if (data.action === 'UPDATE') {
@@ -48,8 +44,7 @@ socket.on('db_mutation', (data: { model: string, action: string, userId: string,
           useStore.setState({ comments: st.comments.filter(x => x.id !== data.resultId) });
         }
       } else {
-         // Fallback for Projects/Members
-         st.loadArcanaData();
+        st.loadArcanaData();
       }
     } else {
       useStore.getState().loadArcanaData();
@@ -58,15 +53,14 @@ socket.on('db_mutation', (data: { model: string, action: string, userId: string,
     const payload = data.data;
     if (payload) {
       const st = useFinanceStore.getState() as any;
-      
-      // Map model name to store array name
+
       const modelMap: Record<string, string> = {
         'Transaction': 'transactions',
         'Account': 'accounts',
         'Category': 'categories',
         'Project': 'projects',
         'Contractor': 'contractors',
-        'LegalEntity': 'entities', // Note: financeStore uses 'entities' for LegalEntity
+        'LegalEntity': 'entities',
         'Deal': 'deals',
         'Fund': 'funds',
         'Asset': 'assets',
@@ -74,13 +68,18 @@ socket.on('db_mutation', (data: { model: string, action: string, userId: string,
         'Invoice': 'invoices',
         'PaymentRequest': 'paymentRequests'
       };
-      
+
       const arrayName = modelMap[data.model];
       if (arrayName && st[arrayName]) {
         if (data.action === 'CREATE') {
           useFinanceStore.setState({ [arrayName]: [payload, ...st[arrayName].filter((x: any) => x.id !== payload.id)] } as any);
         } else if (data.action === 'UPDATE') {
-          useFinanceStore.setState({ [arrayName]: st[arrayName].map((x: any) => x.id === payload.id ? payload : x) } as any);
+          // For Transaction: treat isDeleted=true as a DELETE (soft delete)
+          if (data.model === 'Transaction' && payload.isDeleted === true) {
+            useFinanceStore.setState({ [arrayName]: st[arrayName].filter((x: any) => x.id !== payload.id) } as any);
+          } else {
+            useFinanceStore.setState({ [arrayName]: st[arrayName].map((x: any) => x.id === payload.id ? payload : x) } as any);
+          }
         } else if (data.action === 'DELETE') {
           useFinanceStore.setState({ [arrayName]: st[arrayName].filter((x: any) => x.id !== data.resultId) } as any);
         }

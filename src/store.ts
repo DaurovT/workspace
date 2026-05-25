@@ -151,7 +151,7 @@ interface AppStore {
   _arcanaLoaded: boolean;
   settings: AppSettings;
   // UI State
-  activeApp: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service';
+  activeApp: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service' | 'knowledge';
   activeProjectId: string;
   activePage: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team';
   projectTab: 'list' | 'kanban' | 'gantt';
@@ -182,7 +182,7 @@ interface AppStore {
   loadTasksForProject: (projectId: string) => Promise<void>;
   loadCommentsForTask: (taskId: string) => Promise<void>;
   setCurrentUser: (userId: string, name: string, email: string, role: string, avatar?: string) => void;
-  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service') => void;
+  setActiveApp: (app: 'desktop' | 'workspace' | 'login' | 'settings' | 'bpmn' | 'finance' | 'hr' | 'tms' | 'procurement' | 'service' | 'knowledge') => void;
   setActiveProject: (id: string) => void;
   setActivePage: (p: 'desktop' | 'dashboard' | 'inbox' | 'calendar' | 'my_tasks' | 'analytics' | 'project' | 'team') => void;
   setProjectTab: (t: 'list' | 'kanban' | 'gantt') => void;
@@ -480,42 +480,35 @@ export const useStore = create<AppStore>()((set, get) => ({
 
   createTask: async (t) => {
     const st = get();
-    const tempTask = {
-      ...t,
-      id: `task_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      position: st.tasks.filter(x => x.status === t.status).length,
-      progress: 0,
-      tags: t.tags || [],
-      dependencies: t.dependencies || [],
-    } as Task;
-    
-    // Add temp task for UI
-    set({
-      tasks: [...st.tasks, tempTask],
-      notifications: [
-        ...st.notifications,
-        { id: `notif_${Date.now()}`, type: 'assigned', title: 'Новая задача', body: `Создана задача: ${t.title}`, taskId: tempTask.id, read: false, createdAt: new Date().toISOString() }
-      ]
-    });
-    
-    // Create on backend
+    // Create on backend first to get a stable server-assigned ID,
+    // avoiding race conditions with WebSocket db_mutation events.
     try {
+      const payload = {
+        ...t,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        position: st.tasks.filter(x => x.status === t.status).length,
+        progress: 0,
+        tags: t.tags || [],
+        dependencies: t.dependencies || [],
+      };
       const response = await fetch('/api/arcana/tasks', {
         method: 'POST',
         headers: apiHeaders(),
-        body: JSON.stringify(tempTask)
+        body: JSON.stringify(payload)
       });
       if (response.ok) {
         const realTask = await response.json();
         set(s => ({
-          tasks: s.tasks.map(task => task.id === tempTask.id ? realTask : task)
+          tasks: [...s.tasks.filter(x => x.id !== realTask.id), realTask],
+          notifications: [
+            ...s.notifications,
+            { id: `notif_${Date.now()}`, type: 'assigned' as const, title: 'Новая задача', body: `Создана задача: ${t.title}`, taskId: realTask.id, read: false, createdAt: new Date().toISOString() }
+          ]
         }));
       }
     } catch (e) {
-      console.error('Failed to create task on backend', e);
-      // Optional: Remove temp task or show error
+      console.error('Failed to create task', e);
     }
   },
 

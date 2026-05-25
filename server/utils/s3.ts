@@ -14,7 +14,7 @@ const s3Client = new S3Client({
   },
 });
 
-const BUCKET_NAME = process.env.S3_BUCKET || 'uploads';
+const BUCKET_NAME = process.env.S3_BUCKET || 'workspace';
 
 export const uploadToS3 = async (buffer: Buffer, originalname: string, mimetype: string): Promise<string> => {
   const extension = path.extname(originalname);

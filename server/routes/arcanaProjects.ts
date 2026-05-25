@@ -86,6 +86,11 @@ router.post('/', async (req, res) => {
 // PUT update project
 router.put('/:id', async (req, res) => {
   try {
+    const ctx = authContext.getStore();
+    const member = await prisma.arcanaProjectMember.findFirst({ where: { projectId: req.params.id, userId: ctx?.userId } });
+    if (!member || (member.role !== 'admin' && ctx?.role !== 'admin' && ctx?.role !== 'owner')) {
+      return res.status(403).json({ error: 'Only project admins can update this project' });
+    }
     const { name, color, icon, description, status } = req.body;
     const project = await prisma.arcanaProject.update({
       where: { id: req.params.id },
@@ -128,6 +133,11 @@ router.put('/:id', async (req, res) => {
 // POST add member
 router.post('/:id/members', async (req, res) => {
   try {
+    const ctx = authContext.getStore();
+    const member = await prisma.arcanaProjectMember.findFirst({ where: { projectId: req.params.id, userId: ctx?.userId } });
+    if (!member || (member.role !== 'admin' && ctx?.role !== 'admin' && ctx?.role !== 'owner')) {
+      return res.status(403).json({ error: 'Only project admins can manage members' });
+    }
     const { userId, role } = req.body;
     await prisma.arcanaProjectMember.create({
       data: { projectId: req.params.id, userId, role: role || 'member' }
@@ -141,6 +151,11 @@ router.post('/:id/members', async (req, res) => {
 // DELETE remove member
 router.delete('/:id/members/:userId', async (req, res) => {
   try {
+    const ctx = authContext.getStore();
+    const member = await prisma.arcanaProjectMember.findFirst({ where: { projectId: req.params.id, userId: ctx?.userId } });
+    if (!member || (member.role !== 'admin' && ctx?.role !== 'admin' && ctx?.role !== 'owner')) {
+      return res.status(403).json({ error: 'Only project admins can manage members' });
+    }
     await prisma.arcanaProjectMember.deleteMany({
       where: { projectId: req.params.id, userId: req.params.userId }
     });
@@ -153,6 +168,11 @@ router.delete('/:id/members/:userId', async (req, res) => {
 // PUT update member role
 router.put('/:id/members/:userId', async (req, res) => {
   try {
+    const ctx = authContext.getStore();
+    const member = await prisma.arcanaProjectMember.findFirst({ where: { projectId: req.params.id, userId: ctx?.userId } });
+    if (!member || (member.role !== 'admin' && ctx?.role !== 'admin' && ctx?.role !== 'owner')) {
+      return res.status(403).json({ error: 'Only project admins can manage members' });
+    }
     const { role } = req.body;
     await prisma.arcanaProjectMember.updateMany({
       where: { projectId: req.params.id, userId: req.params.userId },

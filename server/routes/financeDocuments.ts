@@ -11,7 +11,8 @@ router.get('/', async (req: Request, res: Response) => {
     });
     res.json(docs);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -23,7 +24,8 @@ router.post('/', async (req: Request, res: Response) => {
     });
     res.status(201).json(doc);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -36,7 +38,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     });
     res.json(doc);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -48,7 +51,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     });
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

@@ -9,7 +9,8 @@ router.get('/', async (req, res) => {
     const data = await prisma.exchangeRate.findMany({ orderBy: { currency: 'asc' } });
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -25,7 +26,8 @@ router.put('/:currency', async (req, res) => {
     });
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

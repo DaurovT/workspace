@@ -102,7 +102,8 @@ router.get('/', async (req: Request, res: Response) => {
       res.json(transactions); // Fallback for legacy calls that expect an array directly
     }
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -116,7 +117,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!tx) return res.status(404).json({ error: 'Not found' });
     res.json(tx);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -144,7 +146,8 @@ router.post('/', async (req: Request, res: Response) => {
     
     res.status(201).json(tx);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -187,7 +190,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     res.json(tx);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -218,7 +222,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

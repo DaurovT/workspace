@@ -9,7 +9,8 @@ router.get('/', async (_req: Request, res: Response) => {
     const entities = await prisma.legalEntity.findMany({ orderBy: { createdAt: 'asc' } });
     res.json(entities);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -19,7 +20,8 @@ router.post('/', async (req: Request, res: Response) => {
     const entity = await prisma.legalEntity.create({ data: req.body });
     res.status(201).json(entity);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -32,7 +34,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     });
     res.json(entity);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -42,7 +45,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     await prisma.legalEntity.delete({ where: { id: req.params.id as string } });
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

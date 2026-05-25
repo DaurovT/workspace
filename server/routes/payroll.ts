@@ -24,7 +24,8 @@ router.get('/', async (_req: Request, res: Response) => {
     });
     res.json(runs);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -38,7 +39,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!run) return res.status(404).json({ error: 'Not found' });
     res.json(run);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -106,7 +108,8 @@ router.post('/', async (req: Request, res: Response) => {
     await logAudit('CREATE', 'PayrollRun', `Рассчитана ведомость за ${month}/${year} (${type}), итого к выплате: ${totalNet}`);
     res.status(201).json(run);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -160,7 +163,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     await logAudit('UPDATE', 'PayrollRun', `Статус ведомости ${run.id} изменён на: ${runData.status || 'обновление'}`);
     res.json(run);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -181,7 +185,8 @@ router.put('/entry/:id', async (req: Request, res: Response) => {
     });
     res.json(entry);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -192,7 +197,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     await prisma.payrollRun.delete({ where: { id: req.params.id as string } });
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

@@ -9,7 +9,8 @@ router.get('/', async (req, res) => {
     const data = await prisma.budgetLine.findMany();
     res.json(data);
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -34,7 +35,8 @@ router.post('/upsert', async (req, res) => {
       res.json(created);
     }
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

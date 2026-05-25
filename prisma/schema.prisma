@@ -731,3 +731,17 @@ model ServiceTicketComment {
   isSystem  Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+// ─── KNOWLEDGE BASE (Obsidian-like) ────────────────────────────────────────
+
+model KnowledgeNote {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   // Markdown content
+  parentId  String?
+  parent    KnowledgeNote?  @relation("NoteHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  KnowledgeNote[] @relation("NoteHierarchy")
+  authorId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

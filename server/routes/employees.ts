@@ -115,7 +115,8 @@ router.get('/kpi', async (_req: Request, res: Response) => {
 
     res.json(kpi);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -128,7 +129,8 @@ router.get('/', async (_req: Request, res: Response) => {
     });
     res.json(employees);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -156,7 +158,8 @@ router.get('/me', async (req: Request, res: Response) => {
     
     res.json({ ...employee, timeLogs });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -170,7 +173,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!employee) return res.status(404).json({ error: 'Not found' });
     res.json(employee);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -185,7 +189,8 @@ router.post('/', async (req: Request, res: Response) => {
     await logAudit('CREATE', 'Employee', `Создан сотрудник: ${data.userId}`, null, employee);
     res.status(201).json(employee);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -204,7 +209,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     await logAudit('UPDATE', 'Employee', `Обновлён сотрудник: ${employee.userId}`, old, employee);
     res.json(employee);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -216,7 +222,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     await logAudit('DELETE', 'Employee', `Удалён сотрудник: ${old?.userId || req.params.id}`, old, null);
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

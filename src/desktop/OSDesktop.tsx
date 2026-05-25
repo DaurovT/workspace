@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store';
 import {
   Truck, Search,
-  Aperture, Settings, Rat, Origami, Lock, UserPlus, ShoppingCart, Wrench
+  Aperture, Settings, Rat, Origami, Lock, UserPlus, ShoppingCart, Wrench, Book
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -115,6 +115,14 @@ const OSDesktop: React.FC = () => {
       icon: (size: number) => <Settings size={size} color="#fff" />,
       color: 'linear-gradient(135deg, #475569, #1e293b)',
       onClick: () => tryOpenApp('settings', () => setActiveApp('settings'))
+    },
+    {
+      id: 'knowledge',
+      name: 'База Знаний',
+      description: 'Документы и инструкции',
+      icon: (size: number) => <Book size={size} color="#fff" />,
+      color: 'linear-gradient(135deg, #a855f7, #6366f1)',
+      onClick: () => tryOpenApp('knowledge', () => setActiveApp('knowledge'))
     }
   ];
 

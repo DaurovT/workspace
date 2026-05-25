@@ -18,7 +18,8 @@ router.get('/', async (req: Request, res: Response) => {
     });
     res.json(deals);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -32,7 +33,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!deal) return res.status(404).json({ error: 'Not found' });
     res.json(deal);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -43,7 +45,8 @@ router.post('/', async (req: Request, res: Response) => {
     const deal = await prisma.deal.create({ data });
     res.status(201).json(deal);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -54,7 +57,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     const deal = await prisma.deal.update({ where: { id: req.params.id as string }, data });
     res.json(deal);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -64,7 +68,8 @@ router.delete('/:id', async (req: Request, res: Response) => {
     await prisma.deal.delete({ where: { id: req.params.id as string } });
     res.status(204).send();
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
