@@ -2,9 +2,10 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useFinanceStore } from '../financeStore';
 import type { Transaction } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
 const fmt = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
-const MONTH_LABELS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const MONTH_LABELS = ['янв','Фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 const COL_W = 88;      // width for every period column
 const SUM_W = 96;      // slightly wider for summary (Итого) columns
 const LABEL_W = 240;
@@ -83,7 +84,8 @@ function sumTx(txs: Transaction[], catId: string, type: string, col: DataCol, vi
 // ─── Cell components ──────────────────────────────────────────────────────────
 const Cell: React.FC<{ value: number; isPlan?: boolean; isToday?: boolean; bold?: boolean; isGroup?: boolean; w?: number }> =
 ({ value, isPlan, isToday, bold, isGroup, w = COL_W }) => {
-  const bg = isToday ? 'rgba(99,102,241,0.07)' : isGroup ? 'rgba(99,102,241,0.04)' : 'transparent';
+  const { t } = useTranslation(); void t;
+    const bg = isToday ? 'rgba(99,102,241,0.07)' : isGroup ? 'rgba(99,102,241,0.04)' : 'transparent';
   const color = isPlan
     ? 'var(--color-primary)'
     : value === 0 ? 'var(--text-muted)'
@@ -113,7 +115,8 @@ export const PaymentCalendarTable: React.FC<{
 }> = ({ viewMode, periodYear, periodMonth, todayTrigger, scenarioId, hideZeroRows = false,
         filterAccountId, filterProjectId, filterDealId,
         accountingMethod = 'Кассовый метод', source = 'Доходы и расходы' }) => {
-  const { categories, transactions, budgetLines, updateBudgetLine } = useFinanceStore();
+  const { t } = useTranslation();
+    const { categories, transactions, budgetLines, updateBudgetLine } = useFinanceStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const todayThRef = useRef<HTMLTableCellElement>(null);
 
@@ -143,7 +146,7 @@ export const PaymentCalendarTable: React.FC<{
   const expenseRows: RowDef[] = useMemo(() => {
     const cats = categories.filter(c => c.type === 'expense');
     const build = (parentId?: string, indent = 0): RowDef[] =>
-      cats.filter(c => c.parentId === parentId).map(c => ({
+      cats.filter(c => (parentId ? c.parentId === parentId : !c.parentId)).map(c => ({
         id: c.id, label: c.name, type: 'expense' as const, indent,
         children: build(c.id, indent + 1)
       }));
@@ -253,8 +256,8 @@ export const PaymentCalendarTable: React.FC<{
                         borderRadius: 4, padding: '2px 6px', outline: 'none' }}
                     />
                   ) : (
-                    <span title="Кликните чтобы редактировать план">
-                      {val === 0 ? <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>план</span> : fmt.format(val)}
+                    <span title={t("Кликните чтобы редактировать план", "Кликните чтобы редактировать план")}>
+                      {val === 0 ? <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>{t("план", "план")}</span> : fmt.format(val)}
                     </span>
                   )}
                 </td>
@@ -348,7 +351,7 @@ export const PaymentCalendarTable: React.FC<{
                           marginLeft: 4, fontSize: 9,
                           background: 'var(--color-primary)', color: 'var(--text-primary)',
                           borderRadius: 4, padding: '1px 4px',
-                        }}>сег</span>}
+                        }}>{t("сег", "сег")}</span>}
                       </>
                     ) : null}
                   </th>
@@ -424,7 +427,7 @@ export const PaymentCalendarTable: React.FC<{
                       borderBottom: '1px solid var(--border-subtle)',
                       borderRight: '1px solid var(--border-subtle)',
                       borderTop: '2px solid var(--border-subtle)' }}>
-                      {ACTIVITY_LABELS[flow]} деятельность
+                      {ACTIVITY_LABELS[flow]}  {t("деятельность", "деятельность")}
                     </td>
                     {cols.map(col => {
                       const w = colW(col);
@@ -535,7 +538,7 @@ export const PaymentCalendarTable: React.FC<{
 
             {/* Чистая прибыль */}
             <tr style={{ background: 'var(--bg-base)' }}>
-              {stickyLabel('Чистая прибыль', true, 'var(--bg-base)')}
+              {stickyLabel('Чистая прибыль (Net Profit)', true, 'var(--bg-base)')}
               {cols.map(col => {
                 const v = netForCol(col);
                 const w = colW(col);
