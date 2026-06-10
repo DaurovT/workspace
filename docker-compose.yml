@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: workspace_postgres_123
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: finance_db
     ports:
       - "5432:5432"
@@ -19,24 +19,32 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - DATABASE_URL=postgresql://postgres:workspace_postgres_123@db:5432/finance_db?schema=public
-      - JWT_SECRET=90ebqOrD6JpIOIcSXBrrxdvh31M2QAnNmHjmONL+4Sv3DabSRrCS7bUhNUaCZLSH
-      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/finance_db?schema=public
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=development
       - PORT=3000
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - CORS_ORIGIN=${CORS_ORIGIN}
       - REDIS_URL=redis://redis:6379
       - S3_ENDPOINT=http://minio:9000
-      - S3_ACCESS_KEY=admin
-      - S3_SECRET_KEY=workspace_minio_123
+      - S3_ACCESS_KEY=${MINIO_ROOT_USER}
+      - S3_SECRET_KEY=${MINIO_ROOT_PASSWORD}
       - S3_BUCKET=workspace
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
     command: >
-      sh -c "npx prisma migrate deploy && npm run server:start"
+      sh -c "npx prisma migrate deploy && (npm run server:dev & npm run dev)"
     depends_on:
       - db
       - redis
       - minio
     volumes:
+      - ./src:/app/src
+      - ./server:/app/server
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.ts:/app/vite.config.ts
       - uploads_data:/app/uploads
 
   nginx:
@@ -56,8 +64,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=workspace_minio_123
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data

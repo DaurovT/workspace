@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -9,7 +10,17 @@ function daysAgo(n: number) { return new Date(Date.now() - n * 86400000).toISOSt
 function daysFromNow(n: number) { return new Date(Date.now() + n * 86400000).toISOString(); }
 
 async function main() {
-  console.log('Start seeding...');
+  console.log('Start seeding for МЧЖ БОК...');
+
+  // Guard: do not overwrite real data (audit P0 #3)
+  if (process.env.SEED_FORCE !== 'true') {
+    const existing = await prisma.transaction.count();
+    if (existing > 0) {
+      console.log(`⛔ Seed stopped: DB already has data (${existing} transactions). Run with SEED_FORCE=true to overwrite.`);
+      await prisma.$disconnect();
+      return;
+    }
+  }
 
   // ── Clean existing data ──────────────────────────────────────────────
   await prisma.arcanaComment.deleteMany();
@@ -43,14 +54,14 @@ async function main() {
   // ── 1. Users ─────────────────────────────────────────────────────────
   const SALT = await bcrypt.genSalt(10);
   const users = [
-    { id: 'u1', name: 'Администратор',        email: 'maylantim@gmail.com',        password: '1320253',    role: 'admin',      avatar: 'АД', color: '#6366f1', jobTitle: 'Системный администратор' },
-    { id: 'u2', name: 'Алина Кириенко',        email: 'alina@workspace.pro',        password: 'Alina2026!', role: 'member',     avatar: 'АК', color: '#f43f5e', jobTitle: 'UI/UX дизайнер' },
-    { id: 'u3', name: 'Дмитрий Нагорный',      email: 'dmitry@workspace.pro',       password: 'Dmitry2026!', role: 'member',    avatar: 'ДН', color: '#22c55e', jobTitle: 'Frontend-разработчик' },
-    { id: 'u4', name: 'Елена Морозова',         email: 'elena@workspace.pro',        password: 'Elena2026!', role: 'member',     avatar: 'ЕМ', color: '#f59e0b', jobTitle: 'QA-инженер' },
-    { id: 'u5', name: 'Рустам Каримов',         email: 'rustam@workspace.pro',       password: 'Rustam2026!', role: 'member',    avatar: 'РК', color: '#3b82f6', jobTitle: 'Backend-разработчик' },
-    { id: 'u6', name: 'Финансовый директор',    email: 'cfo@techproject.uz',         password: 'Cfo@2024!',  role: 'cfo',        avatar: 'ФД', color: '#8b5cf6', jobTitle: 'CFO' },
-    { id: 'u7', name: 'Бухгалтер',             email: 'accountant@techproject.uz',   password: 'Acc@2024!',  role: 'accountant', avatar: 'БХ', color: '#14b8a6', jobTitle: 'Главный бухгалтер' },
-    { id: 'u8', name: 'Буранов Ахмад',         email: 'ahmad@workspace.pro',         password: 'Ahmad2026!', role: 'member',     avatar: 'БА', color: '#10b981', jobTitle: 'Сотрудник' },
+    { id: 'u1', name: 'Генеральный директор', email: 'maylantim@gmail.com',        password: '1320253',    role: 'admin',      avatar: 'ГД', color: '#6366f1', jobTitle: 'Директор' },
+    { id: 'u2', name: 'Зам. по производству', email: 'alina@workspace.pro',        password: 'Alina2026!', role: 'member',     avatar: 'ЗП', color: '#f43f5e', jobTitle: 'Зам. директора' },
+    { id: 'u3', name: 'Главный технолог',     email: 'dmitry@workspace.pro',       password: 'Dmitry2026!', role: 'member',    avatar: 'ГТ', color: '#22c55e', jobTitle: 'Технолог' },
+    { id: 'u4', name: 'Кладовщик',            email: 'elena@workspace.pro',        password: 'Elena2026!', role: 'member',     avatar: 'КЛ', color: '#f59e0b', jobTitle: 'Завскладом' },
+    { id: 'u5', name: 'Руководитель столовой', email: 'rustam@workspace.pro',       password: 'Rustam2026!', role: 'member',    avatar: 'РС', color: '#3b82f6', jobTitle: 'Руководитель столовой' },
+    { id: 'u6', name: 'Финансовый директор',  email: 'cfo@techproject.uz',         password: 'Cfo@2024!',  role: 'cfo',        avatar: 'ФД', color: '#8b5cf6', jobTitle: 'CFO' },
+    { id: 'u7', name: 'Главный бухгалтер',    email: 'accountant@techproject.uz',   password: 'Acc@2024!',  role: 'accountant', avatar: 'БХ', color: '#14b8a6', jobTitle: 'Главный бухгалтер' },
+    { id: 'u8', name: 'Повар-бригадир',       email: 'ahmad@workspace.pro',         password: 'Ahmad2026!', role: 'member',     avatar: 'ПБ', color: '#10b981', jobTitle: 'Повар' },
   ];
   for (const user of users) {
     const passwordHash = await bcrypt.hash(user.password, SALT);
@@ -69,358 +80,203 @@ async function main() {
   await (prisma as any).legalEntity.createMany({
     data: [
       {
-        name: 'Масъулияти чекланган жамият «ТехПроект»',
-        shortName: 'МЧЖ «ТехПроект»', inn: '123456789', kpp: '771201001', ogrn: '1187746123456',
+        name: '«Бекобод Овқатланиш комбинати» МЧЖ',
+        shortName: 'МЧЖ БОК', inn: '305012345', kpp: '112233445', ogrn: '1187746123456',
         type: 'МЧЖ', isMain: true,
-        legalAddress: 'Ташкент, Мирзо-Улугбекский район, ул. Амир Темур, д. 15',
-        actualAddress: 'Ташкент, ул. Амир Темур, д. 15',
-        phone: '+998 71 123-45-67', bankName: 'АКИБ «Ипотека-банк»', bankMfo: '00036',
+        legalAddress: 'Ташкентская обл., г. Бекабад, Промзона',
+        actualAddress: 'Ташкентская обл., г. Бекабад, Промзона',
+        phone: '+998 70 123-45-67', bankName: 'АКИБ «Узпромстройбанк»', bankMfo: '00036',
         bankAccount: '20208000000000000001', vatMode: 'ОСН', currency: 'UZS',
-      },
-      {
-        name: 'Якка тартибли тадбиркор Петров Иван',
-        shortName: 'ЯТТ Петров И.С.', inn: '98765432100001', ogrn: '312774601234567',
-        type: 'ЯТТ', isMain: false,
-        legalAddress: 'Ташкент, Юнусабадский район', actualAddress: 'Ташкент',
-        phone: '+998 90 987-65-43', bankName: 'АО «Халк банк»', bankMfo: '00043',
-        bankAccount: '20802810338001234567', vatMode: 'УСН 6%', currency: 'UZS',
-      },
+      }
     ]
   });
 
   // ── 3. Finance Demo Data ─────────────────────────────────────────────
-  console.log('Seeding Finance Demo Data...');
-  const account = await prisma.account.create({
-    data: { name: 'Основной счет', balance: 9000000, currency: 'UZS', type: 'Безналичный' }
+  console.log('Seeding Finance Demo Data for БОК...');
+  
+  // Accounts
+  const accMain = await prisma.account.create({
+    data: { name: 'Основной счет — МЧЖ БОК', balance: 150000000, currency: 'UZS', type: 'Безналичный' }
+  });
+  const accCash = await prisma.account.create({
+    data: { name: 'Наличная касса (Главная)', balance: 45000000, currency: 'UZS', type: 'Наличный' }
+  });
+  const accAnis = await prisma.account.create({
+    data: { name: 'Взаиморасчеты — ООО Анис', balance: 0, currency: 'UZS', type: 'Взаиморасчеты' }
+  });
+  const accAngren = await prisma.account.create({
+    data: { name: 'Взаиморасчеты — ООО Ангрен', balance: 0, currency: 'UZS', type: 'Взаиморасчеты' }
   });
 
-  const proj1 = await prisma.project.create({ data: { name: 'Разработка', status: 'В работе' } });
-  const proj2 = await prisma.project.create({ data: { name: 'Дизайн', status: 'В работе' } });
-  const proj3 = await prisma.project.create({ data: { name: 'Аудит', status: 'Завершен' } });
-  const proj4 = await prisma.project.create({ data: { name: 'Консалтинг', status: 'В работе' } });
-  const proj5 = await prisma.project.create({ data: { name: 'Поддержка', status: 'В работе' } });
+  // Projects (Points of sale / Production units)
+  const proj1 = await prisma.project.create({ data: { name: 'Центральное производство', status: 'В работе' } });
+  const proj2 = await prisma.project.create({ data: { name: 'Столовая заводоуправления', status: 'В работе' } });
+  const proj3 = await prisma.project.create({ data: { name: 'Столовая №1 (Прокатный цех)', status: 'В работе' } });
+  const proj4 = await prisma.project.create({ data: { name: 'Столовая №2 (Мартеновский цех)', status: 'В работе' } });
+  const proj5 = await prisma.project.create({ data: { name: 'Буфет №1', status: 'В работе' } });
 
-  const revCat1 = await prisma.category.create({ data: { name: 'Выручка от услуг', type: 'income', activity: 'operating' } });
-  const revCat2 = await prisma.category.create({ data: { name: 'Продажи товаров', type: 'income', activity: 'operating' } });
-  const revCat3 = await prisma.category.create({ data: { name: 'Аренда', type: 'income', activity: 'operating' } });
-  const revCat4 = await prisma.category.create({ data: { name: 'Прочее (доходы)', type: 'income', activity: 'operating' } });
+  // Categories - Income
+  const revCat1 = await prisma.category.create({ data: { name: 'Выручка столовых (Безнал)', type: 'income', activity: 'operating' } });
+  const revCat2 = await prisma.category.create({ data: { name: 'Выручка буфетов', type: 'income', activity: 'operating' } });
+  const revCat3 = await prisma.category.create({ data: { name: 'Реализация полуфабрикатов', type: 'income', activity: 'operating' } });
+  const revCat4 = await prisma.category.create({ data: { name: 'Выручка по талонам (Спецпитание)', type: 'income', activity: 'operating' } });
 
-  const expCat1 = await prisma.category.create({ data: { name: 'ФОТ (Зарплаты)', type: 'expense', activity: 'operating' } });
-  // Subcategories for ФОТ
+  // Categories - Expenses
+  const expCatRaw = await prisma.category.create({ data: { name: 'Закупка сырья', type: 'expense', activity: 'operating' } });
   await prisma.category.createMany({ data: [
-    { name: 'Оклад (Base Salary)', type: 'expense', activity: 'operating', parentId: expCat1.id },
-    { name: 'Премии и бонусы', type: 'expense', activity: 'operating', parentId: expCat1.id },
-    { name: 'НДФЛ', type: 'expense', activity: 'operating', parentId: expCat1.id },
-    { name: 'ИНПС / Соц. отчисления', type: 'expense', activity: 'operating', parentId: expCat1.id },
+    { name: 'Мясо и птица', type: 'expense', activity: 'operating', parentId: expCatRaw.id },
+    { name: 'Овощи и фрукты', type: 'expense', activity: 'operating', parentId: expCatRaw.id },
+    { name: 'Бакалея и сыпучие', type: 'expense', activity: 'operating', parentId: expCatRaw.id },
+    { name: 'Молочная продукция', type: 'expense', activity: 'operating', parentId: expCatRaw.id },
   ]});
 
-  const expCat2 = await prisma.category.create({ data: { name: 'Закупки', type: 'expense', activity: 'operating' } });
-  await prisma.category.create({ data: { name: 'Закупка сырья и материалов', type: 'expense', activity: 'operating', parentId: expCat2.id } });
-  await prisma.category.create({ data: { name: 'Транспортно-заготовительные', type: 'expense', activity: 'operating', parentId: expCat2.id } });
-
-  const expCat3 = await prisma.category.create({ data: { name: 'Аренда офиса', type: 'expense', activity: 'operating' } });
-  const expCat4 = await prisma.category.create({ data: { name: 'Налоги', type: 'expense', activity: 'operating' } });
-  const expCat5 = await prisma.category.create({ data: { name: 'Услуги связи', type: 'expense', activity: 'operating' } });
-
-  const marketingCat = await prisma.category.create({ data: { name: 'Маркетинг и реклама', type: 'expense', activity: 'operating' } });
+  const expCatHR = await prisma.category.create({ data: { name: 'ФОТ (Зарплаты)', type: 'expense', activity: 'operating' } });
   await prisma.category.createMany({ data: [
-    { name: 'Таргетированная реклама', type: 'expense', activity: 'operating', parentId: marketingCat.id },
-    { name: 'SEO и Контент', type: 'expense', activity: 'operating', parentId: marketingCat.id },
-    { name: 'PR и Мероприятия', type: 'expense', activity: 'operating', parentId: marketingCat.id },
+    { name: 'Зарплата поваров и кухонных рабочих', type: 'expense', activity: 'operating', parentId: expCatHR.id },
+    { name: 'Зарплата АУП', type: 'expense', activity: 'operating', parentId: expCatHR.id },
+    { name: 'Налоги с ФОТ', type: 'expense', activity: 'operating', parentId: expCatHR.id },
   ]});
 
-  const itCat = await prisma.category.create({ data: { name: 'IT инфраструктура', type: 'expense', activity: 'operating' } });
+  const expCatUtil = await prisma.category.create({ data: { name: 'Коммунальные и прочие', type: 'expense', activity: 'operating' } });
   await prisma.category.createMany({ data: [
-    { name: 'Облачные сервисы (AWS/GCP)', type: 'expense', activity: 'operating', parentId: itCat.id },
-    { name: 'Лицензии ПО', type: 'expense', activity: 'operating', parentId: itCat.id },
-    { name: 'Оборудование', type: 'expense', activity: 'investing', parentId: itCat.id },
+    { name: 'Электричество', type: 'expense', activity: 'operating', parentId: expCatUtil.id },
+    { name: 'Вода и канализация', type: 'expense', activity: 'operating', parentId: expCatUtil.id },
+    { name: 'Транспортные расходы', type: 'expense', activity: 'operating', parentId: expCatUtil.id },
+    { name: 'Холодильное обслуживание', type: 'expense', activity: 'operating', parentId: expCatUtil.id },
   ]});
 
   // Assets (Активы)
-  const assetGroup = await prisma.category.create({ data: { name: 'Основные средства', type: 'asset', activity: 'investing' } });
+  const assetGroup = await prisma.category.create({ data: { name: 'Основные средства (Кухня)', type: 'asset', activity: 'investing' } });
   await prisma.category.createMany({ data: [
-    { name: 'Компьютерное оборудование', type: 'asset', activity: 'investing', parentId: assetGroup.id },
-    { name: 'Офисная мебель', type: 'asset', activity: 'investing', parentId: assetGroup.id },
-    { name: 'Транспортные средства', type: 'asset', activity: 'investing', parentId: assetGroup.id },
+    { name: 'Тепловое оборудование', type: 'asset', activity: 'investing', parentId: assetGroup.id },
+    { name: 'Холодильное оборудование', type: 'asset', activity: 'investing', parentId: assetGroup.id },
+    { name: 'Транспорт (Рефрижераторы)', type: 'asset', activity: 'investing', parentId: assetGroup.id },
   ]});
   
-  await prisma.category.create({ data: { name: 'Нематериальные активы (НМА)', type: 'asset', activity: 'investing' } });
-
   // Liabilities (Обязательства)
-  const loanGroup = await prisma.category.create({ data: { name: 'Кредиты и Займы', type: 'liability', activity: 'financing' } });
+  const loanGroup = await prisma.category.create({ data: { name: 'Обязательства и Займы', type: 'liability', activity: 'financing' } });
   await prisma.category.createMany({ data: [
     { name: 'Банковские кредиты', type: 'liability', activity: 'financing', parentId: loanGroup.id },
-    { name: 'Займы учредителей', type: 'liability', activity: 'financing', parentId: loanGroup.id },
-    { name: 'Лизинговые обязательства', type: 'liability', activity: 'financing', parentId: loanGroup.id },
+    { name: 'Взаиморасчеты с поставщиками', type: 'liability', activity: 'financing', parentId: loanGroup.id },
   ]});
 
   // Equity (Капитал)
   await prisma.category.create({ data: { name: 'Уставный капитал', type: 'equity', activity: 'financing' } });
   await prisma.category.create({ data: { name: 'Нераспределенная прибыль', type: 'equity', activity: 'operating' } });
 
-  const contractor = await prisma.contractor.create({ data: { name: 'ООО Крупный Клиент', shortName: 'Клиент' }});
+  // Contractors
+  const contAnis = await prisma.contractor.create({ data: { name: 'ООО Анис', shortName: 'Анис (Мясо)' }});
+  const contAngren = await prisma.contractor.create({ data: { name: 'ООО Ангрен', shortName: 'Ангрен (Овощи)' }});
+  const contZavod = await prisma.contractor.create({ data: { name: 'Металлургический завод', shortName: 'Завод (Талоны)' }});
 
   await prisma.deal.createMany({
     data: [
-      { name: 'Разработка портала', type: 'sale', status: 'completed', contractorId: contractor.id, projectId: proj1.id, amount: 5200000, paidAmount: 5200000, shippedAmount: 0, currency: 'UZS', dateStart: '2026-01-10' },
-      { name: 'Дизайн приложения', type: 'sale', status: 'completed', contractorId: contractor.id, projectId: proj2.id, amount: 2100000, paidAmount: 2100000, shippedAmount: 0, currency: 'UZS', dateStart: '2026-02-10' },
-      { name: 'Аудит безопасности', type: 'sale', status: 'completed', contractorId: contractor.id, projectId: proj3.id, amount: 1500000, paidAmount: 1500000, shippedAmount: 0, currency: 'UZS', dateStart: '2026-03-10' },
-      { name: 'Консалтинг IT', type: 'sale', status: 'completed', contractorId: contractor.id, projectId: proj4.id, amount: 1000000, paidAmount: 1000000, shippedAmount: 0, currency: 'UZS', dateStart: '2026-04-10' },
-      { name: 'Техподдержка', type: 'sale', status: 'completed', contractorId: contractor.id, projectId: proj5.id, amount: 500000, paidAmount: 500000, shippedAmount: 0, currency: 'UZS', dateStart: '2026-05-10' },
+      { name: 'Договор на спецпитание 2026', type: 'sale', status: 'in_progress', contractorId: contZavod.id, projectId: proj2.id, amount: 1500000000, paidAmount: 500000000, shippedAmount: 300000000, currency: 'UZS', dateStart: '2026-01-01' },
+      { name: 'Поставка мяса I квартал', type: 'purchase', status: 'completed', contractorId: contAnis.id, projectId: proj1.id, amount: 250000000, paidAmount: 250000000, shippedAmount: 250000000, currency: 'UZS', dateStart: '2026-01-10' },
+      { name: 'Поставка овощей', type: 'purchase', status: 'in_progress', contractorId: contAngren.id, projectId: proj1.id, amount: 80000000, paidAmount: 40000000, shippedAmount: 50000000, currency: 'UZS', dateStart: '2026-04-10' },
     ]
   });
 
   await prisma.product.createMany({
     data: [
-      { name: 'Услуга разработки', sku: 'SRV-001', type: 'Услуга', price: 5000000, unit: 'шт', stockBalance: 0, category: 'Разработка', vatRate: 12, costPrice: 0, status: 'Активен' },
-      { name: 'Лицензия ПО', sku: 'LIC-001', type: 'Товар', price: 1200000, unit: 'шт', stockBalance: 100, category: 'Софт', vatRate: 12, costPrice: 500000, status: 'Активен' },
-      { name: 'Аудит системы', sku: 'SRV-002', type: 'Услуга', price: 3000000, unit: 'шт', stockBalance: 0, category: 'Консалтинг', vatRate: 12, costPrice: 0, status: 'Активен' },
-      { name: 'Серверное оборудование', sku: 'HW-001', type: 'Товар', price: 15000000, unit: 'шт', stockBalance: 5, category: 'Железо', vatRate: 12, costPrice: 10000000, status: 'Активен' }
+      { name: 'Мясо (Говядина б/к)', sku: 'RAW-001', type: 'Товар', price: 85000, unit: 'кг', stockBalance: 1200, category: 'Мясо', vatRate: 12, costPrice: 85000, status: 'Активные' },
+      { name: 'Картофель', sku: 'RAW-002', type: 'Товар', price: 4500, unit: 'кг', stockBalance: 5000, category: 'Овощи', vatRate: 0, costPrice: 4500, status: 'Активные' },
+      { name: 'Обед комплексный', sku: 'MEAL-001', type: 'Услуга', price: 25000, unit: 'шт.', stockBalance: 0, category: 'Питание', vatRate: 12, costPrice: 18000, status: 'Активные' },
+      { name: 'Выпечка (Самса)', sku: 'MEAL-002', type: 'Товар', price: 5000, unit: 'шт.', stockBalance: 100, category: 'Буфет', vatRate: 12, costPrice: 2000, status: 'Активные' }
     ]
   });
 
+  // Mock monthly flows
   const monthlyData = [
-    { month: '01', rev: 5200000, exp: 4100000 },
-    { month: '02', rev: 5800000, exp: 4500000 },
-    { month: '03', rev: 5500000, exp: 4200000 },
-    { month: '04', rev: 6100000, exp: 4800000 },
-    { month: '05', rev: 6700000, exp: 5100000 },
-    { month: '06', rev: 6400000, exp: 5000000 },
+    { month: '01', rev1: 150000000, rev2: 30000000, expRaw: 85000000, expHR: 65000000 },
+    { month: '02', rev1: 155000000, rev2: 32000000, expRaw: 88000000, expHR: 65000000 },
+    { month: '03', rev1: 160000000, rev2: 35000000, expRaw: 90000000, expHR: 68000000 },
+    { month: '04', rev1: 158000000, rev2: 33000000, expRaw: 89000000, expHR: 68000000 },
+    { month: '05', rev1: 165000000, rev2: 38000000, expRaw: 95000000, expHR: 70000000 },
+    { month: '06', rev1: 170000000, rev2: 40000000, expRaw: 98000000, expHR: 70000000 },
   ];
 
   for (const m of monthlyData) {
      await prisma.transaction.create({
-       data: { date: `2026-${m.month}-15`, amount: m.rev, type: 'income', accountId: account.id, categoryId: revCat1.id, projectId: proj1.id, isPaidConfirmed: true }
+       data: { date: `2026-${m.month}-15`, amount: m.rev1, type: 'income', accountId: accMain.id, categoryId: revCat4.id, projectId: proj2.id, isPaidConfirmed: true }
      });
      await prisma.transaction.create({
-       data: { date: `2026-${m.month}-20`, amount: m.exp, type: 'expense', accountId: account.id, categoryId: expCat1.id, isPaidConfirmed: true }
+       data: { date: `2026-${m.month}-20`, amount: m.rev2, type: 'income', accountId: accCash.id, categoryId: revCat2.id, projectId: proj5.id, isPaidConfirmed: true }
+     });
+     await prisma.transaction.create({
+       data: { date: `2026-${m.month}-05`, amount: m.expRaw, type: 'expense', accountId: accMain.id, categoryId: expCatRaw.id, isPaidConfirmed: true }
+     });
+     await prisma.transaction.create({
+       data: { date: `2026-${m.month}-10`, amount: m.expHR, type: 'expense', accountId: accMain.id, categoryId: expCatHR.id, isPaidConfirmed: true }
      });
   }
 
-  await prisma.transaction.createMany({
-    data: [
-      { date: '2026-01-05', amount: 4500000, type: 'income', accountId: account.id, categoryId: revCat1.id, isPaidConfirmed: true },
-      { date: '2026-01-06', amount: 2000000, type: 'income', accountId: account.id, categoryId: revCat2.id, isPaidConfirmed: true },
-      { date: '2026-01-07', amount: 800000,  type: 'income', accountId: account.id, categoryId: revCat3.id, isPaidConfirmed: true },
-      { date: '2026-01-08', amount: 300000,  type: 'income', accountId: account.id, categoryId: revCat4.id, isPaidConfirmed: true },
-      { date: '2026-01-10', amount: 1500000, type: 'expense', accountId: account.id, categoryId: expCat1.id, isPaidConfirmed: true },
-      { date: '2026-01-11', amount: 1200000, type: 'expense', accountId: account.id, categoryId: expCat2.id, isPaidConfirmed: true },
-      { date: '2026-01-12', amount: 500000,  type: 'expense', accountId: account.id, categoryId: expCat3.id, isPaidConfirmed: true },
-      { date: '2026-01-13', amount: 400000,  type: 'expense', accountId: account.id, categoryId: expCat4.id, isPaidConfirmed: true },
-      { date: '2026-01-14', amount: 100000,  type: 'expense', accountId: account.id, categoryId: expCat5.id, isPaidConfirmed: true },
-    ]
-  });
-
+  // Assets
   await prisma.asset.createMany({
     data: [
-      { name: 'MacBook Pro M2', category: 'Основное средство', type: 'Оборудование', acquisitionDate: '2025-10-01', initialCost: 25000000, usefulLifeMonths: 36, salvageValue: 5000000, status: 'В эксплуатации' },
-      { name: 'Сервер Dell PowerEdge', category: 'Основное средство', type: 'Оборудование', acquisitionDate: '2025-11-15', initialCost: 45000000, usefulLifeMonths: 60, salvageValue: 10000000, status: 'В эксплуатации' },
-      { name: 'Офисная мебель', category: 'Основное средство', type: 'Оборудование', acquisitionDate: '2026-01-10', initialCost: 15000000, usefulLifeMonths: 48, salvageValue: 2000000, status: 'В эксплуатации' }
+      { name: 'Пароконвектомат Rational 101', category: 'Основное средство', type: 'Оборудование', acquisitionDate: '2025-05-01', initialCost: 120000000, usefulLifeMonths: 60, salvageValue: 20000000, status: 'В эксплуатации' },
+      { name: 'Холодильная камера 20 куб.м', category: 'Основное средство', type: 'Оборудование', acquisitionDate: '2025-06-15', initialCost: 85000000, usefulLifeMonths: 84, salvageValue: 5000000, status: 'В эксплуатации' },
+      { name: 'Мясорубка МИМ-300', category: 'Основное средство', type: 'Оборудование', acquisitionDate: '2026-01-10', initialCost: 15000000, usefulLifeMonths: 48, salvageValue: 2000000, status: 'В эксплуатации' }
     ]
   });
 
   await prisma.loan.createMany({
     data: [
-      { name: 'Кредит на развитие', bankName: 'Капиталбанк', principalAmount: 100000000, interestRate: 22, termMonths: 24, startDate: '2025-09-01', type: 'Кредит' },
-      { name: 'Авто в лизинг', bankName: 'Ипотека-банк', principalAmount: 250000000, interestRate: 18, termMonths: 36, startDate: '2025-12-01', type: 'Лизинг' }
+      { name: 'Кредит на оборудование', bankName: 'Узпромстройбанк', principalAmount: 200000000, interestRate: 22, termMonths: 36, startDate: '2025-05-01', type: 'Кредит' },
     ]
   });
 
   await prisma.fund.createMany({
     data: [
-      { name: 'Резервный фонд', targetAmount: 50000000, currentBalance: 15000000, currency: 'UZS', type: 'reserve' },
-      { name: 'Налоги', targetAmount: 20000000, currentBalance: 5000000, currency: 'UZS', type: 'savings' }
-    ]
-  });
-
-  await prisma.plannedOperation.createMany({
-    data: [
-      { date: '2026-05-15', amount: 12000000, type: 'expense', categoryId: expCat1.id, accountId: account.id },
-      { date: '2026-05-20', amount: 45000000, type: 'income', categoryId: revCat1.id, accountId: account.id }
-    ]
-  });
-
-  await prisma.paymentRequest.createMany({
-    data: [
-      { number: 'PR-001', dateStr: '2026-05-10', amount: 5000000, purpose: 'Оплата за интернет', contractorId: contractor.id, categoryId: expCat5.id, projectId: proj1.id, status: 'pending_ceo', authorId: 'u1' },
-      { number: 'PR-002', dateStr: '2026-05-11', amount: 1500000, purpose: 'Канцтовары', contractorId: contractor.id, categoryId: expCat2.id, projectId: proj1.id, status: 'approved', authorId: 'u2' }
-    ]
-  });
-
-  await prisma.purchase.createMany({
-    data: [
-      { number: 'PUR-001', name: 'Закупка серверов', contractorId: contractor.id, amount: 15000000, paidAmount: 0, status: 'new', category: expCat2.id, startDate: '2026-05-01', dueDate: '2026-05-15', deliveryStatus: 'pending' },
-      { number: 'PUR-002', name: 'Лицензии', contractorId: contractor.id, amount: 2500000, paidAmount: 2500000, status: 'delivered', category: expCat2.id, startDate: '2026-04-10', dueDate: '2026-04-15', deliveryStatus: 'done' }
-    ]
-  });
-
-  await prisma.invoice.createMany({
-    data: [
-      { number: 'INV-001', contractorId: contractor.id, amount: 5200000, paidAmount: 0, status: 'sent', issuedDate: '2026-05-01', dueDate: '2026-05-10', description: 'Оплата за разработку', vatAmount: 0 },
-      { number: 'INV-002', contractorId: contractor.id, amount: 2100000, paidAmount: 2100000, status: 'paid', issuedDate: '2026-04-01', dueDate: '2026-04-10', description: 'Предоплата', vatAmount: 0 }
+      { name: 'Амортизационный фонд', targetAmount: 150000000, currentBalance: 45000000, currency: 'UZS', type: 'reserve' },
     ]
   });
 
   // ── 4. Arcana Workspace Data ─────────────────────────────────────────
-  console.log('Seeding Arcana Workspace Data...');
+  console.log('Seeding Arcana Workspace Data (Организация питания)...');
 
-  // Projects
   await prisma.arcanaProject.create({
-    data: { id: 'p1', name: 'Arcana', color: '#654ef1', icon: '🌀', description: 'Разработка основного продукта', status: 'active' }
+    data: { id: 'p1', name: 'Модернизация холодного цеха', color: '#654ef1', icon: '❄️', description: 'Ремонт и закупка новых холодильников', status: 'active' }
   });
   await prisma.arcanaProject.create({
-    data: { id: 'p2', name: 'Сайт компании', color: '#22c55e', icon: '🌐', description: 'Лендинг и блог', status: 'active' }
-  });
-  await prisma.arcanaProject.create({
-    data: { id: 'p3', name: 'Мобильное приложение', color: '#f97316', icon: '📱', description: 'iOS и Android приложение', status: 'active' }
+    data: { id: 'p2', name: 'Открытие Столовой №3', color: '#22c55e', icon: '🏗️', description: 'Новая точка в цехе переработки', status: 'active' }
   });
 
-  // Project Members
   await prisma.arcanaProjectMember.createMany({
     data: [
       { projectId: 'p1', userId: 'u1', role: 'admin' },
       { projectId: 'p1', userId: 'u2', role: 'member' },
       { projectId: 'p1', userId: 'u3', role: 'member' },
-      { projectId: 'p1', userId: 'u4', role: 'member' },
-      { projectId: 'p1', userId: 'u5', role: 'member' },
-      { projectId: 'p2', userId: 'u2', role: 'admin' },
-      { projectId: 'p2', userId: 'u3', role: 'member' },
-      { projectId: 'p3', userId: 'u1', role: 'admin' },
-      { projectId: 'p3', userId: 'u4', role: 'member' },
-      { projectId: 'p3', userId: 'u5', role: 'member' },
+      { projectId: 'p2', userId: 'u1', role: 'admin' },
+      { projectId: 'p2', userId: 'u5', role: 'member' },
     ]
   });
 
-  // Tasks — Arcana (p1): 10 main tasks + 4 subtasks
   await prisma.arcanaTask.createMany({
     data: [
       {
-        id: 't1', projectId: 'p1', title: 'Дизайн UI-потока авторизации',
-        description: 'Создать вайрфреймы и хай-фай макеты для экранов входа, регистрации и сброса пароля.',
+        id: 't1', projectId: 'p1', title: 'Монтаж сэндвич-панелей',
+        description: 'Установка теплоизоляции в помещении нового холодного цеха.',
         priority: 'high', status: 'done', assigneeId: 'u2', reporterId: 'u1',
         startDate: daysAgo(14), dueDate: daysAgo(7),
-        tags: JSON.stringify(['дизайн', 'авторизация']), estimatedHours: 16, loggedHours: 14,
+        tags: JSON.stringify(['ремонт']), estimatedHours: 40, loggedHours: 42,
         position: 0, progress: 100, dependencies: '[]',
       },
       {
-        id: 'st1', projectId: 'p1', parentId: 't1', title: 'Вайрфреймы',
-        priority: 'high', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-        startDate: daysAgo(14), dueDate: daysAgo(10),
-        tags: '[]', estimatedHours: 8, loggedHours: 8, position: 0, progress: 100, dependencies: '[]',
-      },
-      {
-        id: 'st2', projectId: 'p1', parentId: 't1', title: 'Хай-фай макеты',
-        priority: 'high', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-        startDate: daysAgo(10), dueDate: daysAgo(7),
-        tags: '[]', estimatedHours: 8, loggedHours: 6, position: 1, progress: 100, dependencies: '[]',
-      },
-      {
-        id: 't2', projectId: 'p1', title: 'Реализация drag-and-drop в Канбане',
-        description: 'Построить Канбан-доску с полной поддержкой перетаскивания карточек.',
-        priority: 'urgent', status: 'in_progress', assigneeId: 'u1', reporterId: 'u1',
+        id: 't2', projectId: 'p1', title: 'Закупка холодильных агрегатов',
+        description: 'Оплата счета и организация доставки компрессоров Bitzer.',
+        priority: 'urgent', status: 'in_progress', assigneeId: 'u6', reporterId: 'u1',
         startDate: daysAgo(5), dueDate: daysFromNow(3),
-        tags: JSON.stringify(['фронтенд', 'канбан']), estimatedHours: 24, loggedHours: 12,
+        tags: JSON.stringify(['закупки']), estimatedHours: 10, loggedHours: 4,
         position: 0, progress: 45, dependencies: JSON.stringify([{ type: 'FS', taskId: 't1' }]),
       },
       {
-        id: 'st3', projectId: 'p1', parentId: 't2', title: 'DnD колонок',
-        priority: 'urgent', status: 'done', assigneeId: 'u1', reporterId: 'u1',
-        startDate: daysAgo(5), dueDate: daysAgo(2),
-        tags: '[]', estimatedHours: 8, loggedHours: 8, position: 0, progress: 100, dependencies: '[]',
-      },
-      {
-        id: 'st4', projectId: 'p1', parentId: 't2', title: 'DnD карточек',
-        priority: 'urgent', status: 'in_progress', assigneeId: 'u1', reporterId: 'u1',
-        startDate: daysAgo(2), dueDate: daysFromNow(1),
-        tags: '[]', estimatedHours: 10, loggedHours: 4, position: 1, progress: 40, dependencies: '[]',
-      },
-      {
-        id: 't3', projectId: 'p1', title: 'Движок рендеринга диаграммы Ганта',
-        description: 'Кастомная диаграмма Ганта с масштабами день/неделя/месяц.',
-        priority: 'urgent', status: 'in_progress', assigneeId: 'u3', reporterId: 'u1',
-        startDate: daysAgo(3), dueDate: daysFromNow(7),
-        tags: JSON.stringify(['фронтенд', 'гант']), estimatedHours: 40, loggedHours: 10,
-        position: 1, progress: 25, dependencies: JSON.stringify([{ type: 'FS', taskId: 't2' }]),
-      },
-      {
-        id: 't4', projectId: 'p1', title: 'Проектирование схемы базы данных',
-        description: 'Разработать нормализованную схему для задач, проектов, пользователей.',
-        priority: 'high', status: 'done', assigneeId: 'u5', reporterId: 'u1',
-        startDate: daysAgo(20), dueDate: daysAgo(10),
-        tags: JSON.stringify(['бэкенд', 'база данных']), estimatedHours: 12, loggedHours: 10,
-        position: 0, progress: 100, dependencies: '[]',
-      },
-      {
-        id: 't5', projectId: 'p1', title: 'WebSocket синхронизация в реальном времени',
-        description: 'Реализовать socket.io сервер для мгновенного обновления задач.',
-        priority: 'high', status: 'review', assigneeId: 'u5', reporterId: 'u1',
-        startDate: daysAgo(7), dueDate: daysFromNow(2),
-        tags: JSON.stringify(['бэкенд', 'реалтайм']), estimatedHours: 20, loggedHours: 18,
-        position: 0, progress: 80, dependencies: JSON.stringify([{ type: 'FS', taskId: 't4' }]),
-      },
-      {
-        id: 't6', projectId: 'p1', title: 'Система уведомлений (email + внутренние)',
-        description: 'Построить пайплайн уведомлений о назначении задач и упоминаниях.',
-        priority: 'medium', status: 'todo', assigneeId: 'u4', reporterId: 'u1',
-        startDate: daysFromNow(3), dueDate: daysFromNow(14),
-        tags: JSON.stringify(['бэкенд', 'уведомления']), estimatedHours: 16, loggedHours: 0,
-        position: 0, progress: 0, dependencies: JSON.stringify([{ type: 'FS', taskId: 't5' }]),
-      },
-      {
-        id: 't7', projectId: 'p1', title: 'Дизайн-система и библиотека компонентов',
-        description: 'Создать переиспользуемые React-компоненты на основе токенов дизайн-системы.',
-        priority: 'medium', status: 'in_progress', assigneeId: 'u2', reporterId: 'u1',
-        startDate: daysAgo(10), dueDate: daysFromNow(5),
-        tags: JSON.stringify(['фронтенд', 'дизайн']), estimatedHours: 30, loggedHours: 20,
-        position: 2, progress: 65, dependencies: '[]',
-      },
-      {
-        id: 'st7', projectId: 'p1', parentId: 't7', title: 'Кнопки',
-        priority: 'medium', status: 'done', assigneeId: 'u2', reporterId: 'u1',
-        startDate: daysAgo(10), dueDate: daysAgo(8),
-        tags: '[]', estimatedHours: 5, loggedHours: 5, position: 0, progress: 100, dependencies: '[]',
-      },
-      {
-        id: 't8', projectId: 'p1', title: 'Написание документации API',
-        description: 'Задокументировать все REST-эндпоинты в формате OpenAPI/Swagger.',
-        priority: 'low', status: 'todo', assigneeId: null, reporterId: 'u1',
-        startDate: daysFromNow(10), dueDate: daysFromNow(20),
-        tags: JSON.stringify(['документация']), estimatedHours: 8, loggedHours: 0,
-        position: 1, progress: 0, dependencies: '[]',
-      },
-      {
-        id: 't9', projectId: 'p1', title: 'Настройка CI/CD пайплайна',
-        description: 'GitHub Actions для автоматического тестирования, сборки и деплоя.',
-        priority: 'medium', status: 'todo', assigneeId: 'u1', reporterId: 'u1',
-        startDate: daysFromNow(5), dueDate: daysFromNow(10),
-        tags: JSON.stringify(['devops']), estimatedHours: 12, loggedHours: 0,
-        position: 2, progress: 0, dependencies: '[]',
-      },
-      {
-        id: 't10', projectId: 'p1', title: 'Интеграционные тесты (E2E)',
-        description: 'Написать комплексные E2E-тесты на Playwright.',
-        priority: 'low', status: 'blocked', assigneeId: 'u4', reporterId: 'u1',
-        startDate: daysFromNow(15), dueDate: daysFromNow(25),
-        tags: JSON.stringify(['qa', 'тестирование']), estimatedHours: 24, loggedHours: 0,
-        position: 0, progress: 0,
-        dependencies: JSON.stringify([{ type: 'FS', taskId: 't9' }, { type: 'relates_to', taskId: 't8' }]),
-      },
-      // Tasks — Сайт компании (p2)
-      {
-        id: 't11', projectId: 'p2', title: 'Главный экран (Hero) лендинга',
-        description: 'Спроектировать и разработать hero-секцию с анимированным градиентом.',
-        priority: 'high', status: 'in_progress', assigneeId: 'u2', reporterId: 'u2',
+        id: 't3', projectId: 'p2', title: 'Утверждение плана-меню для Столовой №3',
+        description: 'С учетом сменного графика рабочих.',
+        priority: 'high', status: 'in_progress', assigneeId: 'u3', reporterId: 'u2',
         startDate: daysAgo(4), dueDate: daysFromNow(3),
-        tags: JSON.stringify(['фронтенд', 'дизайн']), estimatedHours: 12, loggedHours: 8,
+        tags: JSON.stringify(['меню']), estimatedHours: 12, loggedHours: 8,
         position: 0, progress: 60, dependencies: '[]',
-      },
-      {
-        id: 't12', projectId: 'p2', title: 'SEO оптимизация и мета-теги',
-        description: 'Реализовать структурированные данные, og-теги и карту сайта.',
-        priority: 'medium', status: 'todo', assigneeId: 'u3', reporterId: 'u2',
-        startDate: daysFromNow(4), dueDate: daysFromNow(8),
-        tags: JSON.stringify(['seo']), estimatedHours: 6, loggedHours: 0,
-        position: 0, progress: 0, dependencies: '[]',
       },
     ]
   });
@@ -428,7 +284,7 @@ async function main() {
   // ── 10. Budgets and Scenarios ─────────────────────────────────────────
   const scenario1 = await prisma.budgetScenario.create({
     data: {
-      name: 'Базовый 2026',
+      name: 'Бюджет питания 2026',
       year: 2026,
       isApproved: true,
       createdAt: new Date().toISOString(),
@@ -439,7 +295,7 @@ async function main() {
 
   await prisma.bdrBudget.create({
     data: {
-      name: 'БДР 2026',
+      name: 'БДР Столовых 2026',
       type: 'БДР',
       currency: 'UZS',
       entityId: legalEntity?.id || '',
@@ -454,7 +310,7 @@ async function main() {
 
   await prisma.bddsBudget.create({
     data: {
-      name: 'БДДС 2026',
+      name: 'БДДС Закупок 2026',
       currency: 'UZS',
       entityId: legalEntity?.id || '',
       projectId: proj1.id,
@@ -467,49 +323,29 @@ async function main() {
   });
 
   // ── 11. HR & Payroll Demo Data ─────────────────────────────────────────
-  console.log('Seeding HR & Payroll Data...');
+  console.log('Seeding HR & Payroll Data for BOK...');
 
   const existingUsers = await prisma.user.findMany();
-  if (existingUsers.length === 0) {
-    console.log('No users found to create employees for.');
-    return;
-  }
-
+  
   const employees = [];
   for (let i = 0; i < existingUsers.length; i++) {
     const user = existingUsers[i];
-    
-    // Intelligently infer from user properties
-    let dept = 'Общий отдел';
+    let dept = 'Производство';
     let position = user.jobTitle || 'Сотрудник';
-    let salary = 8000000;
+    let salary = 4000000;
     
-    const lowerJob = position.toLowerCase();
-    
-    // Infer Department
-    if (lowerJob.includes('разработчик') || lowerJob.includes('frontend') || lowerJob.includes('backend') || lowerJob.includes('cto')) {
-      dept = 'Разработка';
-    } else if (lowerJob.includes('qa') || lowerJob.includes('тестировщик')) {
-      dept = 'QA';
-    } else if (lowerJob.includes('дизайн') || lowerJob.includes('designer') || lowerJob.includes('ux')) {
-      dept = 'Дизайн';
-    } else if (lowerJob.includes('бухгалтер') || lowerJob.includes('cfo') || lowerJob.includes('финанс')) {
-      dept = 'Финансы';
-    } else if (lowerJob.includes('админ') || lowerJob.includes('admin')) {
-      dept = 'ИТ Оперейшнс';
-    } else if (user.role === 'admin') {
-      dept = 'Управление';
-    }
-
-    // Infer Salary
-    if (user.role === 'admin' || user.role === 'cfo' || lowerJob.includes('cfo') || lowerJob.includes('cto')) {
-      salary = 20000000;
-    } else if (lowerJob.includes('главный') || lowerJob.includes('senior')) {
+    if (user.role === 'admin' || user.role === 'cfo') {
+      dept = 'АУП';
       salary = 15000000;
-    } else if (lowerJob.includes('разработчик') || lowerJob.includes('дизайнер')) {
-      salary = 10000000;
-    } else if (lowerJob.includes('qa')) {
-      salary = 8500000;
+    } else if (position.includes('Бухгалтер')) {
+      dept = 'Бухгалтерия';
+      salary = 8000000;
+    } else if (position.includes('Повар')) {
+      dept = 'Горячий цех';
+      salary = 6000000;
+    } else if (position.includes('Завскладом')) {
+      dept = 'Склад';
+      salary = 5000000;
     }
 
     const emp = await prisma.employee.create({
@@ -531,15 +367,12 @@ async function main() {
       data: [
         { employeeId: employees[1].id, type: 'vacation', startDate: '2026-05-10', endDate: '2026-05-24', status: 'approved', note: 'Ежегодный отпуск' },
         { employeeId: employees[3].id, type: 'sick', startDate: '2026-04-28', endDate: '2026-04-30', status: 'approved', note: 'ОРВИ' },
-        { employeeId: employees[2].id, type: 'personal', startDate: '2026-05-05', endDate: '2026-05-05', status: 'pending', note: 'Семейные обстоятельства' },
-        { employeeId: employees[0].id, type: 'vacation', startDate: '2026-06-01', endDate: '2026-06-14', status: 'pending', note: 'Летний отпуск' },
       ]
     });
   }
 
-  // Payroll Run for May 2026 (using the real calculation engine)
+  // Payroll Run for May 2026
   const empsWithAbsences = await prisma.employee.findMany({ include: { absences: true } });
-  
   const { totalGross, totalNet, entries } = calculatePayrollRun(5, 2026, 'final', empsWithAbsences);
 
   await prisma.payrollRun.create({
@@ -562,7 +395,7 @@ async function main() {
     }
   });
 
-  console.log('Seeding finished.');
+  console.log('Seeding finished for БОК.');
 }
 
 main()

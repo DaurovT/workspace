@@ -32,7 +32,7 @@ model LegalEntity {
   id            String   @id @default(cuid())
   name          String
   shortName     String
-  inn           String
+  inn           String   @unique
   kpp           String?
   ogrn          String?
   pinfl         String?
@@ -498,21 +498,67 @@ model TimeLog {
 
 model Employee {
   id              String   @id @default(cuid())
-  userId          String   @unique  // Link to User
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Связь с учётной записью (необязательна — не все сотрудники имеют доступ к системе)
+  userId          String?  @unique
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  hasSystemAccess Boolean  @default(false)
+
+  // Привязка к должности из структуры предприятия
+  orgPositionId   String?
+  orgPosition     OrgPosition? @relation(fields: [orgPositionId], references: [id], onDelete: SetNull)
+
+  // Личные данные
+  lastName        String?
+  firstName       String?
+  middleName      String?
+  birthDate       String?
+  gender          String?   // male | female
+  nationality     String?   @default("Узбекистан")
+  passportSeries  String?
+  passportNumber  String?
+  passportIssuedBy   String?
+  passportIssuedDate String?
+  passportExpiry     String?
+  inn             String?
+  pinfl           String?
+  phone           String?
+  address         String?
+  emergencyContact String?
+  emergencyPhone   String?
+
+  // Рабочие данные
   department      String?
-  position        String?
+  position        String?   // текстовое дублирование для поиска
   hireDate        String
+  terminationDate String?
+  status          String   @default("active") // active | on_leave | terminated
+
+  // Финансовые данные
   salary          Decimal
   salaryType      String   @default("monthly") // monthly | hourly
   currency        String   @default("UZS")
-  contractorId    String?  // Link to Contractor for financial ops
-  status          String   @default("active") // active | on_leave | terminated
-  terminationDate String?
   bankAccount     String?
-  notes           String?
   taxProfile      String   @default("standard")
-  advancePct      Decimal    @default(40)
+  advancePct      Decimal  @default(40)
+  contractorId    String?
+
+  // График работы (инлайн — у каждого сотрудника свой)
+  scheduleType    String   @default("5_2")   // 5_2 | 6_1 | 2_2 | custom
+  scheduleWorkDays Int     @default(5)
+  scheduleRestDays Int     @default(2)
+  scheduleHours   Decimal  @default(8)
+  scheduleStart   String   @default("08:00")
+  scheduleEnd     String   @default("17:00")
+  scheduleCycleDate String? // опорная дата для 2/2
+
+  // Дополнительные данные
+  medicalBookDate    String?
+  medicalBookExpiry  String?
+  uniformSize        String?
+  education          String?
+  notes              String?
+
   createdAt       DateTime @default(now())
   absences        Absence[]
   payrollEntries  PayrollEntry[]
@@ -732,3 +778,64 @@ model ServiceTicketComment {
   createdAt DateTime @default(now())
 }
 
+
+// ─── Organizational Structure ────────────────────────────────────────────────
+
+model OrgPosition {
+  id          String   @id @default(cuid())
+  code        String?  // уникальный код для seed (e.g. bakery_baker)
+  name        String   // Повар, Заведующий цехом
+  department  String?  // Хлебобулочный цех, Горячий цех
+  section     String?  // Производство, Точки питания, Офис
+  level       Int      @default(1)
+  parentId    String?
+  parent      OrgPosition?  @relation("OrgHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    OrgPosition[] @relation("OrgHierarchy")
+  staffLimit  Int      @default(1)   // максимальный штат по расписанию
+  note        String?
+  createdAt   DateTime @default(now())
+  employees   Employee[]
+
+  @@unique([code])
+}
+
+model TranslationCache {
+  id         String   @id @default(cuid())
+  sourceLang String
+  targetLang String
+  sourceText String   @db.Text
+  translated String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@unique([sourceLang, targetLang, sourceText])
+}
+
+// ─── Shift Schedules & Work Calendar ───────────────────────────────────────
+
+model ShiftSchedule {
+  id          String     @id @default(cuid())
+  name        String     // 5/2 Стандарт, 2/2 Сменный, 6/1 Шестидневка
+  type        String     // 5_2 | 2_2 | 6_1 | custom
+  workDays    Int        @default(5)   // рабочих дней подряд
+  restDays    Int        @default(2)   // выходных дней подряд
+  hoursPerDay Decimal    @default(8)   // часов в смену
+  startTime   String     @default("08:00")
+  endTime     String     @default("17:00")
+  cycleStart  String?    // YYYY-MM-DD — опорная дата для расчёта цикла
+  note        String?
+  createdAt   DateTime   @default(now())
+}
+
+
+model WorkCalendarDay {
+  id          String   @id @default(cuid())
+  date        String   @unique  // YYYY-MM-DD (конкретная дата или шаблон MM-DD)
+  type        String   // holiday | extra_off | extra_work
+  name        String   // Навруз, Хайит, Корпоратив, Субботник
+  isRecurring Boolean  @default(false) // true = ежегодный праздник по MM-DD
+  monthDay    String?  // MM-DD для ежегодных праздников
+  scope       String   @default("all") // all или department name
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+}

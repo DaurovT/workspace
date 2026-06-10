@@ -7,6 +7,7 @@ import {
 import { ChevronDown, Calendar, Filter } from 'lucide-react';
 import { useFinanceStore } from '../financeStore';
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 const PIE_COLORS_REV = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
 const PIE_COLORS_EXP = ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#d97706'];
@@ -14,7 +15,8 @@ const PIE_COLORS_EXP = ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#d97706'];
 
 
 const MainDashboard: React.FC = () => {
-  const chartsReady = useChartsReady();
+  const { t } = useTranslation();
+    const chartsReady = useChartsReady();
 
 
   // Global filter states
@@ -24,15 +26,7 @@ const MainDashboard: React.FC = () => {
   const [selectedDisplay, setSelectedDisplay] = useState('По месяцам');
   const [selectedEntities, setSelectedEntities] = useState('Все юрлица');
   const [selectedProjects, setSelectedProjects] = useState('Все проекты');
-  const [selectedDeals, setSelectedDeals] = useState('Все сделки');
-
-  // Pseudo-randomizer helper to simulate data changes on click
-  const scrambleData = (data: any[], keyToChange: string, factor: number) => {
-    return data.map(item => ({
-      ...item,
-      [keyToChange]: item[keyToChange] ? Math.round(item[keyToChange] * (1 + (Math.random() * factor - factor / 2))) : item[keyToChange]
-    }));
-  };
+  const [selectedDeals, setSelectedDeals] = useState("Все сделки");
 
   // States mapping to segmented controls
   const [method, setMethod] = useState('cash');
@@ -57,7 +51,7 @@ const MainDashboard: React.FC = () => {
   // Compute monthlyData from real transactions
   const realMonthlyData = React.useMemo(() => {
     const confirmedTx = transactions.filter(t => t.isPaidConfirmed);
-    const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    const months = ['янв', 'Фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
     const now = new Date();
     const year = now.getFullYear();
     let runningBal = accounts.reduce((s, a) => s + a.balance, 0);
@@ -110,7 +104,7 @@ const MainDashboard: React.FC = () => {
     return data.length ? data.sort((a, b) => b.value - a.value).slice(0, 5) : [];
   }, [transactions, categories]);
 
-  const dynamicChartData = React.useMemo(() => scrambleData(realMonthlyData, 'profit', method === 'cash' ? 0 : 0.3), [method, realMonthlyData]);
+  const dynamicChartData = React.useMemo(() => realMonthlyData /* fake Math.random scramble removed, audit P0 #2 */, [method, realMonthlyData]);
   const dynamicStructureDataRev = realStructureDataRev;
   const dynamicStructureDataExp = realStructureDataExp;
 
@@ -125,6 +119,7 @@ const MainDashboard: React.FC = () => {
 
 
   const FilterDropdown = ({ label, icon, value, options, onChange }: { label?: string, icon?: React.ReactNode, value: string, options?: string[], onChange?: (v: string) => void }) => {
+    const { t } = useTranslation(); void t;
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = React.useRef<HTMLDivElement>(null);
 
@@ -170,6 +165,7 @@ const MainDashboard: React.FC = () => {
   };
 
   const StatsCard = ({ label, value, change, isPositive, last }: { label: string, value: string, change?: string, isPositive?: boolean, last?: boolean }) => {
+    const { t } = useTranslation(); void t;
     let changeColor = 'var(--text-muted)';
     let Arrow = null;
     if (isPositive === true) { changeColor = '#10b981'; Arrow = () => <span style={{ fontSize: 10 }}>↗</span>; }
@@ -264,7 +260,7 @@ const MainDashboard: React.FC = () => {
           <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={13} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры и фильтры</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры и фильтры", "Параметры и фильтры")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
           </div>
@@ -272,7 +268,7 @@ const MainDashboard: React.FC = () => {
           <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Global Settings */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Глобальные</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{t("Глобальные", "Глобальные")}</div>
               <FilterDropdown value={selectedYear} onChange={setSelectedYear} options={['2025 (Факт)', '2026 (План)', '2027 (План)']} />
               <FilterDropdown value={selectedPeriod} onChange={setSelectedPeriod} options={['С начала года', 'За прошлый месяц', 'За текущий квартал']} />
             </div>
@@ -281,12 +277,12 @@ const MainDashboard: React.FC = () => {
 
             {/* Detailed Filters Component Block */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Детализация</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{t("Детализация", "Детализация")}</div>
               <FilterDropdown icon={<Calendar size={14} />} value={selectedDates} onChange={setSelectedDates} options={['Янв \'26 — дек \'26', 'Произвольный период']} />
               <FilterDropdown value={selectedDisplay} onChange={setSelectedDisplay} options={['По месяцам', 'По кварталам', 'По годам']} />
               <FilterDropdown value={selectedEntities} onChange={setSelectedEntities} options={['Все юрлица', ...contractors.map(c => c.name)]} />
               <FilterDropdown value={selectedProjects} onChange={setSelectedProjects} options={['Все проекты', ...projects.map(p => p.name)]} />
-              <FilterDropdown value={selectedDeals} onChange={setSelectedDeals} options={['Все сделки', ...deals.map(d => d.name)]} />
+              <FilterDropdown value={selectedDeals} onChange={setSelectedDeals} options={["Все сделки", ...deals.map(d => d.name)]} />
             </div>
           </div>
         </div>
@@ -301,7 +297,7 @@ const MainDashboard: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01, whiteSpace: 'nowrap' }}>CFO Дашборд</span>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01, whiteSpace: 'nowrap' }}>{t("CFO Дашборд", "CFO Дашборд")}</span>
             </div>
           </div>
         </div>
@@ -310,29 +306,29 @@ const MainDashboard: React.FC = () => {
         <div style={{ flex: 1, padding: '32px', overflowY: 'auto', minWidth: 0 }}>
 
           {/* SECTION 1: Прибыль (Profit & P&L) */}
-          <Section title="Прибыльность проектов"
+          <Section title={t("Прибыльность проектов", "Прибыльность проектов")}
             kpis={
               <>
-                <StatsCard label="Выручка" value={formatCurrency(totalRev)} change="+15%" isPositive={true} />
-                <StatsCard label="Расходы" value={formatCurrency(totalExp)} change="+5%" isPositive={false} />
-                <StatsCard label="Прибыль" value={formatCurrency(totalProfit)} change="+20%" isPositive={true} />
-                <StatsCard label="Рентабельность" value={rentability} />
+                <StatsCard label={t("Выручка", "Выручка")} value={formatCurrency(totalRev)} change="+15%" isPositive={true} />
+                <StatsCard label={t("Расходы", "Расходы")} value={formatCurrency(totalExp)} change="+5%" isPositive={false} />
+                <StatsCard label={t("Прибыль", "Прибыль")} value={formatCurrency(totalProfit)} change="+20%" isPositive={true} />
+                <StatsCard label={t("Рентабельность", "Рентабельность")} value={rentability} />
                 <StatsCard label="EBITDA" value={formatCurrency(computedKPIs.netProfit)} last />
               </>
             }
             tabs={
               <>
-                <TabButton active={method === 'accrual'} onClick={() => setMethod('accrual')}>Метод начисления</TabButton>
-                <TabButton active={method === 'cash'} onClick={() => setMethod('cash')}>Кассовый метод</TabButton>
-                <TabButton active={profitSort === 'profit'} onClick={() => setProfitSort('profit')}>Сортировка по прибыли</TabButton>
-                <TabButton active={profitSort === 'margin'} onClick={() => setProfitSort('margin')}>По рентабельности</TabButton>
+                <TabButton active={method === 'accrual'} onClick={() => setMethod('accrual')}>{t("Метод начисления", "Метод начисления")}</TabButton>
+                <TabButton active={method === 'cash'} onClick={() => setMethod('cash')}>{t("Кассовый метод", "Кассовый метод")}</TabButton>
+                <TabButton active={profitSort === 'profit'} onClick={() => setProfitSort('profit')}>{t("Сортировка по прибыли", "Сортировка по прибыли")}</TabButton>
+                <TabButton active={profitSort === 'margin'} onClick={() => setProfitSort('margin')}>{t("По рентабельности", "По рентабельности")}</TabButton>
               </>
             }
             legend={
               <>
-                <LegendItem color="var(--color-primary)" label="Выручка" />
-                <LegendItem color="#10b981" label="Прибыль" />
-                <LegendItem color="#f59e0b" label="Расходы" />
+                <LegendItem color="var(--color-primary)" label={t("Выручка", "Выручка")} />
+                <LegendItem color="#10b981" label={t("Прибыль", "Прибыль")} />
+                <LegendItem color="#f59e0b" label={t("Расходы", "Расходы")} />
               </>
             }
           >
@@ -343,35 +339,35 @@ const MainDashboard: React.FC = () => {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} tickFormatter={(val) => `${val / 1000000}M`} />
                 <Tooltip cursor={{ fill: 'var(--bg-hover)' }} contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)' }} />
                 <Brush dataKey="name" height={20} stroke="var(--border-subtle)" fill="var(--bg-base)" travellerWidth={10} />
-                <Bar dataKey="rev" name="Выручка" fill="#5e6ad2" radius={[4, 4, 0, 0]} maxBarSize={20} />
-                <Bar dataKey="exp" name="Расходы" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={20} />
-                <Line type="monotone" dataKey="profit" name="Прибыль" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }} />
+                <Bar dataKey="rev" name={t("Выручка", "Выручка")} fill="#5e6ad2" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                <Bar dataKey="exp" name={t("Расходы", "Расходы")} fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                <Line type="monotone" dataKey="profit" name={t("Прибыль", "Прибыль")} stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: '#10b981', strokeWidth: 0 }} />
               </ComposedChart>
             </ResponsiveContainer>}
           </Section>
 
           {/* SECTION 2: Движение денег (Cash Flow) */}
-          <Section title="Денежный поток, сум"
+          <Section title={t("Денежный поток, сум", "Денежный поток, сум")}
             kpis={
               <>
-                <StatsCard label="Поступления" value={formatCurrency(computedKPIs.totalIncome)} />
-                <StatsCard label="Выплаты" value={formatCurrency(computedKPIs.totalExpense)} />
-                <StatsCard label="Чистый денежный поток" value={formatCurrency(computedKPIs.netCashFlow)} last />
+                <StatsCard label={t("Поступления", "Поступления")} value={formatCurrency(computedKPIs.totalIncome)} />
+                <StatsCard label={t("Выплаты", "Выплаты")} value={formatCurrency(computedKPIs.totalExpense)} />
+                <StatsCard label={t("Чистый денежный поток", "Чистый денежный поток")} value={formatCurrency(computedKPIs.netCashFlow)} last />
               </>
             }
             tabs={
               <>
-                <TabButton active={cfType === 'total'} onClick={() => setCfType('total')}>Общий</TabButton>
-                <TabButton active={cfType === 'operational'} onClick={() => setCfType('operational')}>Операционный</TabButton>
-                <TabButton active={cfType === 'investment'} onClick={() => setCfType('investment')}>Инвестиционный</TabButton>
-                <TabButton active={cfType === 'financial'} onClick={() => setCfType('financial')}>Финансовый</TabButton>
+                <TabButton active={cfType === 'total'} onClick={() => setCfType('total')}>{t("Общая сумма", "Общая сумма")}</TabButton>
+                <TabButton active={cfType === 'operational'} onClick={() => setCfType('operational')}>{t("Операционный", "Операционный")}</TabButton>
+                <TabButton active={cfType === 'investment'} onClick={() => setCfType('investment')}>{t("Инвестиционный", "Инвестиционный")}</TabButton>
+                <TabButton active={cfType === 'financial'} onClick={() => setCfType('financial')}>{t("Финансовая", "Финансовая")}</TabButton>
               </>
             }
             legend={
               <>
-                <LegendItem color="#fbbf24" label="Выплаты" />
-                <LegendItem color="#3b82f6" label="Поступления" />
-                <LegendItem color="#ef4444" label="Сальдо" />
+                <LegendItem color="#fbbf24" label={t("Выплаты", "Выплаты")} />
+                <LegendItem color="#3b82f6" label={t("Поступления", "Поступления")} />
+                <LegendItem color="#ef4444" label={t("Сальдо", "Сальдо")} />
               </>
             }
           >
@@ -382,19 +378,19 @@ const MainDashboard: React.FC = () => {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} tickFormatter={(val) => `${val / 1000000}M`} />
                 <Tooltip cursor={{ fill: 'var(--bg-hover)' }} contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)' }} />
                 <Brush dataKey="name" height={20} stroke="var(--border-subtle)" fill="var(--bg-base)" travellerWidth={10} />
-                <Bar dataKey="in" name="Поступления" fill="#5e6ad2" radius={[4, 4, 0, 0]} maxBarSize={20} />
-                <Bar dataKey="out" name="Выплаты" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={20} />
-                <Line type="monotone" dataKey="cf" name="Сальдо" stroke="#ef4444" strokeWidth={2} dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }} />
+                <Bar dataKey="in" name={t("Поступления", "Поступления")} fill="#5e6ad2" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                <Bar dataKey="out" name={t("Выплаты", "Выплаты")} fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                <Line type="monotone" dataKey="cf" name={t("Сальдо", "Сальдо")} stroke="#ef4444" strokeWidth={2} dot={{ r: 4, fill: '#ef4444', strokeWidth: 0 }} />
               </ComposedChart>
             </ResponsiveContainer>}
           </Section>
 
           {/* SECTION 3: Остатки на счетах (Balance Dynamics) */}
-          <Section title="Остатки на счетах"
+          <Section title={t("Остатки на счетах", "Остатки на счетах")}
             kpis={
               <>
-                <StatsCard label="Текущий остаток" value={formatCurrency(computedKPIs.totalBalance)} />
-                <StatsCard label="Ликвидность" value={computedKPIs.liquidity} last />
+                <StatsCard label={t("Текущий остаток", "Текущий остаток")} value={formatCurrency(computedKPIs.totalBalance)} />
+                <StatsCard label={t("Ликвидность", "Ликвидность")} value={computedKPIs.liquidity} last />
               </>
             }
           >
@@ -411,7 +407,7 @@ const MainDashboard: React.FC = () => {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 12 }} tickFormatter={(val) => `${val / 1000000}M`} />
                 <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)' }} />
                 <Brush dataKey="name" height={20} y={0} stroke="var(--border-subtle)" fill="var(--bg-base)" travellerWidth={10} />
-                <Area type="stepAfter" dataKey="bal" name="Остаток" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorBal)" />
+                <Area type="stepAfter" dataKey="bal" name={t("Остаток", "Остаток")} stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorBal)" />
               </AreaChart>
             </ResponsiveContainer>}
           </Section>
@@ -420,7 +416,7 @@ const MainDashboard: React.FC = () => {
           <div className="finance-dashboard-split">
             {/* Revenue */}
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 20 }}>
-              <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 24, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 8 }}>Выручка</h2>
+              <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 24, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 8 }}>{t("Выручка", "Выручка")}</h2>
               <div className="finance-pie-container">
                 <div style={{ width: '50%', height: 200 }}>
                   {chartsReady && <ResponsiveContainer width="100%" height={200}>
@@ -445,7 +441,7 @@ const MainDashboard: React.FC = () => {
 
             {/* Expenses */}
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: 20 }}>
-              <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 24, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 8 }}>Расходы</h2>
+              <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: 24, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 8 }}>{t("Расходы", "Расходы")}</h2>
               <div className="finance-pie-container">
                 <div style={{ width: '50%', height: 200 }}>
                   {chartsReady && <ResponsiveContainer width="100%" height={200}>
@@ -473,15 +469,16 @@ const MainDashboard: React.FC = () => {
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 8, overflow: 'hidden', position: 'relative', marginBottom: 24 }}>
             <div style={{ padding: '12px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-                Самые прибыльные направления <ChevronDown size={14} style={{ opacity: 0.3 }} />
+                
+                {t("Самые прибыльные направления", "Самые прибыльные направления")} <ChevronDown size={14} style={{ opacity: 0.3 }} />
               </h2>
             </div>
             <div style={{ padding: 20 }}>
               <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--border-subtle)' }}>
-                    <th style={{ textAlign: 'left', paddingBottom: 16, fontWeight: 500 }}>Направление</th>
-                    <th style={{ textAlign: 'right', paddingBottom: 16, fontWeight: 500 }}>Сумма</th>
+                    <th style={{ textAlign: 'left', paddingBottom: 16, fontWeight: 500 }}>{t("Направление", "Направление")}</th>
+                    <th style={{ textAlign: 'right', paddingBottom: 16, fontWeight: 500 }}>{t("Сумма", "Сумма")}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,56 +1,58 @@
 import React from 'react';
 import { useFinanceStore } from '../financeStore';
 import { useStore } from '../../../store';
-import { ChevronLeft, ChevronDown, ChevronRight, Activity, CreditCard, Briefcase, Calendar, LayoutGrid, BarChart3, BookOpen, Settings, Send, FileText, Package, Landmark, Origami, MessageCircle, Plus, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronRight, Activity, CreditCard, Briefcase, Calendar, LayoutGrid, BarChart3, BookOpen, Settings, Send, FileText, Package, Landmark, Origami, MessageCircle, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const FinanceSidebar: React.FC = () => {
+  const { t } = useTranslation();
   const { activeView, activeSubView, setActiveView, expandedMenus, toggleMenu, isSidebarCollapsed, toggleSidebar, copilotConversations, activeCopilotConversationId, setActiveCopilotConversationId, setCopilotOpen, isSidebarMobileOpen, setSidebarMobileOpen } = useFinanceStore();
   const setActiveApp = useStore(state => state.setActiveApp);
 
   const menuItems = [
-    { id: 'main', label: 'Показатели', icon: Activity },
-    { id: 'transactions', label: 'Операции', icon: CreditCard },
+    { id: 'main', label: t('Показатели'), icon: Activity },
+    { id: 'transactions', label: t('Операционная деятельность'), icon: CreditCard },
     {
-      id: 'deals', label: 'Сделки', icon: Briefcase,
+      id: 'deals', label: t('Сделки'), icon: Briefcase,
       subItems: [
-        { id: 'sales', label: 'Продажи' },
-        { id: 'purchase', label: 'Закупки' },
-        { id: 'invoices', label: 'Выставленные счета' }
+        { id: 'sales', label: t('Продажи') },
+        { id: 'purchase', label: t('Закупки') },
+        { id: 'invoices', label: t('Выставленные счета') }
       ]
     },
     {
-      id: 'plan', label: 'План', icon: Calendar,
+      id: 'plan', label: t('План'), icon: Calendar,
       subItems: [
-        { id: 'calendar', label: 'Платежный календарь' },
-        { id: 'bdr', label: 'Бюджет доходов и расходов' },
-        { id: 'bdds', label: 'Бюджет движения денег' }
+        { id: 'calendar', label: t('Платежный календарь') },
+        { id: 'bdr', label: t('Бюджет доходов и расходов') },
+        { id: 'bdds', label: t('Бюджет движения денег') }
       ]
     },
-    { id: 'projects', label: 'Проекты', icon: LayoutGrid },
+    { id: 'projects', label: t('Проекты'), icon: LayoutGrid },
     {
-      id: 'reports', label: 'Отчёты', icon: BarChart3,
+      id: 'reports', label: t('Отчёты'), icon: BarChart3,
       subItems: [
-        { id: 'cashflow', label: 'Движение денег (ДДС)' },
-        { id: 'pnl', label: 'Прибыли и убытки (ОПУ)' },
-        { id: 'balance', label: 'Баланс' }
+        { id: 'cashflow', label: t('Движение денег (ДДС)') },
+        { id: 'pnl', label: t('Прибыли и убытки (ОПУ)') },
+        { id: 'balance', label: t('Баланс') }
       ]
     },
     {
-      id: 'references', label: 'Справочники', icon: BookOpen,
+      id: 'references', label: t('Справочники'), icon: BookOpen,
       subItems: [
-        { id: 'contractors', label: 'Контрагенты' },
-        { id: 'categories', label: 'Учетные статьи' },
-        { id: 'accounts', label: 'Мои счета' },
-        { id: 'entities', label: 'Мои юрлица' },
-        { id: 'products', label: 'Товары и услуги' }
+        { id: 'contractors', label: t('Контрагенты') },
+        { id: 'categories', label: t('Учетные статьи') },
+        { id: 'accounts', label: t('Мои счета') },
+        { id: 'entities', label: t('Мои юрлица') },
+        { id: 'products', label: t('Товары и услуги') }
       ]
     },
-    { id: 'assets', label: 'Учет активов', icon: Package },
-    { id: 'liabilities', label: 'Кредиты и займы', icon: Landmark },
-    { id: 'treasury', label: 'Казначейство', icon: Send, disabled: true },
-    { id: 'documents', label: 'Документооборот', icon: FileText, disabled: true },
-    { id: 'settings', label: 'Настройки', icon: Settings },
-  ] as const;
+    { id: 'assets', label: t('Учет активов'), icon: Package },
+    { id: 'liabilities', label: t('Кредиты и займы'), icon: Landmark },
+    { id: 'treasury', label: t('Казначейство'), icon: Send, disabled: true },
+    { id: 'documents', label: t('Документооборот'), icon: FileText, disabled: true },
+    { id: 'settings', label: t('Настройки'), icon: Settings },
+  ];
 
   return (
     <>
@@ -75,7 +77,7 @@ const FinanceSidebar: React.FC = () => {
             <button 
               onClick={() => setActiveApp('desktop')} 
               style={{ padding: 6, borderRadius: 6, background: 'var(--bg-hover)', color: 'var(--text-secondary)', display: 'flex', border: 'none', cursor: 'pointer' }}
-              title="Вернуться на рабочий стол"
+              title={t("Вернуться на рабочий стол", "Вернуться на рабочий стол")}
             >
               <ChevronLeft size={16} />
             </button>
@@ -124,7 +126,7 @@ const FinanceSidebar: React.FC = () => {
                   <Icon size={16} style={{ flexShrink: 0, opacity: (isActiveMain && !hasSubItems) ? 1 : 0.7 }} />
                   {!isSidebarCollapsed && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>}
                 </div>
-                {!isSidebarCollapsed && isDisabled && <Lock size={12} style={{ flexShrink: 0, color: 'var(--text-muted)' }} />}
+                {!isSidebarCollapsed && isDisabled && <span style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 4, padding: '1px 5px' }}>скоро</span>}
                 {!isSidebarCollapsed && hasSubItems && !isDisabled && (
                   <div onClick={(e) => { e.stopPropagation(); toggleMenu(item.id); }} style={{ display: 'flex', color: 'var(--text-muted)' }}>
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -179,7 +181,7 @@ const FinanceSidebar: React.FC = () => {
           <div style={{ marginTop: 24, padding: '0 8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px 12px' }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>AI History</div>
-              <button onClick={() => { setActiveCopilotConversationId(null); setCopilotOpen(true); if (isSidebarMobileOpen) setSidebarMobileOpen(false); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title="Новый чат">
+              <button onClick={() => { setActiveCopilotConversationId(null); setCopilotOpen(true); if (isSidebarMobileOpen) setSidebarMobileOpen(false); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={t("Новый чат", "Новый чат")}>
                 <Plus size={12} />
               </button>
             </div>
@@ -210,7 +212,8 @@ const FinanceSidebar: React.FC = () => {
             })}
             {copilotConversations.length === 0 && (
               <div style={{ padding: '0 12px', fontSize: 12, color: 'var(--text-muted)' }}>
-                Нет сохраненных чатов
+                
+                {t("Нет сохраненных чатов", "Нет сохраненных чатов")}
               </div>
             )}
           </div>
