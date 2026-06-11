@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import prisma from '../db';
+import { postTransaction, repostTransaction, unpostTransaction, LEDGER_ON } from '../services/ledgerService';
 
 const router = Router();
 
@@ -141,6 +142,10 @@ router.post('/', async (req: Request, res: Response) => {
           });
         }
       }
+      if (LEDGER_ON) {
+        const acc = createdTx.accountId ? await txPrisma.account.findUnique({ where: { id: createdTx.accountId }, select: { type: true } }) : null;
+        await postTransaction(txPrisma, createdTx, acc?.type);
+      }
       return createdTx;
     });
     
@@ -185,6 +190,10 @@ router.put('/:id', async (req: Request, res: Response) => {
           });
         }
       }
+      if (LEDGER_ON) {
+        const acc = updatedTx.accountId ? await txPrisma.account.findUnique({ where: { id: updatedTx.accountId }, select: { type: true } }) : null;
+        await repostTransaction(txPrisma, updatedTx, acc?.type);
+      }
       return updatedTx;
     });
 
@@ -218,6 +227,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
         where: { id: String(req.params.id) },
         data: { isDeleted: true, deletedAt: new Date() }
       });
+      if (LEDGER_ON) await unpostTransaction(txPrisma, String(req.params.id));
     });
     
     res.status(204).send();
