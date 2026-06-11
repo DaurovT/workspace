@@ -8,7 +8,7 @@ type Db = Prisma.TransactionClient | any;
 
 /** Build + validate + insert journal lines for one transaction. Throws on unbalanced. */
 export async function postTransaction(db: Db, tx: {
-  id: string; type: string; amount: any;
+  id: string; type: string; amount: number | string | { toString(): string };
   accountId?: string | null; categoryId?: string | null;
 }, accountType?: string | null): Promise<number> {
   const txLike: TxLike = {
@@ -35,7 +35,7 @@ export async function unpostTransaction(db: Db, transactionId: string): Promise<
 }
 
 /** Re-post after an update: unpost + post atomically (caller wraps in $transaction). */
-export async function repostTransaction(db: Db, tx: any, accountType?: string | null): Promise<number> {
+export async function repostTransaction(db: Db, tx: { id: string; type: string; amount: number | string | { toString(): string }; accountId?: string | null; categoryId?: string | null }, accountType?: string | null): Promise<number> {
   await unpostTransaction(db, tx.id);
   return postTransaction(db, tx, accountType);
 }

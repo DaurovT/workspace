@@ -19,7 +19,7 @@ let active = false;
 const aiCache = new Map<string, string>();
 const queue: string[] = [];
 const waiting = new Map<string, Set<Text>>();
-let timer: any = null;
+let timer: ReturnType<typeof setTimeout> | null = null;
 let processing = false;
 
 function loadCache() {
@@ -39,7 +39,7 @@ function saveCache() {
 function buildDict(): Map<string, string> {
   const d = new Map<string, string>();
   try {
-    const st: any = useFinanceStore.getState();
+    const st = useFinanceStore.getState() as { categories?: { name: string; nameUz?: string }[]; accounts?: { name: string; nameUz?: string }[] };
     for (const c of st.categories || []) if (c?.nameUz) d.set(c.name, c.nameUz);
     for (const a of st.accounts || []) if (a?.nameUz) d.set(a.name, a.nameUz);
   } catch { /* store not ready */ }

@@ -9,7 +9,15 @@ const FinanceSidebar: React.FC = () => {
   const { activeView, activeSubView, setActiveView, expandedMenus, toggleMenu, isSidebarCollapsed, toggleSidebar, isSidebarMobileOpen, setSidebarMobileOpen } = useFinanceStore();
   const setActiveApp = useStore(state => state.setActiveApp);
 
-  const menuItems = [
+  interface MenuItem {
+    id: string;
+    label: string;
+    icon: React.ComponentType<{ size?: number | string; style?: React.CSSProperties }>;
+    subItems?: { id: string; label: string }[];
+    disabled?: boolean;
+  }
+  type ViewId = Parameters<typeof setActiveView>[0];
+  const menuItems: MenuItem[] = [
     { id: 'main', label: t('Показатели'), icon: Activity },
     { id: 'transactions', label: t('Операционная деятельность'), icon: CreditCard },
     {
@@ -84,8 +92,8 @@ const FinanceSidebar: React.FC = () => {
         {menuItems.map(item => {
           const isExpanded = expandedMenus.includes(item.id);
           const isActiveMain = activeView === item.id;
-          const hasSubItems = !!(item as any).subItems;
-          const isDisabled = (item as any).disabled;
+          const hasSubItems = !!item.subItems;
+          const isDisabled = item.disabled;
           const Icon = item.icon;
           
           return (
@@ -98,7 +106,7 @@ const FinanceSidebar: React.FC = () => {
                   if (hasSubItems) {
                     toggleMenu(item.id);
                   } else {
-                    setActiveView(item.id as any);
+                    setActiveView(item.id as ViewId);
                     if (isSidebarMobileOpen) setSidebarMobileOpen(false);
                   }
                 }}
@@ -129,14 +137,14 @@ const FinanceSidebar: React.FC = () => {
 
               {!isSidebarCollapsed && hasSubItems && isExpanded && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, marginBottom: 4 }}>
-                  {(item as any).subItems.map((sub: any) => {
+                  {item.subItems!.map((sub) => {
                     const isActiveSub = activeView === item.id && activeSubView === sub.id;
                     return (
                       <div
                         key={sub.id}
                         className={`nav-item ${isActiveSub ? 'active' : ''}`}
                         onClick={() => {
-                          setActiveView(item.id as any, sub.id);
+                          setActiveView(item.id as ViewId, sub.id);
                           if (isSidebarMobileOpen) setSidebarMobileOpen(false);
                         }}
                         style={{
