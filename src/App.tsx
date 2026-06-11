@@ -1,3 +1,4 @@
+import { initLocaleNames } from './lib/localeNames';
 import { ToastHost } from './components/ToastHost';
 import { ConfirmHost } from './components/ConfirmHost';
 import { useEffect, lazy, Suspense } from 'react';
@@ -62,6 +63,9 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Reference-name UZ substitution (display-only, safe exact-match)
+  useEffect(() => { initLocaleNames(); }, []);
 
   // Check saved JWT token on startup
   useEffect(() => {
