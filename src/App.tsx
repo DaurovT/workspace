@@ -1,3 +1,4 @@
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { initLocaleNames } from './lib/localeNames';
 import { ToastHost } from './components/ToastHost';
 import { ConfirmHost } from './components/ConfirmHost';
@@ -197,7 +198,7 @@ function App() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <Suspense fallback={<Loading />}>{content}</Suspense>
       <TaskModal />
       <CommandPalette />
@@ -207,7 +208,7 @@ function App() {
       <GlobalAICopilot />
       <ToastHost />
       <ConfirmHost />
-    </>
+    </ErrorBoundary>
   );
 }
 

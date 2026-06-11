@@ -29,7 +29,7 @@ import { useTranslation } from 'react-i18next';
 
 const FinanceApp: React.FC = () => {
   const { t } = useTranslation();
-    const { activeView, activeSubView, fetchInitialData } = useFinanceStore();
+    const { activeView, activeSubView, fetchInitialData, isInitialLoading } = useFinanceStore();
   const [showQuickExpense, setShowQuickExpense] = React.useState(false);
 
   React.useEffect(() => {
@@ -48,7 +48,16 @@ const FinanceApp: React.FC = () => {
     </div>
   );
 
-  if (activeView === 'main') content = <MainDashboard />;
+  if (isInitialLoading) {
+    content = (
+      <div role="status" aria-label="Загрузка данных" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {[...Array(7)].map((_, i) => (
+          <div key={i} style={{ height: i === 0 ? 36 : 52, borderRadius: 10, background: 'var(--bg-elevated)', opacity: 0.7, animation: `pulse 1.4s ease ${i * 0.08}s infinite` }} />
+        ))}
+      </div>
+    );
+  }
+  else if (activeView === 'main') content = <MainDashboard />;
   else if (activeView === 'transactions') content = <TransactionsPage />;
   else if (activeView === 'projects') content = <ProjectsPage />;
   else if (activeView === 'deals' && (!activeSubView || activeSubView === 'sales')) content = <DealsSalesPage />;

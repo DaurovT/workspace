@@ -370,6 +370,7 @@ export type ViewState =
 
 interface FinanceState {
   fetchInitialData: () => Promise<void>;
+  isInitialLoading: boolean;
   markAllNotificationsRead: () => Promise<void>;
   markNotificationRead: (id: string) => Promise<void>;
   activeView: ViewState;
@@ -619,6 +620,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     } catch (e) { console.error(e); }
   },
 
+  isInitialLoading: true,
   fetchInitialData: async () => {
     try {
       const responses = await Promise.all([
@@ -679,6 +681,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     } catch (e) {
       console.error('Failed to fetch initial data:', e);
     }
+    set({ isInitialLoading: false });
   },
 
   markAllNotificationsRead: async () => {
