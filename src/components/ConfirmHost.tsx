@@ -1,10 +1,11 @@
 import React from 'react';
 import { useConfirmStore } from '../lib/confirm';
+import { Button } from './ui';
 
 export const ConfirmHost: React.FC = () => {
   const { req, close } = useConfirmStore();
   if (!req) return null;
-  const btn: React.CSSProperties = { padding: '8px 14px', fontSize: 13, borderRadius: 8, cursor: 'pointer' };
+
   return (
     <div
       onClick={() => close(false)}
@@ -19,12 +20,8 @@ export const ConfirmHost: React.FC = () => {
         {req.title && <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>{req.title}</div>}
         <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 18 }}>{req.message}</div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={() => close(false)} style={{ ...btn, fontWeight: 500, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-primary)' }}>
-            {req.cancelLabel || 'Отмена'}
-          </button>
-          <button onClick={() => close(true)} style={{ ...btn, fontWeight: 600, border: 'none', background: req.danger ? 'var(--color-danger)' : 'var(--color-primary)', color: '#fff' }}>
-            {req.confirmLabel || 'Подтвердить'}
-          </button>
+          <Button variant="ghost" onClick={() => close(false)}>{req.cancelLabel || 'Отмена'}</Button>
+          <Button variant={req.danger ? 'danger' : 'primary'} onClick={() => close(true)}>{req.confirmLabel || 'Подтвердить'}</Button>
         </div>
       </div>
     </div>
