@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import prisma from '../db';
+import { generateAIResponse } from '../services/aiService';
 
 const router = Router();
 
@@ -25,10 +26,28 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { messages, ...data } = req.body;
+    let currentMessages = messages || [];
+    
+    // If the last message is from user, generate AI response
+    if (currentMessages.length > 0 && currentMessages[currentMessages.length - 1].role === 'user') {
+      try {
+        const replyText = await generateAIResponse(currentMessages);
+        currentMessages.push({
+          id: Date.now().toString(),
+          role: 'assistant',
+          sender: 'ai',
+          content: replyText,
+          text: replyText
+        });
+      } catch (e) {
+        console.error("AI Generation error:", e);
+      }
+    }
+
     const convo = await prisma.copilotConversation.create({
       data: {
         ...data,
-        messages: JSON.stringify(messages || [])
+        messages: JSON.stringify(currentMessages)
       }
     });
     res.status(201).json({
@@ -46,8 +65,24 @@ router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { messages, ...data } = req.body;
     const updateData: any = { ...data };
-    if (messages) {
-      updateData.messages = JSON.stringify(messages);
+    
+    let currentMessages = messages;
+    if (currentMessages) {
+      if (currentMessages.length > 0 && currentMessages[currentMessages.length - 1].role === 'user') {
+        try {
+          const replyText = await generateAIResponse(currentMessages);
+          currentMessages.push({
+            id: Date.now().toString(),
+            role: 'assistant',
+            sender: 'ai',
+            content: replyText,
+            text: replyText
+          });
+        } catch (e) {
+          console.error("AI Generation error:", e);
+        }
+      }
+      updateData.messages = JSON.stringify(currentMessages);
     }
     
     const convo = await prisma.copilotConversation.update({

@@ -6,6 +6,7 @@ import {
   Pencil, Trash2, X
 } from 'lucide-react';
 import { APP_CURRENCY } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 // ─── Shared cell style (Linear standard) ──────────────────────────
 const th: React.CSSProperties = {
@@ -45,6 +46,7 @@ const EditModal: React.FC<{
   onSave: (updates: Partial<Account>) => void;
   onClose: () => void;
 }> = ({ account, onSave, onClose }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(account.name);
   const [balance, setBalance] = useState(String(account.balance));
   const [currency, setCurrency] = useState(account.currency);
@@ -68,35 +70,36 @@ const EditModal: React.FC<{
       <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 12, width: 420, boxShadow: '0 16px 48px rgba(0,0,0,0.25)', padding: '22px 24px' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Редактировать счёт</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{t("Редактировать счёт", "Редактировать счёт")}</span>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={15} /></button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div><label style={labelCss}>Название</label><input value={name} onChange={e => setName(e.target.value)} style={fieldCss} /></div>
-          <div><label style={labelCss}>Текущий остаток</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} style={fieldCss} /></div>
-          <div><label style={labelCss}>Банк / Расположение</label><input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="Необязательно" style={fieldCss} /></div>
+          <div><label style={labelCss}>{t("Наименование", "Наименование")}</label><input value={name} onChange={e => setName(e.target.value)} style={fieldCss} /></div>
+          <div><label style={labelCss}>{t("Текущий остаток", "Текущий остаток")}</label><input type="number" value={balance} onChange={e => setBalance(e.target.value)} style={fieldCss} /></div>
+          <div><label style={labelCss}>{t("Банк / Расположение", "Банк / Расположение")}</label><input value={bankName} onChange={e => setBankName(e.target.value)} placeholder={t("Необязательно", "Необязательно")} style={fieldCss} /></div>
           <div>
-            <label style={labelCss}>Тип</label>
+            <label style={labelCss}>{t("Тип", "Тип")}</label>
             <select value={type} onChange={e => setType(e.target.value as any)} style={fieldCss}>
               {(['Безналичный', 'Наличный', 'Карта', 'Крипто'] as const).map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
-            <label style={labelCss}>Валюта</label>
+            <label style={labelCss}>{t("Валюта", "Валюта")}</label>
             <select value={currency} onChange={e => setCurrency(e.target.value)} style={fieldCss}>
-              <option value={APP_CURRENCY}>UZS — Узбекский сум</option>
-              <option value="USD">USD — Доллар США</option>
-              <option value="EUR">EUR — Евро</option>
+              <option value={APP_CURRENCY}>{t("UZS — Узбекский сум", "UZS — Узбекский сум")}</option>
+              <option value="USD">{t("USD — Доллар США", "USD — Доллар США")}</option>
+              <option value="EUR">{t("EUR — Евро", "EUR — Евро")}</option>
               <option value="USDT">USDT — Tether</option>
-              <option value="RUB">RUB — Российский рубль</option>
+              <option value="RUB">{t("RUB — Российский рубль", "RUB — Российский рубль")}</option>
             </select>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-            <button onClick={onClose} style={{ flex: 1, height: 32, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>Отмена</button>
+            <button onClick={onClose} style={{ flex: 1, height: 32, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>{t("Отозвать", "Отозвать")}</button>
             <button onClick={() => onSave({ name, balance: parseFloat(balance) || 0, currency, bankName: bankName || undefined, type: type as Account['type'] })}
               disabled={!name.trim()}
               style={{ flex: 1, height: 32, background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,0.25)' }}>
-              Сохранить
+              
+              {t("Сохранить", "Сохранить")}
             </button>
           </div>
         </div>
@@ -106,7 +109,9 @@ const EditModal: React.FC<{
 };
 
 // ─── Delete Confirm ────────────────────────────────────────────────
-const DeleteConfirm: React.FC<{ account: Account; onConfirm: () => void; onClose: () => void }> = ({ account, onConfirm, onClose }) => (
+const DeleteConfirm: React.FC<{ account: Account; onConfirm: () => void; onClose: () => void }> = ({ account, onConfirm, onClose }) => {
+  const { t } = useTranslation();
+  return (
   <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
     onClick={onClose}>
     <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 12, width: 380, padding: 24, boxShadow: '0 16px 48px rgba(0,0,0,0.25)' }}
@@ -116,22 +121,24 @@ const DeleteConfirm: React.FC<{ account: Account; onConfirm: () => void; onClose
           <Trash2 size={16} color="#ef4444" />
         </div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>Удалить счёт?</div>
+          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>{t("Удалить счёт?", "Удалить счёт?")}</div>
           <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            «{account.name}» будет удалён безвозвратно. Транзакции по счёту останутся.
+            «{account.name}{t("» будет удалён безвозвратно. Транзакции по счёту останутся.", "» будет удалён безвозвратно. Транзакции по счёту останутся.")}
           </div>
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onClose} style={{ flex: 1, height: 32, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>Отмена</button>
-        <button onClick={onConfirm} style={{ flex: 1, height: 32, background: '#ef4444', border: 'none', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Удалить</button>
+        <button onClick={onClose} style={{ flex: 1, height: 32, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>{t("Отозвать", "Отозвать")}</button>
+        <button onClick={onConfirm} style={{ flex: 1, height: 32, background: '#ef4444', border: 'none', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{t("Удалить", "Удалить")}</button>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ─── Main Table ────────────────────────────────────────────────────
 export const AccountsTable: React.FC<{ searchQuery?: string; selectedTypes?: string[] }> = ({ searchQuery = '', selectedTypes }) => {
+  const { t } = useTranslation();
   const { accounts, transactions, updateAccount, deleteAccount } = useFinanceStore();
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Безналичный', 'Наличный', 'Карта', 'Крипто']));
   const [editTarget, setEditTarget] = useState<Account | null>(null);
@@ -184,7 +191,7 @@ export const AccountsTable: React.FC<{ searchQuery?: string; selectedTypes?: str
   if (groupedData.length === 0) {
     return (
       <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '60px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-        {searchQuery ? `По запросу «${searchQuery}» ничего не найдено` : 'Нет счетов. Создайте первый счёт.'}
+        {searchQuery ? `${t('По запросу')} «${searchQuery}» ${t('ничего не найдено')}` : t('Нет счетов. Создайте первый счёт.')}
       </div>
     );
   }
@@ -197,13 +204,13 @@ export const AccountsTable: React.FC<{ searchQuery?: string; selectedTypes?: str
         <thead>
           <tr>
             <th style={{ ...th, width: 32 }} />
-            <th style={th}>Название счёта</th>
-            <th style={{ ...th, width: 180 }}>Банк / Расположение</th>
-            <th style={{ ...th, width: 120, textAlign: 'right' }}>Начальный</th>
-            <th style={{ ...th, width: 140, textAlign: 'right' }}>Текущий остаток</th>
-            <th style={{ ...th, width: 80 }}>Валюта</th>
-            <th style={{ ...th, width: 80, textAlign: 'right' }}>Транзакции</th>
-            <th style={{ ...th, width: 90, textAlign: 'right' }}>Действия</th>
+            <th style={th}>{t("Название счёта", "Название счёта")}</th>
+            <th style={{ ...th, width: 180 }}>{t("Банк / Расположение", "Банк / Расположение")}</th>
+            <th style={{ ...th, width: 120, textAlign: 'right' }}>{t("Начальный", "Начальный")}</th>
+            <th style={{ ...th, width: 140, textAlign: 'right' }}>{t("Текущий остаток", "Текущий остаток")}</th>
+            <th style={{ ...th, width: 80 }}>{t("Валюта", "Валюта")}</th>
+            <th style={{ ...th, width: 80, textAlign: 'right' }}>{t("Транзакции", "Транзакции")}</th>
+            <th style={{ ...th, width: 90, textAlign: 'right' }}>{t("Действия", "Действия")}</th>
           </tr>
         </thead>
         <tbody>
@@ -229,7 +236,7 @@ export const AccountsTable: React.FC<{ searchQuery?: string; selectedTypes?: str
                   <td style={{ ...tdG, paddingLeft: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: color }} />
-                      {groupName}
+                      {t(groupName)}
                       <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', background: 'var(--bg-surface)', padding: '1px 6px', borderRadius: 4, border: '1px solid var(--border-subtle)', textTransform: 'none', letterSpacing: 0 }}>
                         {items.length}
                       </span>
@@ -307,13 +314,13 @@ export const AccountsTable: React.FC<{ searchQuery?: string; selectedTypes?: str
                       </td>
                       <td style={{ ...td, textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: 2, justifyContent: 'flex-end', opacity: isHover ? 1 : 0, transition: 'opacity 0.12s' }}>
-                          <button onClick={() => setEditTarget(acc)} title="Редактировать"
+                          <button onClick={() => setEditTarget(acc)} title={t("Редактировать", "Редактировать")}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
                             onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
                             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
                             <Pencil size={12} />
                           </button>
-                          <button onClick={() => setDeleteTarget(acc)} title="Удалить"
+                          <button onClick={() => setDeleteTarget(acc)} title={t("Удалить", "Удалить")}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
                             onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
                             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
@@ -332,7 +339,7 @@ export const AccountsTable: React.FC<{ searchQuery?: string; selectedTypes?: str
       {totalAll.length > 0 && (
         <tfoot>
           <tr>
-            <td colSpan={4} style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-hover)' }}>Итого</td>
+            <td colSpan={4} style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', borderTop: '1px solid var(--border-subtle)', textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-hover)' }}>{t("Итого", "Итого")}</td>
             <td style={{ padding: '10px 14px', textAlign: 'right', borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-hover)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-end' }}>
                 {totalAll.map(([cur, val]) => (

@@ -4,6 +4,7 @@ import { Send, Download, CheckCircle2, Clock, AlertCircle, XCircle, Plus, HelpCi
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
 
 import type { InvStatus, IssuedInvoice } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -11,13 +12,14 @@ const STATUS_META: Record<InvStatus, { label: string; color: string; bg: string;
   draft:          { label: 'Черновик',         color: 'var(--text-secondary)', bg: 'rgba(148,163,184,0.1)', icon: <Clock size={12} /> },
   sent:           { label: 'Отправлен',        color: '#3b82f6', bg: 'rgba(59,130,246,0.1)',  icon: <Send size={12} /> },
   partially_paid: { label: 'Частично',         color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  icon: <AlertCircle size={12} /> },
-  paid:           { label: 'Оплачен',          color: '#10b981', bg: 'rgba(16,185,129,0.1)', icon: <CheckCircle2 size={12} /> },
-  overdue:        { label: 'Просрочен',        color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  icon: <XCircle size={12} /> },
+  paid:           { label: 'Оплачено',          color: '#10b981', bg: 'rgba(16,185,129,0.1)', icon: <CheckCircle2 size={12} /> },
+  overdue:        { label: 'Просрочено',        color: '#ef4444', bg: 'rgba(239,68,68,0.1)',  icon: <XCircle size={12} /> },
   cancelled:      { label: 'Аннулирован',      color: '#64748b', bg: 'rgba(100,116,139,0.1)', icon: <XCircle size={12} /> },
 };
 
 const DealsInvoicesPage: React.FC = () => {
-  const { contractors, invoices, addInvoice, updateInvoice } = useFinanceStore();
+  const { t } = useTranslation();
+    const { contractors, invoices, addInvoice, updateInvoice } = useFinanceStore();
   const [statusFilter, setStatusFilter] = useState<InvStatus | 'all'>('all');
 
   const [isCreateOpen, setCreateOpen] = useState(false);
@@ -114,7 +116,7 @@ const DealsInvoicesPage: React.FC = () => {
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <Filter size={13} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры и KPI</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры и KPI", "Параметры и KPI")}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
         </div>
@@ -123,16 +125,16 @@ const DealsInvoicesPage: React.FC = () => {
           {/* Filters */}
           
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Статус счёта</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Статус счёта", "Статус счёта")}</div>
             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} style={inp}>
-              <option value="all">Все статусы</option>
+              <option value="all">{t("Все статусы", "Все статусы")}</option>
               {(Object.keys(STATUS_META) as InvStatus[]).map(s => <option key={s} value={s}>{STATUS_META[s].label}</option>)}
             </select>
           </div>
 
           {/* KPI Summary */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>Итого по выборке</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>{t("Итого по выборке", "Итого по выборке")}</div>
             {[
               { label: 'Всего счетов', val: filtered.length, type: 'count' },
               { label: 'На сумму', val: filtered.filter(i => i.status !== 'cancelled').reduce((s, i) => s + i.amount, 0),  color: 'var(--text-primary)' },
@@ -160,8 +162,8 @@ const DealsInvoicesPage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Выставленные счета</span>
-              <span title="Выставляйте счета клиентам и контролируйте дебиторскую задолженность" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Выставленные счета", "Выставленные счета")}</span>
+              <span title={t("Выставляйте счета клиентам и контролируйте дебиторскую задолженность", "Выставляйте счета клиентам и контролируйте дебиторскую задолженность")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -173,7 +175,7 @@ const DealsInvoicesPage: React.FC = () => {
               borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
               cursor: 'pointer', transition: 'transform 100ms'
             }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <Plus size={13} /> Выставить счёт
+              <Plus size={13} />  {t("Выставить счёт", "Выставить счёт")}
             </button>
           </div>
         </div>
@@ -231,20 +233,20 @@ const DealsInvoicesPage: React.FC = () => {
                     <div style={{ display: 'flex', gap: 6 }}>
                       {inv.status === 'draft' && (
                         <button onClick={e => { e.stopPropagation(); advanceStatus(inv.id); }} style={{ background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)', padding: '3px 8px', borderRadius: 6, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <Send size={10} /> Отправить
+                          <Send size={10} />  {t("Отправить", "Отправить")}
                         </button>
                       )}
                       {inv.status === 'sent' && (
                         <button onClick={e => { e.stopPropagation(); advanceStatus(inv.id); }} style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)', padding: '3px 8px', borderRadius: 6, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <AlertCircle size={10} /> Частично
+                          <AlertCircle size={10} />  {t("Частично", "Частично")}
                         </button>
                       )}
                       {inv.status === 'partially_paid' && (
                         <button onClick={e => { e.stopPropagation(); advanceStatus(inv.id); }} style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)', padding: '3px 8px', borderRadius: 6, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <CheckCircle2 size={10} /> Оплачен
+                          <CheckCircle2 size={10} />  {t("Оплачено", "Оплачено")}
                         </button>
                       )}
-                      <button onClick={e => { e.stopPropagation(); downloadInvoiceCSV(inv); }} style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', padding: '3px 7px', borderRadius: 6, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center' }} title="Скачать CSV">
+                      <button onClick={e => { e.stopPropagation(); downloadInvoiceCSV(inv); }} style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', padding: '3px 7px', borderRadius: 6, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center' }} title={t("Скачать CSV", "Скачать CSV")}>
                         <Download size={11} />
                       </button>
                     </div>
@@ -266,19 +268,21 @@ const DealsInvoicesPage: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 'max-content' }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{invoices.filter(i => i.status !== 'cancelled').length}</span> счетов
+            <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{invoices.filter(i => i.status !== 'cancelled').length}</span>  {t("счетов", "счетов")}
           </div>
           <div style={{ width: 1, height: 12, background: 'var(--border-subtle)' }} />
           <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            На сумму: <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{compactFmt.format(invoices.filter(i => i.status !== 'cancelled').reduce((s, i) => s + i.amount, 0))}</span>
+            
+            {t("На сумму:", "На сумму:")} <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{compactFmt.format(invoices.filter(i => i.status !== 'cancelled').reduce((s, i) => s + i.amount, 0))}</span>
           </div>
           <div style={{ width: 1, height: 12, background: 'var(--border-subtle)' }} />
           <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            Проср.: <span style={{ color: overdueCount > 0 ? '#ef4444' : 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{overdueCount}</span>
+            
+            {t("Проср.:", "Проср.:")} <span style={{ color: overdueCount > 0 ? '#ef4444' : 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{overdueCount}</span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 'max-content', marginLeft: 16 }}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Долг:</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Долг:", "Долг:")}</span>
           <span style={{ color: totalDebtor > 0 ? '#ef4444' : '#10b981', fontWeight: 700, fontFamily: 'var(--font-mono)', fontSize: 13 }}>
             {compactFmt.format(totalDebtor)}
           </span>
@@ -289,27 +293,27 @@ const DealsInvoicesPage: React.FC = () => {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
           <div style={{ background: 'var(--bg-surface)', width: 440, borderRadius: 12, border: '1px solid var(--border-subtle)', overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}>
             <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 16, fontWeight: 600 }}>Новый счёт на оплату</h2>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 16, fontWeight: 600 }}>{t("Новый счёт на оплату", "Новый счёт на оплату")}</h2>
               <button onClick={() => setCreateOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex' }}><XCircle size={18} /></button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Клиент *</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Клиент *", "Клиент *")}</label>
                 <select value={newContractor} onChange={e => setNewContractor(e.target.value)} style={inp}>
                   {contractors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Назначение *</label>
-                <input value={newDesc} onChange={e => setNewDesc(e.target.value)} type="text" placeholder="За что счёт?" style={inp} />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Назначение *", "Назначение *")}</label>
+                <input value={newDesc} onChange={e => setNewDesc(e.target.value)} type="text" placeholder={t("За что счёт?", "За что счёт?")} style={inp} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Сумма без НДС *</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Сумма без НДС *", "Сумма без НДС *")}</label>
                   <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} min="0" style={inp} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>НДС (%)</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("НДС (%)", "НДС (%)")}</label>
                   <select value={newVat} onChange={e => setNewVat(e.target.value)} style={inp}>
                     <option value="0">0%</option>
                     <option value="10">10%</option>
@@ -317,20 +321,20 @@ const DealsInvoicesPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Срок оплаты</label>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Срок оплаты", "Срок оплаты")}</label>
                   <input type="date" value={newDue} onChange={e => setNewDue(e.target.value)} style={inp} />
                 </div>
               </div>
               {newAmount && (
                 <div style={{ background: 'var(--bg-hover)', borderRadius: 8, padding: 12, fontSize: 13, color: 'var(--text-primary)', display: 'flex', justifyContent: 'space-between', border: '1px solid var(--border-subtle)', marginTop: 8 }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Итого с НДС:</span>
-                  <strong style={{ fontFamily: 'monospace', fontSize: 14 }}>{new Intl.NumberFormat('ru-RU').format(Number(newAmount) * (1 + Number(newVat) / 100))} сум</strong>
+                  <span style={{ color: 'var(--text-secondary)' }}>{t("Итого с НДС:", "Итого с НДС:")}</span>
+                  <strong style={{ fontFamily: 'monospace', fontSize: 14 }}>{new Intl.NumberFormat('ru-RU').format(Number(newAmount) * (1 + Number(newVat) / 100))}  {t("сум", "сум")}</strong>
                 </div>
               )}
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 12, background: 'var(--bg-card)' }}>
-              <button onClick={() => setCreateOpen(false)} style={{ padding: '0 16px', height: 32, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 500 }}>Отмена</button>
-              <button onClick={handleCreate} style={{ padding: '0 16px', height: 32, background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>Сохранить счёт</button>
+              <button onClick={() => setCreateOpen(false)} style={{ padding: '0 16px', height: 32, background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 500 }}>{t("Отозвать", "Отозвать")}</button>
+              <button onClick={handleCreate} style={{ padding: '0 16px', height: 32, background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>{t("Сохранить счёт", "Сохранить счёт")}</button>
             </div>
           </div>
         </div>
@@ -351,7 +355,7 @@ const DealsInvoicesPage: React.FC = () => {
               {/* Header */}
               <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Счёт на оплату</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Счёт на оплату", "Счёт на оплату")}</div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{inv.number}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
@@ -382,37 +386,37 @@ const DealsInvoicesPage: React.FC = () => {
                 {/* Financials */}
                 <div style={{ padding: 16, background: 'var(--bg-hover)', borderRadius: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Сумма без НДС</div><div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace' }}>{fmt.format(inv.amount - inv.vatAmount)} сум</div></div>
-                    <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>НДС</div><div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: '#f59e0b' }}>{fmt.format(inv.vatAmount)} сум</div></div>
-                    <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Итого</div><div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: 'var(--color-primary)' }}>{fmt.format(inv.amount)} сум</div></div>
+                    <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Сумма без НДС", "Сумма без НДС")}</div><div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace' }}>{fmt.format(inv.amount - inv.vatAmount)}  {t("сум", "сум")}</div></div>
+                    <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("НДС", "НДС")}</div><div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: '#f59e0b' }}>{fmt.format(inv.vatAmount)}  {t("сум", "сум")}</div></div>
+                    <div><div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Итого", "Итого")}</div><div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: 'var(--color-primary)' }}>{fmt.format(inv.amount)}  {t("сум", "сум")}</div></div>
                   </div>
                   <div style={{ height: 6, background: 'var(--border-subtle)', borderRadius: 4, overflow: 'hidden', marginBottom: 6 }}>
                     <div style={{ width: `${pct}%`, height: '100%', background: pct === 100 ? '#10b981' : '#f59e0b', borderRadius: 4 }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
-                    <span>Оплачено: {new Intl.NumberFormat('ru-RU').format(inv.paidAmount)} сум ({pct}%)</span>
-                    <span>Остаток: {new Intl.NumberFormat('ru-RU').format(inv.amount - inv.paidAmount)} сум</span>
+                    <span>{t("Оплачено:", "Оплачено:")} {new Intl.NumberFormat('ru-RU').format(inv.paidAmount)}  {t("сум (", "сум (")}{pct}%)</span>
+                    <span>{t("Остаток:", "Остаток:")} {new Intl.NumberFormat('ru-RU').format(inv.amount - inv.paidAmount)}  {t("сум", "сум")}</span>
                   </div>
                 </div>
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                   {inv.status === 'draft' && (
                     <button onClick={() => { advanceStatus(inv.id); setSelectedInvId(null); }} style={{ padding: '0 16px', height: 32, background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Send size={12} /> Отправить клиенту
+                      <Send size={12} />  {t("Отправить клиенту", "Отправить клиенту")}
                     </button>
                   )}
                   {inv.status === 'sent' && (
                     <button onClick={() => { advanceStatus(inv.id); setSelectedInvId(null); }} style={{ padding: '0 16px', height: 32, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <AlertCircle size={12} /> Отметить частично
+                      <AlertCircle size={12} />  {t("Отметить частично", "Отметить частично")}
                     </button>
                   )}
                   {inv.status === 'partially_paid' && (
                     <button onClick={() => { advanceStatus(inv.id); setSelectedInvId(null); }} style={{ padding: '0 16px', height: 32, background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <CheckCircle2 size={12} /> Отметить оплаченным
+                      <CheckCircle2 size={12} />  {t("Отметить оплаченным", "Отметить оплаченным")}
                     </button>
                   )}
                   <button onClick={() => downloadInvoiceCSV(inv)} style={{ padding: '0 14px', height: 32, background: 'var(--bg-hover)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 8, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Download size={12} /> Скачать CSV
+                    <Download size={12} />  {t("Скачать CSV", "Скачать CSV")}
                   </button>
                 </div>
               </div>

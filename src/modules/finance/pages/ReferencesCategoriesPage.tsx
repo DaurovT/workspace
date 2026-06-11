@@ -4,9 +4,11 @@ import { useFinanceStore } from '../financeStore';
 import { CategoriesTreeTable, CategoryModal } from '../components/CategoriesTreeTable';
 import { Filter, Plus } from 'lucide-react';
 import { ROOT_GROUPS } from '../config/categoryGroups';
+import { useTranslation } from 'react-i18next';
 
 const ReferencesCategoriesPage: React.FC = () => {
-  const { categories, addCategory } = useFinanceStore();
+  const { t } = useTranslation();
+    const { categories, addCategory } = useFinanceStore();
 
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery] = useState('');
@@ -55,14 +57,15 @@ const ReferencesCategoriesPage: React.FC = () => {
           <div style={{ height: 44, padding: '0 12px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={12} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры", "Параметры")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, lineHeight: 1 }}>✕</button>
           </div>
 
           <div style={{ flex: 1, padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>
-              Тип статьи
+              
+              {t("Тип статьи", "Тип статьи")}
             </div>
 
             <button
@@ -76,7 +79,7 @@ const ReferencesCategoriesPage: React.FC = () => {
                 fontSize: 12, fontWeight: selectedRootType === '' ? 600 : 400,
               }}
             >
-              <span>Все статьи</span>
+              <span>{t("Все статьи", "Все статьи")}</span>
               <span style={{ fontSize: 11, background: 'var(--bg-elevated)', color: 'var(--text-muted)', padding: '1px 6px', borderRadius: 10 }}>
                 {filteredStats.total}
               </span>
@@ -122,13 +125,14 @@ const ReferencesCategoriesPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
             <button
               onClick={() => setSidebarOpen(!isSidebarOpen)}
-              title="Фильтры (F)"
+              title={t("Фильтры (F)", "Фильтры (F)")}
               style={{ background: isSidebarOpen ? 'var(--bg-card)' : 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-muted)' }}
             >
               <Filter size={12} />
             </button>
             <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>
-              Учётные статьи
+              
+              {t("Учетные статьи", "Учетные статьи")}
             </span>
             <span style={{ fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: 10 }}>
               {stats.total}
@@ -140,7 +144,7 @@ const ReferencesCategoriesPage: React.FC = () => {
               onClick={() => setCreateModal(true)}
               style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '0 14px', height: 28, borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,0.25)' }}
             >
-              <Plus size={13} /> Создать статью
+              <Plus size={13} />  {t("Создать статью", "Создать статью")}
             </button>
           </div>
         </div>
@@ -157,7 +161,8 @@ const ReferencesCategoriesPage: React.FC = () => {
         {stats.total > 0 && (
           <div style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', padding: '10px 28px', display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              Всего статей: <b style={{ color: 'var(--text-primary)' }}>{stats.total}</b>
+              
+              {t("Всего статей:", "Всего статей:")} <b style={{ color: 'var(--text-primary)' }}>{stats.total}</b>
             </span>
             {ROOT_GROUPS.filter(g => (stats.byType[g.type] ?? 0) > 0).map(g => (
               <span key={g.type} style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>

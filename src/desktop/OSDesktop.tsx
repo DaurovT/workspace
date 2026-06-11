@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '../store';
 import {
   Truck, Search,
-  Aperture, Settings, Rat, Origami, Lock, UserPlus, ShoppingCart, Wrench
+  Aperture, Settings, Rat, Origami, Lock, UserPlus, ShoppingCart, Wrench, Network
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -78,7 +78,7 @@ const OSDesktop: React.FC = () => {
     },
     {
       id: 'finance',
-      name: 'Manor',
+      name: 'Manor Finance',
       description: 'Управленческий учет',
       icon: (size: number) => <Origami size={size} color="#fff" />,
       color: 'linear-gradient(135deg, #10b981, #059669)',
@@ -115,6 +115,14 @@ const OSDesktop: React.FC = () => {
       icon: (size: number) => <Settings size={size} color="#fff" />,
       color: 'linear-gradient(135deg, #475569, #1e293b)',
       onClick: () => tryOpenApp('settings', () => setActiveApp('settings'))
+    },
+    {
+      id: 'scheme',
+      name: 'Схема',
+      description: 'Производственно-логистическая схема',
+      icon: (size: number) => <Network size={size} color="#fff" />,
+      color: 'linear-gradient(135deg, #14b8a6, #0f766e)',
+      onClick: () => tryOpenApp('scheme', () => setActiveApp('scheme'))
     }
   ];
 

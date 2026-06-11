@@ -4,9 +4,11 @@ import { format, parseISO, endOfMonth, startOfMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { APP_CURRENCY, } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 export const ReportsTableBalance: React.FC = () => {
-  const { transactions, categories, accounts, funds } = useFinanceStore();
+  const { t } = useTranslation();
+    const { transactions, categories, accounts, funds } = useFinanceStore();
 
   // Build a set of months from confirmed transactions
   const months = useMemo(() => {
@@ -113,20 +115,20 @@ export const ReportsTableBalance: React.FC = () => {
         <div style={{ flex: 1, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 10, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <TrendingUp size={20} color="#10b981" />
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>АКТИВЫ</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981' }}>{lastSnap ? fmt(lastSnap.totalAssets) : '—'} сум</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{t("АКТИВЫ", "АКТИВЫ")}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981' }}>{lastSnap ? fmt(lastSnap.totalAssets) : '—'}  {t("сум", "сум")}</div>
           </div>
         </div>
         <div style={{ flex: 1, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.15)', borderRadius: 10, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <TrendingDown size={20} color="#8b5cf6" />
           <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>ПАССИВЫ + КАПИТАЛ</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#8b5cf6' }}>{lastSnap ? fmt(lastSnap.totalLiabEquity) : '—'} сум</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{t("ПАССИВЫ + КАПИТАЛ", "ПАССИВЫ + КАПИТАЛ")}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#8b5cf6' }}>{lastSnap ? fmt(lastSnap.totalLiabEquity) : '—'}  {t("сум", "сум")}</div>
           </div>
         </div>
         <div style={{ background: isBalanced ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.06)', border: `1px solid ${isBalanced ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 10, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: isBalanced ? '#10b981' : '#ef4444', boxShadow: `0 0 8px ${isBalanced ? '#10b981' : '#ef4444'}` }} />
-          <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{isBalanced ? 'Баланс сходится ✓' : 'Расхождение'}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600 }}>{isBalanced ? "Баланс сходится ✓" : 'Расхождение'}</div>
         </div>
       </div>
 
@@ -137,7 +139,8 @@ export const ReportsTableBalance: React.FC = () => {
             <thead>
               <tr style={{ background: 'var(--bg-card)' }}>
                 <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', borderBottom: '2px solid rgba(255,255,255,0.08)', width: '35%' }}>
-                  Статья
+                  
+                  {t("Статья", "Статья")}
                 </th>
                 {months.map(m => (
                   <th key={m} style={{ padding: '14px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', borderBottom: '2px solid rgba(255,255,255,0.08)', borderLeft: '1px solid var(--border-subtle)', minWidth: 120 }}>
@@ -148,29 +151,29 @@ export const ReportsTableBalance: React.FC = () => {
             </thead>
             <tbody>
               {/* ASSETS */}
-              <SectionHeader label="I. Активы" colorAccent="#3b82f6" />
-              <Row label="Денежные средства (Счета)" values={snapshots.map(s => s.cash)} indent />
-              <Row label="Зарезервировано (Сейфы)" values={snapshots.map(s => -s.reserved)} indent color="#f59e0b" />
-              <Row label="Свободные денежные средства" values={snapshots.map(s => s.cash - s.reserved)} indent color="#10b981" />
-              <Row label="Дебиторская задолженность" values={snapshots.map(s => s.receivables)} indent />
-              <Row label="Основные средства (капвложения)" values={snapshots.map(s => s.fixedAssets)} indent />
-              <Row label="ИТОГО АКТИВЫ" values={snapshots.map(s => s.totalAssets)} isBold color="#3b82f6" />
+              <SectionHeader label={t("I. Активы", "I. Активы")} colorAccent="#3b82f6" />
+              <Row label={t("Денежные средства (Счета)", "Денежные средства (Счета)")} values={snapshots.map(s => s.cash)} indent />
+              <Row label={t("Зарезервировано (Сейфы)", "Зарезервировано (Сейфы)")} values={snapshots.map(s => -s.reserved)} indent color="#f59e0b" />
+              <Row label={t("Свободные денежные средства", "Свободные денежные средства")} values={snapshots.map(s => s.cash - s.reserved)} indent color="#10b981" />
+              <Row label={t("Дебиторская задолженность", "Дебиторская задолженность")} values={snapshots.map(s => s.receivables)} indent />
+              <Row label={t("Основные средства (капвложения)", "Основные средства (капвложения)")} values={snapshots.map(s => s.fixedAssets)} indent />
+              <Row label={t("ИТОГО АКТИВЫ", "ИТОГО АКТИВЫ")} values={snapshots.map(s => s.totalAssets)} isBold color="#3b82f6" />
 
               {/* Spacer */}
               <tr><td colSpan={months.length + 1} style={{ height: 12 }} /></tr>
 
               {/* LIABILITIES */}
-              <SectionHeader label="II. Обязательства" colorAccent="#ef4444" />
-              <Row label="Кредиторская задолженность" values={snapshots.map(s => s.payables)} indent />
-              <Row label="ИТОГО ОБЯЗАТЕЛЬСТВА" values={snapshots.map(s => s.payables)} isBold color="#ef4444" />
+              <SectionHeader label={t("II. Обязательства", "II. Обязательства")} colorAccent="#ef4444" />
+              <Row label={t("Кредиторская задолженность", "Кредиторская задолженность")} values={snapshots.map(s => s.payables)} indent />
+              <Row label={t("ИТОГО ОБЯЗАТЕЛЬСТВА", "ИТОГО ОБЯЗАТЕЛЬСТВА")} values={snapshots.map(s => s.payables)} isBold color="#ef4444" />
 
               {/* Spacer */}
               <tr><td colSpan={months.length + 1} style={{ height: 12 }} /></tr>
 
               {/* EQUITY */}
-              <SectionHeader label="III. Капитал" colorAccent="#10b981" />
-              <Row label="Нераспределённая прибыль" values={snapshots.map(s => s.retainedEarnings)} indent color={lastSnap?.retainedEarnings >= 0 ? '#10b981' : '#ef4444'} />
-              <Row label="ИТОГО КАПИТАЛ" values={snapshots.map(s => s.retainedEarnings)} isBold color="#10b981" />
+              <SectionHeader label={t("III. Капитал", "III. Капитал")} colorAccent="#10b981" />
+              <Row label={t("Нераспределённая прибыль", "Нераспределённая прибыль")} values={snapshots.map(s => s.retainedEarnings)} indent color={lastSnap?.retainedEarnings >= 0 ? '#10b981' : '#ef4444'} />
+              <Row label={t("ИТОГО КАПИТАЛ", "ИТОГО КАПИТАЛ")} values={snapshots.map(s => s.retainedEarnings)} isBold color="#10b981" />
 
               {/* Spacer */}
               <tr><td colSpan={months.length + 1} style={{ height: 12 }} /></tr>
@@ -178,7 +181,8 @@ export const ReportsTableBalance: React.FC = () => {
               {/* TOTAL */}
               <tr style={{ background: 'var(--bg-surface)' }}>
                 <td style={{ padding: '14px 16px', fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', borderTop: '2px solid var(--border-default)' }}>
-                  ИТОГО ПАССИВЫ + КАПИТАЛ
+                  
+                  {t("ИТОГО ПАССИВЫ + КАПИТАЛ", "ИТОГО ПАССИВЫ + КАПИТАЛ")}
                 </td>
                 {snapshots.map((s, i) => {
                   const balanced = Math.abs(s.totalAssets - s.totalLiabEquity) < 1;
@@ -198,8 +202,8 @@ export const ReportsTableBalance: React.FC = () => {
 
         {/* Footer */}
         <div style={{ padding: '12px 16px', background: 'var(--bg-base)', borderTop: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-          <span>Форма №1 · Управленческий баланс · Данные автоматически агрегируются из операций</span>
-          <span>▲ — рост vs предыдущий период &nbsp; ▼ — снижение</span>
+          <span>{t("Форма №1 · Управленческий баланс · Данные автоматически агрегируются из операций", "Форма №1 · Управленческий баланс · Данные автоматически агрегируются из операций")}</span>
+          <span>{t("▲ — рост vs предыдущий период &nbsp; ▼ — снижение", "▲ — рост vs предыдущий период &nbsp; ▼ — снижение")}</span>
         </div>
       </div>
     </div>

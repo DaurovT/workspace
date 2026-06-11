@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp, Calendar, X } from 'lucide-react';
 import { useFinanceStore } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
 // ─── Collapsible Section ──────────────────────────────────────────────────────
 const Section: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, defaultOpen = true }) => {
-  const [open, setOpen] = useState(defaultOpen);
+  const { t } = useTranslation(); void t;
+    const [open, setOpen] = useState(defaultOpen);
   return (
     <div>
       <button
@@ -29,7 +31,8 @@ const MultiSelect: React.FC<{
   onToggle: (id: string) => void;
   onClearAll: () => void;
 }> = ({ label, options, selected, onToggle, onClearAll }) => {
-  const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
   const selectedNames = options.filter(o => selected.includes(o.id)).map(o => o.name);
   return (
     <div style={{ position: 'relative' }}>
@@ -61,12 +64,13 @@ const MultiSelect: React.FC<{
             </label>
           ))}
           {options.length === 0 && (
-            <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-muted)' }}>Нет данных</div>
+            <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-muted)' }}>{t("Нет данных", "Нет данных")}</div>
           )}
           <div style={{ borderTop: '1px solid var(--border-subtle)', margin: '4px 0' }} />
           <button onClick={() => setOpen(false)} style={{ width: '100%', padding: '6px 12px', fontSize: 11, fontWeight: 600,
             color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-            Готово
+            
+            {t("Готово", "Готово")}
           </button>
         </div>
       )}
@@ -76,7 +80,8 @@ const MultiSelect: React.FC<{
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const {
+  const { t } = useTranslation();
+    const {
     accounts, contractors, categories, projects,
     typeFilter, setTypeFilter,
     filterStatusPaid, setFilterStatusPaid,
@@ -137,13 +142,14 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
       {/* Header */}
       <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Фильтры</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Фильтры", "Фильтры")}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {hasAnyFilter && (
             <button onClick={resetAll} style={{ fontSize: 11, color: 'var(--color-primary)', background: 'none', border: 'none',
               cursor: 'pointer', fontWeight: 600, padding: 0 }}>
-              Сброс
+              
+              {t("Сброс", "Сброс")}
             </button>
           )}
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
@@ -153,11 +159,11 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 24, flex: 1 }}>
 
         {/* Тип операции */}
-        <Section title="Тип операции">
+        <Section title={t("Тип операции", "Тип операции")}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               { key: 'income',  label: 'Поступление', color: '#10b981' },
-              { key: 'expense', label: 'Выплата',      color: '#ef4444' },
+              { key: 'expense', label: "Выплата",      color: '#ef4444' },
               { key: 'transfer',label: 'Перемещение',  color: '#3b82f6' },
               { key: 'accrual', label: 'Начисление',   color: '#f59e0b' },
             ].map(({ key, label, color }) => (
@@ -173,21 +179,21 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         </Section>
 
         {/* Статус оплаты */}
-        <Section title="Статус оплаты">
+        <Section title={t("Статус оплаты", "Статус оплаты")}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               <input type="checkbox" checked={filterStatusPaid} onChange={e => setFilterStatusPaid(e.target.checked)} style={chkStyle} />
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>Подтверждена</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>{t("Подтверждена", "Подтверждена")}</span>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
               <input type="checkbox" checked={filterStatusUnpaid} onChange={e => setFilterStatusUnpaid(e.target.checked)} style={chkStyle} />
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>Не подтверждена</span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>{t("Не подтверждена", "Не подтверждена")}</span>
             </label>
           </div>
         </Section>
 
         {/* Период */}
-        <Section title="Период оплаты" defaultOpen={false}>
+        <Section title={t("Период оплаты", "Период оплаты")} defaultOpen={false}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <Calendar size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
@@ -202,7 +208,8 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
             {(filterDateFrom || filterDateTo) && (
               <button onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); }}
                 style={{ fontSize: 11, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
-                Очистить период
+                
+                {t("Очистить период", "Очистить период")}
               </button>
             )}
           </div>
@@ -211,7 +218,7 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         {/* Счета */}
         <Section title={`Счета${filterAccounts.length > 0 ? ` (${filterAccounts.length})` : ''}`} defaultOpen={false}>
           <MultiSelect
-            label="Все счета"
+            label={t("Все счета", "Все счета")}
             options={accounts.map(a => ({ id: a.id, name: a.name }))}
             selected={filterAccounts}
             onToggle={id => toggleItem(filterAccounts, setFilterAccounts, id)}
@@ -222,7 +229,7 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         {/* Контрагенты */}
         <Section title={`Контрагенты${filterContractors.length > 0 ? ` (${filterContractors.length})` : ''}`} defaultOpen={false}>
           <MultiSelect
-            label="Все контрагенты"
+            label={t("Все контрагенты", "Все контрагенты")}
             options={contractors.map(c => ({ id: c.id, name: c.name }))}
             selected={filterContractors}
             onToggle={id => toggleItem(filterContractors, setFilterContractors, id)}
@@ -233,7 +240,7 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         {/* Статьи */}
         <Section title={`Статьи учёта${filterCategories.length > 0 ? ` (${filterCategories.length})` : ''}`} defaultOpen={false}>
           <MultiSelect
-            label="Все статьи"
+            label={t("Все статьи", "Все статьи")}
             options={categories.filter(c => !c.parentId).map(c => ({ id: c.id, name: c.name }))}
             selected={filterCategories}
             onToggle={id => toggleItem(filterCategories, setFilterCategories, id)}
@@ -244,7 +251,7 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         {/* Проекты */}
         <Section title={`Проекты${filterProjects.length > 0 ? ` (${filterProjects.length})` : ''}`} defaultOpen={false}>
           <MultiSelect
-            label="Все проекты"
+            label={t("Все проекты", "Все проекты")}
             options={projects.map(p => ({ id: p.id, name: p.name }))}
             selected={filterProjects}
             onToggle={id => toggleItem(filterProjects, setFilterProjects, id)}
@@ -253,16 +260,16 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         </Section>
 
         {/* Сумма */}
-        <Section title="Сумма" defaultOpen={false}>
+        <Section title={t("Сумма", "Сумма")} defaultOpen={false}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input
               type="number" value={filterAmountFrom} onChange={e => setFilterAmountFrom(e.target.value)}
-              placeholder="От" min="0"
+              placeholder={t("От", "От")} min="0"
               style={{ ...inputStyle, width: '50%' }} />
             <span style={{ color: 'var(--text-muted)', flexShrink: 0, fontSize: 12 }}>—</span>
             <input
               type="number" value={filterAmountTo} onChange={e => setFilterAmountTo(e.target.value)}
-              placeholder="До" min="0"
+              placeholder={t("До", "До")} min="0"
               style={{ ...inputStyle, width: '50%' }} />
           </div>
         </Section>
@@ -270,7 +277,7 @@ export const TransactionsFilter: React.FC<{ onClose: () => void }> = ({ onClose 
         {/* Help */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 'auto', padding: '12px 0 4px' }}>
           <HelpCircle size={12} color="var(--text-muted)" />
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Фильтры применяются мгновенно</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Фильтры применяются мгновенно", "Фильтры применяются мгновенно")}</span>
         </div>
       </div>
     </div>

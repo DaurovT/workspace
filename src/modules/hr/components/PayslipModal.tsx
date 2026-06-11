@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { X, Printer } from 'lucide-react';
+import { X, Printer, Wallet } from 'lucide-react';
 import type { PayrollEntry } from '../hrStore';
 
 interface Props {
@@ -48,9 +48,13 @@ export default function PayslipModal({ entry, employeeName, onClose }: Props) {
           </div>
 
           <div style={{ marginBottom: 32, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, borderBottom: '2px solid #000', paddingBottom: 16 }}>
-            <div>
-              <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase' }}>Работодатель</div>
-              <div style={{ fontSize: 16, fontWeight: 600 }}>WorkSpace Pro LLC</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 8, background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Wallet size={24} color="#fff" />
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>«Бекобод Овқатланиш комбинати» МЧЖ</div>
+              </div>
             </div>
             <div>
               <div style={{ fontSize: 12, color: '#6b7280', textTransform: 'uppercase' }}>Сотрудник</div>

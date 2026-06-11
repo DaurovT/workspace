@@ -4,6 +4,7 @@ import { LineChart, Line } from 'recharts';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { format, startOfMonth, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface FlowRow {
   id: string;
@@ -17,7 +18,8 @@ interface FlowRow {
 }
 
 export const ReportsTableDDS: React.FC = () => {
-  const { transactions, categories } = useFinanceStore();
+  const { t } = useTranslation();
+    const { transactions, categories } = useFinanceStore();
   const [expandedRows, setExpandedRows] = useState<string[]>(['group_op', 'group_inv', 'group_fin', 'sub_op_in', 'sub_op_out']);
 
   const toggleRow = (id: string) => {
@@ -59,7 +61,7 @@ export const ReportsTableDDS: React.FC = () => {
 
     const createGroup = (id: string, name: string, activity: string): FlowRow => {
       const flowIn: FlowRow = { id: `sub_${id}_in`, name: 'Поступления', type: 'subgroup', values: months.map(() => 0), total: 0, trend: [], children: [] };
-      const flowOut: FlowRow = { id: `sub_${id}_out`, name: 'Выплаты', type: 'subgroup', values: months.map(() => 0), total: 0, trend: [], children: [] };
+      const flowOut: FlowRow = { id: `sub_${id}_out`, name: "Выплаты", type: 'subgroup', values: months.map(() => 0), total: 0, trend: [], children: [] };
 
       categories.filter(c => c.activity === activity).forEach(cat => {
         const row: FlowRow = { id: cat.id, name: cat.name, type: 'category', values: [], total: 0, trend: [] };
@@ -118,7 +120,7 @@ export const ReportsTableDDS: React.FC = () => {
         <LineChart width={60} height={20} data={data}>
           <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>
-      ) : <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Нет тренда</div>}
+      ) : <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>{t("Нет тренда", "Нет тренда")}</div>}
     </div>
   );
 
@@ -183,12 +185,12 @@ export const ReportsTableDDS: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
           <thead>
             <tr>
-              <Th align="left">По статьям учета</Th>
-              <Th align="left">Тренд</Th>
+              <Th align="left">{t("По статьям учета", "По статьям учета")}</Th>
+              <Th align="left">{t("Тренд", "Тренд")}</Th>
               {months.map(m => (
                 <Th key={m}>{format(parseISO(m), "MMM ''yy", { locale: ru })}</Th>
               ))}
-              <Th>Итого</Th>
+              <Th>{t("Итого", "Итого")}</Th>
             </tr>
           </thead>
           <tbody>

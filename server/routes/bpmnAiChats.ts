@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../db';
 import { authContext } from '../context';
+import { generateAIResponse } from '../services/aiService';
 
 const router = Router();
 
@@ -41,7 +42,23 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { id, title, messages } = req.body;
-    const messagesStr = JSON.stringify(messages || []);
+    let currentMessages = messages || [];
+    
+    // If the last message is from user, generate AI response
+    if (currentMessages.length > 0 && currentMessages[currentMessages.length - 1].role === 'user') {
+      try {
+        const replyText = await generateAIResponse(currentMessages);
+        currentMessages.push({
+          role: 'assistant',
+          content: replyText,
+          text: replyText
+        });
+      } catch (e) {
+        console.error("AI Generation error:", e);
+      }
+    }
+
+    const messagesStr = JSON.stringify(currentMessages);
     
     let chat;
     if (id) {

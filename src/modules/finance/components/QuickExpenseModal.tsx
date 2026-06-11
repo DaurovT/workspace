@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useFinanceStore } from '../financeStore';
 import { X, Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface QuickExpenseModalProps {
   onClose: () => void;
 }
 
 const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ onClose }) => {
-  const { accounts, categories, addTransaction } = useFinanceStore();
+  const { t } = useTranslation();
+    const { accounts, categories, addTransaction } = useFinanceStore();
   
   const expenseCategories = categories.filter(c => c.type === 'expense');
   
@@ -59,7 +61,7 @@ const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ onClose }) => {
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={18} />
             </div>
-            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Быстрый расход</span>
+            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Быстрый расход", "Быстрый расход")}</span>
           </div>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>
             <X size={20} />
@@ -70,7 +72,7 @@ const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ onClose }) => {
         <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Сумма</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Сумма", "Сумма")}</label>
             <input 
               type="number" 
               value={amount} 
@@ -83,14 +85,14 @@ const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ onClose }) => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Счет списания</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Счет списания", "Счет списания")}</label>
             <select 
               value={accountId} 
               onChange={e => setAccountId(e.target.value)} 
               required
               style={{ width: '100%', height: 40, padding: '0 12px', background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)', fontSize: 14, outline: 'none' }}
             >
-              <option value="" disabled>Выберите счет</option>
+              <option value="" disabled>{t("Выберите счет", "Выберите счет")}</option>
               {accounts.map(a => (
                 <option key={a.id} value={a.id}>{a.name} ({new Intl.NumberFormat('ru-RU').format(a.balance)} {a.currency})</option>
               ))}
@@ -98,14 +100,14 @@ const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ onClose }) => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Статья расходов</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Статья расходов", "Статья расходов")}</label>
             <select 
               value={categoryId} 
               onChange={e => setCategoryId(e.target.value)} 
               required
               style={{ width: '100%', height: 40, padding: '0 12px', background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)', fontSize: 14, outline: 'none' }}
             >
-              <option value="" disabled>Выберите статью</option>
+              <option value="" disabled>{t("Выберите статью", "Выберите статью")}</option>
               {expenseCategories.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -113,12 +115,12 @@ const QuickExpenseModal: React.FC<QuickExpenseModalProps> = ({ onClose }) => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Описание (на что)</label>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>{t("Описание (на что)", "Описание (на что)")}</label>
             <input 
               type="text" 
               value={description} 
               onChange={e => setDescription(e.target.value)} 
-              placeholder="Например, такси, канцтовары..."
+              placeholder={t("Например, такси, канцтовары...", "Например, такси, канцтовары...")}
               required
               style={{ width: '100%', height: 40, padding: '0 12px', background: 'var(--bg-base)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)', fontSize: 14, outline: 'none' }}
             />

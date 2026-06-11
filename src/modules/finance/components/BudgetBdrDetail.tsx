@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { ArrowLeft, Download, ChevronDown as ChevDown } from 'lucide-react';
 import { useFinanceStore, type BdrBudget } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
-const MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS_SHORT = ['Янв','Фев','март','апрель','Май','Июн','Июл','август','Сен','Окт','Ноя','Дек'];
 const CURRENT_MONTH = new Date().getMonth();
 const CURRENT_YEAR  = new Date().getFullYear();
 
@@ -12,7 +13,8 @@ const fmtPct = (plan: number, fact: number) => plan > 0 ? Math.round((fact / pla
 interface Props { budget: BdrBudget; onBack: () => void; }
 
 export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
-  const { categories, transactions, budgetLines, budgetScenarios, users } = useFinanceStore();
+  const { t } = useTranslation();
+    const { categories, transactions, budgetLines, budgetScenarios, users } = useFinanceStore();
 
   const [showFact, setShowFact]   = useState(true);
   const [showPct,  setShowPct]    = useState(false);
@@ -20,7 +22,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
   const [hideZeros, setHideZeros] = useState(false);
   const [method,   setMethod]     = useState('Кассовый метод');
   const [period,   setPeriod]     = useState('По месяцам');
-  const [metric,   setMetric]     = useState('Показатели прибыли');
+  const [metric,   setMetric]     = useState("Показатели прибыли");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [editCell, setEditCell]   = useState<{scenId:string;catId:string;m:number;y:number}|null>(null);
   const [editVal,  setEditVal]    = useState('');
@@ -32,7 +34,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
   [budgetScenarios, budget.scenarioId]);
 
   const showProfitRows = metric !== 'Без показателей';
-  const showMarginRow  = metric === 'Показатели прибыли';
+  const showMarginRow  = metric === "Показатели прибыли";
 
   const incCats = useMemo(() => categories.filter(c => c.type === 'income'), [categories]);
   const expCats = useMemo(() => categories.filter(c => c.type === 'expense' && !c.parentId), [categories]);
@@ -138,7 +140,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
   };
 
   const fmtPeriod = (s: string, e: string) => {
-    const mo=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+    const mo=['янв','Фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
     const [sy,sm]=s.split('-'); const [ey,em]=e.split('-');
     return `${mo[+sm-1]} '${sy.slice(2)} — ${mo[+em-1]} '${ey.slice(2)}`;
   };
@@ -316,7 +318,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
     return (
       <>
         <tr style={{background: 'var(--bg-elevated)',borderBottom:'1px solid var(--border-subtle)'}}>
-          <td style={stickyNameStyle('var(--bg-surface)',{fontWeight:600,color:'var(--text-primary)',paddingLeft:16})}>ЧИСТАЯ ПРИБЫЛЬ</td>
+          <td style={stickyNameStyle('var(--bg-surface)',{fontWeight:600,color:'var(--text-primary)',paddingLeft:16})}>{t("ЧИСТАЯ ПРИБЫЛЬ", "ЧИСТАЯ ПРИБЫЛЬ")}</td>
           <td style={{...tdStyle,fontWeight:700,color:'var(--text-primary)'}}>{fmt(ypNet)}</td>
           {showFact&&<td style={{...tdStyle,fontWeight:700,color:'var(--text-primary)'}}>{fmt(yfNet)}</td>}
           {showPct&&<td style={{...tdStyle,fontWeight:700,color:'var(--text-primary)'}}>{fmtPct(ypNet,yfNet)}</td>}
@@ -336,7 +338,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
         </tr>
         {withMargin && (
           <tr style={{background:'var(--bg-hover)',borderBottom:'1px solid var(--border-subtle)'}}>
-            <td style={stickyNameStyle('var(--bg-surface)',{fontWeight:600,color:'var(--text-secondary)',paddingLeft:16})}>Рентабельность %</td>
+            <td style={stickyNameStyle('var(--bg-surface)',{fontWeight:600,color:'var(--text-secondary)',paddingLeft:16})}>{t("Рентабельность %", "Рентабельность %")}</td>
             <td style={{...tdStyle,fontWeight:700,color:'var(--text-secondary)'}}>{fmtPct(ypInc,ypNet)}</td>
             {showFact&&<td style={{...tdStyle,fontWeight:700,color:'var(--text-secondary)'}}>{fmtPct(yfInc,yfNet)}</td>}
             {showPct&&<td style={{...tdStyle,fontWeight:700,color:'var(--text-secondary)'}}>—</td>}
@@ -367,7 +369,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
   if(showFact) colsPerMonth++; if(showPct) colsPerMonth++; if(showDiff) colsPerMonth++;
 
   const exportXls = useCallback(() => {
-    const header = ['Название', 'Итого План', 'Итого Факт', ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} План`), ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} Факт`)];
+    const header = ['Наименование', 'Итого План', 'Итого Факт', ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} План`), ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} Факт`)];
     const rows: string[][] = [header];
     const addRow = (name: string, getPlanFn: (m:{m:number,y:number})=>number, getFactFn: (m:{m:number,y:number})=>number) => {
       rows.push([name,
@@ -400,7 +402,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
           style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',fontSize:12,display:'flex',alignItems:'center',gap:5,padding:0}}
           onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='var(--color-primary)'}
           onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='var(--text-muted)'}>
-          <ArrowLeft size={13}/> Список бюджетов
+          <ArrowLeft size={13}/>  {t("Список бюджетов", "Список бюджетов")}
         </button>
       </div>
 
@@ -427,7 +429,7 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
       <div style={{padding:'12px 32px',display:'flex',alignItems:'center',gap:12,borderBottom:'1px solid var(--border-subtle)',flexWrap:'wrap'}}>
         {[{v:period, s:setPeriod, opts:['По месяцам','По кварталам','По годам']},
           {v:method, s:setMethod, opts:['Кассовый метод','Метод начисления']},
-          {v:metric, s:setMetric, opts:['Показатели прибыли','Прибыль до налогов','Валовая прибыль','Без показателей']},
+          {v:metric, s:setMetric, opts:["Показатели прибыли","Прибыль до налогов",'Валовая прибыль','Без показателей']},
         ].map(({v,s,opts})=>(
           <div key={v} style={{position:'relative'}}>
             <select value={v} onChange={e=>(s as (v:string)=>void)(e.target.value)} style={selStyle}>
@@ -437,13 +439,14 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
           </div>
         ))}
         <div style={{width:1,height:20,background:'var(--border-subtle)',margin:'0 4px'}}/>
-        {chk(showFact,'Факт',()=>setShowFact(v=>!v))}
+        {chk(showFact,'факт',()=>setShowFact(v=>!v))}
         {chk(showPct,'Вып. плана, %',()=>setShowPct(v=>!v))}
         {chk(showDiff,'Откл.',()=>setShowDiff(v=>!v))}
         <div style={{width:1,height:20,background:'var(--border-subtle)',margin:'0 4px'}}/>
         {chk(hideZeros,'Спрятать нулевые',()=>setHideZeros(v=>!v))}
         <span style={{marginLeft:'auto',fontSize:11,color:'var(--text-muted)'}}>
-          Автор: {authorName} · Сценарий: {scenario?.name ?? '—'}
+          
+          {t("Автор:", "Автор:")} {authorName}  {t("· Сценарий:", "· Сценарий:")} {scenario?.name ?? '—'}
         </span>
       </div>
 
@@ -458,8 +461,8 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
           </colgroup>
           <thead>
             <tr style={{background:'var(--bg-surface)'}}>
-              <th style={stickyThStyle()}>Все юрлица</th>
-              <th colSpan={colsPerMonth} style={{...thStyle,borderLeft:'1px solid var(--border-subtle)'}}>Итого</th>
+              <th style={stickyThStyle()}>{t("Все юрлица", "Все юрлица")}</th>
+              <th colSpan={colsPerMonth} style={{...thStyle,borderLeft:'1px solid var(--border-subtle)'}}>{t("Итого", "Итого")}</th>
               {columns.map(col=>(
                 <th key={col.label} colSpan={colsPerMonth} style={{...thStyle,borderLeft:'1px solid var(--border-subtle)',
                   color:col.months.some(m=>m.y<CURRENT_YEAR||(m.y===CURRENT_YEAR&&m.m<=CURRENT_MONTH))?'var(--text-primary)':'var(--text-muted)'}}>
@@ -473,18 +476,18 @@ export const BudgetBdrDetail: React.FC<Props> = ({ budget, onBack }) => {
               </th>
               {[...Array(1+columns.length)].map((_,i)=>(
                 <React.Fragment key={i}>
-                  <th style={{...thStyle,fontSize:10,borderLeft:i===0?'1px solid var(--border-subtle)':'none'}}>План</th>
-                  {showFact&&<th style={{...thStyle,fontSize:10,color:'#10b981'}}>Факт</th>}
-                  {showPct&&<th style={{...thStyle,fontSize:10,color:'#fcd34d'}}>Вып.%</th>}
-                  {showDiff&&<th style={{...thStyle,fontSize:10,color:'#ef4444'}}>Откл.</th>}
+                  <th style={{...thStyle,fontSize:10,borderLeft:i===0?'1px solid var(--border-subtle)':'none'}}>{t("План", "План")}</th>
+                  {showFact&&<th style={{...thStyle,fontSize:10,color:'#10b981'}}>{t("факт", "факт")}</th>}
+                  {showPct&&<th style={{...thStyle,fontSize:10,color:'#fcd34d'}}>{t("Вып.%", "Вып.%")}</th>}
+                  {showDiff&&<th style={{...thStyle,fontSize:10,color:'#ef4444'}}>{t("Откл.", "Откл.")}</th>}
                 </React.Fragment>
               ))}
             </tr>
           </thead>
           <tbody>
-            {renderGroupRow('grp_inc','Доходы',incCats)}
+            {renderGroupRow('grp_inc','Выручка (Revenue)',incCats)}
             {!collapsed.has('grp_inc') && incCats.filter(c=>isCatVisible(c.id)).map(c=>renderCatRow(c.id,c.name,false))}
-            {renderTotalRow('Итого доходов',incCats,false,'#10b981','#6ee7b7')}
+            {renderTotalRow('Валовая прибыль',incCats,false,'#10b981','#6ee7b7')}
             {renderGroupRow('grp_exp','Расходы',expCats)}
             {!collapsed.has('grp_exp') && expCats.filter(c=>isCatVisible(c.id)).map(c=>renderCatRow(c.id,c.name,true))}
             {renderTotalRow('Итого расходов',expCats,true,'#ef4444','#fca5a5')}

@@ -5,6 +5,7 @@ import { Plus, Filter, Package, CheckCircle2, Clock, XCircle, HelpCircle } from 
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
 
 import type { PurchaseStatus, PurchaseDeal } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
 const STATUS_META: Record<PurchaseStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   new: { label: 'Новая', color: 'var(--text-secondary)', bg: 'rgba(148,163,184,0.1)', icon: <Clock size={12} /> },
@@ -14,7 +15,8 @@ const STATUS_META: Record<PurchaseStatus, { label: string; color: string; bg: st
 };
 
 const DealsPurchasePage: React.FC = () => {
-  const { contractors, purchases, addPurchase } = useFinanceStore();
+  const { t } = useTranslation();
+    const { contractors, purchases, addPurchase } = useFinanceStore();
   const [statusFilter, setStatusFilter] = useState<PurchaseStatus | 'all'>('all');
   const [isCreateOpen, setCreateOpen] = useState(false);
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
@@ -84,7 +86,7 @@ const DealsPurchasePage: React.FC = () => {
           <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={13} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры и KPI</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры и KPI", "Параметры и KPI")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
           </div>
@@ -92,16 +94,16 @@ const DealsPurchasePage: React.FC = () => {
           <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Filters */}
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Статус закупки</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Статус закупки", "Статус закупки")}</div>
               <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} style={inp}>
-                <option value="all">Все статусы</option>
+                <option value="all">{t("Все статусы", "Все статусы")}</option>
                 {(Object.keys(STATUS_META) as PurchaseStatus[]).map(s => <option key={s} value={s}>{STATUS_META[s].label}</option>)}
               </select>
             </div>
 
             {/* KPI Summary */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>Итого по выборке</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>{t("Итого по выборке", "Итого по выборке")}</div>
               {[
                 { label: 'Всего закупок', val: filtered.length, type: 'count' },
                 { label: 'Сумма закупок', val: totalAmount, color: 'var(--text-primary)' },
@@ -129,8 +131,8 @@ const DealsPurchasePage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Сделки по закупкам</span>
-              <span title="Контролируйте обязательства перед поставщиками, поставки и авансы" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Сделки по закупкам", "Сделки по закупкам")}</span>
+              <span title={t("Контролируйте обязательства перед поставщиками, поставки и авансы", "Контролируйте обязательства перед поставщиками, поставки и авансы")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -142,7 +144,7 @@ const DealsPurchasePage: React.FC = () => {
               borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
               cursor: 'pointer', transition: 'transform 100ms'
             }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <Plus size={13} /> Новая закупка
+              <Plus size={13} />  {t("Новая закупка", "Новая закупка")}
             </button>
           </div>
         </div>
@@ -200,7 +202,7 @@ const DealsPurchasePage: React.FC = () => {
         {filtered.length === 0 && (
           <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)' }}>
             <Package size={32} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.3 }} />
-            <div style={{ fontSize: 14 }}>Закупки не найдены</div>
+            <div style={{ fontSize: 14 }}>{t("Закупки не найдены", "Закупки не найдены")}</div>
           </div>
         )}
       </div>
@@ -210,38 +212,38 @@ const DealsPurchasePage: React.FC = () => {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
           <div style={{ background: 'var(--bg-surface)', width: 480, borderRadius: 12, border: '1px solid var(--border-subtle)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', overflow: 'hidden' }}>
             <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 16, fontWeight: 600 }}>Новая закупка</h2>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 16, fontWeight: 600 }}>{t("Новая закупка", "Новая закупка")}</h2>
               <button onClick={() => setCreateOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 18 }}>✕</button>
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label htmlFor="pur-name" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Наименование закупки *</label>
-                <input id="pur-name" name="purName" value={newName} onChange={e => setNewName(e.target.value)} type="text" placeholder="Что закупаем?" style={inp} />
+                <label htmlFor="pur-name" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Наименование закупки *", "Наименование закупки *")}</label>
+                <input id="pur-name" name="purName" value={newName} onChange={e => setNewName(e.target.value)} type="text" placeholder={t("Что закупаем?", "Что закупаем?")} style={inp} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label htmlFor="pur-contractor" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Поставщик</label>
+                  <label htmlFor="pur-contractor" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Поставщик", "Поставщик")}</label>
                   <select id="pur-contractor" name="purContractor" value={newContractor} onChange={e => setNewContractor(e.target.value)} style={inp}>
                     {contractors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="pur-category" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Категория</label>
+                  <label htmlFor="pur-category" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Категория", "Категория")}</label>
                   <input id="pur-category" name="purCategory" value={newCategory} onChange={e => setNewCategory(e.target.value)} type="text" style={inp} />
                 </div>
                 <div>
-                  <label htmlFor="pur-amount" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Сумма (сум) *</label>
+                  <label htmlFor="pur-amount" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Сумма (сум) *", "Сумма (сум) *")}</label>
                   <input id="pur-amount" name="purAmount" type="number" min="0" value={newAmount} onChange={e => setNewAmount(e.target.value)} placeholder="0" style={inp} />
                 </div>
                 <div>
-                  <label htmlFor="pur-due" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Срок поставки</label>
+                  <label htmlFor="pur-due" style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Срок поставки", "Срок поставки")}</label>
                   <input id="pur-due" name="purDue" type="date" value={newDue} onChange={e => setNewDue(e.target.value)} style={inp} />
                 </div>
               </div>
             </div>
             <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 12, background: 'var(--bg-card)' }}>
-              <button onClick={() => setCreateOpen(false)} style={{ padding: '0 16px', height: 28, background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-primary)', cursor: 'pointer', fontSize: 12, fontWeight: 500 }}>Отмена</button>
-              <button onClick={handleCreate} style={{ padding: '0 16px', height: 28, background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: '#fff', fontWeight: 500, cursor: 'pointer', fontSize: 12 }}>Создать</button>
+              <button onClick={() => setCreateOpen(false)} style={{ padding: '0 16px', height: 28, background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-primary)', cursor: 'pointer', fontSize: 12, fontWeight: 500 }}>{t("Отозвать", "Отозвать")}</button>
+              <button onClick={handleCreate} style={{ padding: '0 16px', height: 28, background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: '#fff', fontWeight: 500, cursor: 'pointer', fontSize: 12 }}>{t("Создать", "Создать")}</button>
             </div>
           </div>
         </div>

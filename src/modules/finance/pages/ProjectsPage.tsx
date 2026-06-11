@@ -7,6 +7,7 @@ import { ProjectsTable } from '../components/ProjectsTable';
 import type { EnrichedProject } from '../components/ProjectsTable';
 import { isAfter, parseISO } from 'date-fns';
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 const fmt = (n: number) => new Intl.NumberFormat('ru-RU').format(Math.round(n));
 type Status = 'Плановый' | 'В работе' | 'Завершен';
@@ -15,7 +16,8 @@ const STATUS_COLORS: Record<Status, string> = { 'Плановый': '#38bdf8', '
 const TODAY = new Date();
 
 const ProjectsPage: React.FC = () => {
-  const { projects, transactions, addProject, updateProject, deleteProject } = useFinanceStore();
+  const { t } = useTranslation();
+    const { projects, transactions, addProject, updateProject, deleteProject } = useFinanceStore();
 
 
   const [groupF, setGroupF]     = useState('');
@@ -94,7 +96,7 @@ const ProjectsPage: React.FC = () => {
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <Filter size={13} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры", "Параметры")}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
         </div>
@@ -103,7 +105,7 @@ const ProjectsPage: React.FC = () => {
 
           {/* Status filter */}
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Статус проекта</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>{t("Статус проекта", "Статус проекта")}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {ALL_STATUSES.map(s => {
                 const active = statusF.has(s);
@@ -121,7 +123,7 @@ const ProjectsPage: React.FC = () => {
 
           {/* Group filter */}
           <div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>Группа</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>{t("Группа", "Группа")}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
               {['', ...ALL_GROUPS].map(g => (
                 <button key={g || '_all'} onClick={() => setGroupF(g)} style={{
@@ -142,7 +144,7 @@ const ProjectsPage: React.FC = () => {
             <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '10px 12px', display: 'flex', gap: 8 }}>
               <AlertTriangle size={14} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
               <div style={{ fontSize: 11, color: '#f59e0b', fontWeight: 500 }}>
-                {totals.overdue} {totals.overdue === 1 ? 'проект просрочен' : 'проекта просрочено'}
+                {totals.overdue} {totals.overdue === 1 ? 'проекта просрочено' : 'проекта просрочено'}
               </div>
             </div>
           )}
@@ -160,15 +162,15 @@ const ProjectsPage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Проекты</span>
-              <span title="Рентабельность и бюджеты по направлениям" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Проектов", "Проектов")}</span>
+              <span title={t("Рентабельность и бюджеты по направлениям", "Рентабельность и бюджеты по направлениям")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <LayoutGrid size={13} />
               </span>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <button onClick={() => setModal({ open: true })} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '0 14px', height: 28, borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', boxShadow: '0 2px 8px rgba(99,102,241,0.25)' }}>
-              <Plus size={13} /> Создать проект
+              <Plus size={13} />  {t("Создать проект", "Создать проект")}
             </button>
           </div>
         </div>
@@ -178,11 +180,11 @@ const ProjectsPage: React.FC = () => {
 
           {/* Stat cards */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
-            <StatCard label="Проектов" value={String(filtered.length)} color="var(--text-primary)" icon={<Briefcase size={13} />} sub={`из ${projects.length} всего`} />
-            <StatCard label="Бюджет" value={`${fmt(totals.budget)} ${APP_CURRENCY_SYMBOL}`} color="var(--text-secondary)" icon={<Briefcase size={13} />} sub="плановый" />
-            <StatCard label="Доходы" value={`${fmt(totals.income)} ${APP_CURRENCY_SYMBOL}`} color="#10b981" icon={<TrendingUp size={13} />} sub="фактические" />
-            <StatCard label="Расходы" value={`${fmt(totals.expense)} ${APP_CURRENCY_SYMBOL}`} color="#ef4444" icon={<TrendingDown size={13} />} sub="фактические" />
-            <StatCard label="Прибыль" value={`${fmt(totals.profit)} ${APP_CURRENCY_SYMBOL}`} color={totals.profit >= 0 ? '#10b981' : '#ef4444'} icon={<TrendingUp size={13} />} sub={`рент-ть ${totals.margin.toFixed(1)}%`} />
+            <StatCard label={t("Проектов", "Проектов")} value={String(filtered.length)} color="var(--text-primary)" icon={<Briefcase size={13} />} sub={`из ${projects.length} всего`} />
+            <StatCard label={t("Бюджет", "Бюджет")} value={`${fmt(totals.budget)} ${APP_CURRENCY_SYMBOL}`} color="var(--text-secondary)" icon={<Briefcase size={13} />} sub={t("плановый", "плановый")} />
+            <StatCard label={t("Выручка (Revenue)", "Выручка (Revenue)")} value={`${fmt(totals.income)} ${APP_CURRENCY_SYMBOL}`} color="#10b981" icon={<TrendingUp size={13} />} sub={t("фактические", "фактические")} />
+            <StatCard label={t("Расходы", "Расходы")} value={`${fmt(totals.expense)} ${APP_CURRENCY_SYMBOL}`} color="#ef4444" icon={<TrendingDown size={13} />} sub={t("фактические", "фактические")} />
+            <StatCard label={t("Прибыль", "Прибыль")} value={`${fmt(totals.profit)} ${APP_CURRENCY_SYMBOL}`} color={totals.profit >= 0 ? '#10b981' : '#ef4444'} icon={<TrendingUp size={13} />} sub={`рент-ть ${totals.margin.toFixed(1)}%`} />
           </div>
 
         {/* Table area */}
@@ -190,12 +192,14 @@ const ProjectsPage: React.FC = () => {
           {filtered.length === 0 ? (
             <div style={{ padding: 80, textAlign: 'center', color: 'var(--text-muted)' }}>
               <LayoutGrid size={36} style={{ margin: '0 auto 14px', display: 'block', opacity: 0.2 }} />
-              <div style={{ fontSize: 14, marginBottom: 6 }}>Проекты не найдены</div>
+              <div style={{ fontSize: 14, marginBottom: 6 }}>{t("Проекты не найдены", "Проекты не найдены")}</div>
               <div style={{ fontSize: 12, marginBottom: 20 }}>
-                Создайте первый проект
+                
+                {t("Создайте первый проект", "Создайте первый проект")}
               </div>
               <button onClick={() => setModal({ open: true })} style={{ padding: '0 18px', height: 34, background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                + Создать проект
+                
+                {t("+ Создать проект", "+ Создать проект")}
               </button>
             </div>
           ) : (
@@ -211,11 +215,11 @@ const ProjectsPage: React.FC = () => {
         {/* Footer totals */}
         {filtered.length > 0 && (
           <div style={{ flexShrink: 0, borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-surface)', padding: '10px 28px', display: 'flex', gap: 24, alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Итого по фильтру: <b style={{ color: 'var(--text-primary)' }}>{filtered.length}</b> проектов</span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Доходы: <b style={{ color: '#10b981' }}>{fmt(totals.income)} сум</b></span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Расходы: <b style={{ color: '#ef4444' }}>{fmt(totals.expense)} сум</b></span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Прибыль: <b style={{ color: totals.profit >= 0 ? '#10b981' : '#ef4444' }}>{fmt(totals.profit)} сум</b></span>
-            <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>Рентабельность: <b style={{ color: 'var(--color-primary)' }}>{totals.margin.toFixed(1)}%</b></span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Итого по фильтру:", "Итого по фильтру:")} <b style={{ color: 'var(--text-primary)' }}>{filtered.length}</b>  {t("проектов", "проектов")}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Доходы:", "Доходы:")} <b style={{ color: '#10b981' }}>{fmt(totals.income)}  {t("сум", "сум")}</b></span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Расходы:", "Расходы:")} <b style={{ color: '#ef4444' }}>{fmt(totals.expense)}  {t("сум", "сум")}</b></span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Прибыль:", "Прибыль:")} <b style={{ color: totals.profit >= 0 ? '#10b981' : '#ef4444' }}>{fmt(totals.profit)}  {t("сум", "сум")}</b></span>
+            <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>{t("Рентабельность:", "Рентабельность:")} <b style={{ color: 'var(--color-primary)' }}>{totals.margin.toFixed(1)}%</b></span>
           </div>
         )}
       </div>
@@ -237,15 +241,15 @@ const ProjectsPage: React.FC = () => {
                 <Trash2 size={16} color="#ef4444" />
               </div>
               <div>
-                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 5 }}>Удалить проект?</div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 5 }}>{t("Удалить проект?", "Удалить проект?")}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                  «{projects.find(p => p.id === deleteId)?.name}» будет удалён. Транзакции сохранятся.
+                  «{projects.find(p => p.id === deleteId)?.name}{t("» будет удалён. Транзакции сохранятся.", "» будет удалён. Транзакции сохранятся.")}
                 </div>
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setDeleteId(null)} style={{ flex: 1, height: 34, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>Отмена</button>
-              <button onClick={() => { deleteProject(deleteId); setDeleteId(null); }} style={{ flex: 1, height: 34, background: '#ef4444', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Удалить</button>
+              <button onClick={() => setDeleteId(null)} style={{ flex: 1, height: 34, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>{t("Отозвать", "Отозвать")}</button>
+              <button onClick={() => { deleteProject(deleteId); setDeleteId(null); }} style={{ flex: 1, height: 34, background: '#ef4444', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{t("Удалить", "Удалить")}</button>
             </div>
           </div>
         </div>

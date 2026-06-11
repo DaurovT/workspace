@@ -4,9 +4,11 @@ import { APP_CURRENCY_SYMBOL } from '../config/currency';
 import { useFinanceStore } from '../financeStore';
 
 import type { Product } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
 export default function ReferencesProductsPage() {
-  const { products, addProduct, updateProduct, deleteProduct } = useFinanceStore();
+  const { t } = useTranslation();
+    const { products, addProduct, updateProduct, deleteProduct } = useFinanceStore();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -16,7 +18,7 @@ export default function ReferencesProductsPage() {
   
   // Filters
   const [filterTypes, setFilterTypes] = useState<Record<string, boolean>>({ 'Товар': true, 'Услуга': true });
-  const [filterStatus, setFilterStatus] = useState<string>('Активен'); // 'Все', 'Активен', 'В архиве'
+  const [filterStatus, setFilterStatus] = useState<string>('Активные'); // 'Все', 'Активные', 'В архиве'
   const [filterStock, setFilterStock] = useState<Record<string, boolean>>({ 'inStock': false, 'lowStock': false });
 
   // Sorting
@@ -59,8 +61,8 @@ export default function ReferencesProductsPage() {
         stockBalance: Number(formData.stockBalance || 0),
         type: formData.type || 'Товар',
         category: formData.category || (formData.type === 'Товар' ? 'Товары' : 'Услуги'),
-        status: formData.status || 'Активен',
-        unit: formData.unit || 'шт',
+        status: formData.status || 'Активные',
+        unit: formData.unit || 'шт.',
         sku: formData.sku || `SKU-${Math.floor(Math.random() * 10000)}`
       } as Partial<Product>;
 
@@ -74,7 +76,7 @@ export default function ReferencesProductsPage() {
 
       setModalOpen(false);
     } catch {
-      setError('Нет соединения с сервером');
+      setError("Нет соединения с сервером");
     } finally {
       setIsSaving(false);
     }
@@ -87,29 +89,29 @@ export default function ReferencesProductsPage() {
       await deleteProduct(id);
       if (selectedProductId === id) setSelectedProductId(null);
     } catch {
-      setError('Нет соединения с сервером');
+      setError("Нет соединения с сервером");
     }
   };
 
   const handleArchive = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'В архиве' ? 'Активен' : 'В архиве';
+    const newStatus = currentStatus === 'В архиве' ? 'Активные' : 'В архиве';
     setError(null);
     try {
       await updateProduct(id, { status: newStatus });
     } catch {
-      setError('Нет соединения с сервером');
+      setError("Нет соединения с сервером");
     }
   };
 
   const openCreateModal = () => {
     setFormData({
       type: 'Товар',
-      unit: 'шт',
+      unit: 'шт.',
       vatRate: 20,
       price: 0,
       costPrice: 0,
       stockBalance: 0,
-      status: 'Активен'
+      status: 'Активные'
     });
     setModalMode('create');
     setModalOpen(true);
@@ -161,7 +163,7 @@ export default function ReferencesProductsPage() {
     
     return { 
       totalProducts: products.length,
-      activeCount: products.filter(p => p.status === 'Активен').length,
+      activeCount: products.filter(p => p.status === 'Активные').length,
       totalStockValue: stockValue,
       avgMargin: marginCount > 0 ? (totalMarginPct / marginCount) : 0
     };
@@ -177,6 +179,7 @@ export default function ReferencesProductsPage() {
   };
 
   const SortIcon = ({ field }: { field: keyof Product }) => {
+    const { t } = useTranslation(); void t;
     if (sortField !== field) return null;
     return sortAsc ? <ArrowUp size={12} /> : <ArrowDown size={12} />;
   };
@@ -195,44 +198,44 @@ export default function ReferencesProductsPage() {
           <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={12} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Фильтры</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Фильтры", "Фильтры")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}><X size={16} /></button>
           </div>
           <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Тип</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Тип", "Тип")}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={filterTypes['Товар']} onChange={e => setFilterTypes(p => ({...p, 'Товар': e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} /> Товары
+                  <input type="checkbox" checked={filterTypes['Товар']} onChange={e => setFilterTypes(p => ({...p, 'Товар': e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} />  {t("Товары", "Товары")}
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={filterTypes['Услуга']} onChange={e => setFilterTypes(p => ({...p, 'Услуга': e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} /> Услуги
+                  <input type="checkbox" checked={filterTypes['Услуга']} onChange={e => setFilterTypes(p => ({...p, 'Услуга': e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} />  {t("Услуги", "Услуги")}
                 </label>
               </div>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Статус</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Статус", "Статус")}</div>
               <select 
                 value={filterStatus} 
                 onChange={e => setFilterStatus(e.target.value)}
                 style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border-default)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', fontSize: 12, outline: 'none' }}
               >
-                <option value="Все">Все статусы</option>
-                <option value="Активен">Активен</option>
-                <option value="В архиве">В архиве</option>
+                <option value={t("Все", "Все")}>{t("Все статусы", "Все статусы")}</option>
+                <option value={t("Активные", "Активные")}>{t("Активные", "Активные")}</option>
+                <option value={t("В архиве", "В архиве")}>{t("В архиве", "В архиве")}</option>
               </select>
             </div>
 
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Наличие (Товары)</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Наличие (Товары)", "Наличие (Товары)")}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={filterStock.inStock} onChange={e => setFilterStock(p => ({...p, inStock: e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} /> Только в наличии
+                  <input type="checkbox" checked={filterStock.inStock} onChange={e => setFilterStock(p => ({...p, inStock: e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} />  {t("Только в наличии", "Только в наличии")}
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={filterStock.lowStock} onChange={e => setFilterStock(p => ({...p, lowStock: e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} /> Заканчивается (&lt;10 шт)
+                  <input type="checkbox" checked={filterStock.lowStock} onChange={e => setFilterStock(p => ({...p, lowStock: e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} />  {t("Заканчивается (&lt;10 шт)", "Заканчивается (&lt;10 шт)")}
                 </label>
               </div>
             </div>
@@ -249,8 +252,8 @@ export default function ReferencesProductsPage() {
               <Filter size={12} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Товары и Услуги</span>
-              <span title="Единый справочник и складской учет" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Товары и Услуги", "Товары и Услуги")}</span>
+              <span title={t("Единый справочник и складской учет", "Единый справочник и складской учет")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -258,7 +261,7 @@ export default function ReferencesProductsPage() {
 
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={openCreateModal} className="header-btn header-btn-primary">
-              <Plus size={12} /> Добавить позицию
+              <Plus size={12} />  {t("Добавить позицию", "Добавить позицию")}
             </button>
           </div>
         </div>
@@ -275,17 +278,17 @@ export default function ReferencesProductsPage() {
         <div style={{ padding: '12px 24px 0', display: 'flex', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8 }}>
             <ShieldCheck size={13} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Всего:</span>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Всего:", "Всего:")}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{totalProducts}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 2 }}>• активных: {activeCount}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 2 }}>{t("• активных:", "• активных:")} {activeCount}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 8 }}>
             <Box size={13} color="#3b82f6" />
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Капитализация склада:</span>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Капитализация склада:", "Капитализация склада:")}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)' }}>{new Intl.NumberFormat('ru-RU').format(totalStockValue)} {APP_CURRENCY_SYMBOL}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 8 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Средняя маржа:</span>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Средняя маржа:", "Средняя маржа:")}</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: '#10b981' }}>{avgMargin.toFixed(1)}%</span>
           </div>
         </div>
@@ -304,11 +307,12 @@ export default function ReferencesProductsPage() {
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 {searchQuery && (
                   <button onClick={() => setSearchQuery('')} style={{ padding: '6px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}>
-                    Сбросить поиск
+                    
+                    {t("Сбросить поиск", "Сбросить поиск")}
                   </button>
                 )}
                 <button onClick={openCreateModal} style={{ padding: '6px 14px', background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Plus size={12} /> Добавить позицию
+                  <Plus size={12} />  {t("Добавить позицию", "Добавить позицию")}
                 </button>
               </div>
             </div>
@@ -317,21 +321,21 @@ export default function ReferencesProductsPage() {
               <thead>
                 <tr>
                   <th style={thS} onClick={() => toggleSort('name')}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Наименование <SortIcon field="name" /></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{t("Наименование", "Наименование")} <SortIcon field="name" /></div>
                   </th>
                   <th style={thS} onClick={() => toggleSort('sku')}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Артикул <SortIcon field="sku" /></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{t("Артикул", "Артикул")} <SortIcon field="sku" /></div>
                   </th>
                   <th style={{ ...thS, textAlign: 'right' }} onClick={() => toggleSort('price')}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>Цена <SortIcon field="price" /></div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>{t("Цена", "Цена")} <SortIcon field="price" /></div>
                   </th>
                   <th style={{ ...thS, textAlign: 'right' }} onClick={() => toggleSort('stockBalance')}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>Остаток <SortIcon field="stockBalance" /></div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>{t("Остаток", "Остаток")} <SortIcon field="stockBalance" /></div>
                   </th>
                   <th style={thS} onClick={() => toggleSort('status')}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>Статус <SortIcon field="status" /></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{t("Статус", "Статус")} <SortIcon field="status" /></div>
                   </th>
-                  <th style={{ ...thS, textAlign: 'right' }}>Маржа</th>
+                  <th style={{ ...thS, textAlign: 'right' }}>{t("Маржа", "Маржа")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -359,7 +363,7 @@ export default function ReferencesProductsPage() {
                     </td>
                     <td style={{ ...tdS, textAlign: 'right' }}>
                       <span style={{ fontWeight: 600 }}>{new Intl.NumberFormat('ru-RU').format(p.price)}</span>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>НДС {p.vatRate}%</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("НДС", "НДС")} {p.vatRate}%</div>
                     </td>
                     <td style={{ ...tdS, textAlign: 'right' }}>
                       {p.type === 'Товар' ? (
@@ -373,8 +377,8 @@ export default function ReferencesProductsPage() {
                     <td style={tdS}>
                       <span style={{ 
                         fontSize: 11, fontWeight: 600, padding: '2px 6px', borderRadius: 4,
-                        background: p.status === 'Активен' ? 'rgba(16,185,129,0.1)' : 'var(--bg-elevated)',
-                        color: p.status === 'Активен' ? '#10b981' : 'var(--text-muted)'
+                        background: p.status === 'Активные' ? 'rgba(16,185,129,0.1)' : 'var(--bg-elevated)',
+                        color: p.status === 'Активные' ? '#10b981' : 'var(--text-muted)'
                       }}>
                         {p.status}
                       </span>
@@ -415,15 +419,15 @@ export default function ReferencesProductsPage() {
           <div style={{ flex: 1, overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Status */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Статус</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: selectedProduct.status === 'Активен' ? '#10b981' : 'var(--text-muted)' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("Статус", "Статус")}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: selectedProduct.status === 'Активные' ? '#10b981' : 'var(--text-muted)' }}>
                 {selectedProduct.status}
               </span>
             </div>
 
             {/* SKU */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Артикул</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("Артикул", "Артикул")}</span>
               <span style={{ fontSize: 13, fontFamily: 'monospace', color: 'var(--text-primary)' }}>{selectedProduct.sku || '—'}</span>
             </div>
 
@@ -431,25 +435,25 @@ export default function ReferencesProductsPage() {
 
             {/* Pricing */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>Ценообразование</div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>{t("Ценообразование", "Ценообразование")}</div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Цена без НДС</span>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Цена без НДС", "Цена без НДС")}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{new Intl.NumberFormat('ru-RU').format(selectedProduct.price)} {APP_CURRENCY_SYMBOL}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Ставка НДС</span>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Ставка НДС", "Ставка НДС")}</span>
                 <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{selectedProduct.vatRate}%</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Итого с НДС</span>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Итого с НДС", "Итого с НДС")}</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: '#10b981' }}>
                   {new Intl.NumberFormat('ru-RU').format(selectedProduct.price * (1 + selectedProduct.vatRate/100))} {APP_CURRENCY_SYMBOL}
                 </span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Себестоимость</span>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Себестоимость", "Себестоимость")}</span>
                 <span style={{ fontSize: 13, color: 'var(--color-danger)' }}>{new Intl.NumberFormat('ru-RU').format(selectedProduct.costPrice)} {APP_CURRENCY_SYMBOL}</span>
               </div>
               
@@ -459,7 +463,7 @@ export default function ReferencesProductsPage() {
                 const mColor = margin > 30 ? '#10b981' : margin > 10 ? '#f59e0b' : '#ef4444';
                 return (
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 6, marginTop: 8 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Маржинальность</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{t("Маржинальность", "Маржинальность")}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: mColor }}>{margin.toFixed(1)}%</span>
                   </div>
                 );
@@ -470,15 +474,15 @@ export default function ReferencesProductsPage() {
               <>
                 <div style={{ height: 1, background: 'var(--border-subtle)' }} />
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>Склад</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 12 }}>{t("Склад", "Склад")}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Текущий остаток</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Текущий остаток", "Текущий остаток")}</span>
                     <span style={{ fontSize: 14, fontWeight: 700, color: selectedProduct.stockBalance > 0 ? 'var(--text-primary)' : 'var(--color-danger)' }}>
                       {selectedProduct.stockBalance} {selectedProduct.unit}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Капитализация</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t("Капитализация", "Капитализация")}</span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
                       {new Intl.NumberFormat('ru-RU').format(selectedProduct.stockBalance * selectedProduct.costPrice)} {APP_CURRENCY_SYMBOL}
                     </span>
@@ -490,18 +494,18 @@ export default function ReferencesProductsPage() {
 
           <div style={{ padding: 16, borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 8 }}>
             <button onClick={() => openEditModal(selectedProduct)} style={{ flex: 1, height: 32, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-              <Edit2 size={13} /> Изменить
+              <Edit2 size={13} />  {t("Изменить", "Изменить")}
             </button>
             <button 
               onClick={() => handleArchive(selectedProduct.id, selectedProduct.status)} 
               style={{ flex: 1, height: 32, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
-              <Archive size={13} /> {selectedProduct.status === 'Активен' ? 'В архив' : 'Разархивировать'}
+              <Archive size={13} /> {selectedProduct.status === 'Активные' ? 'В архив' : 'Разархивировать'}
             </button>
               {confirmDeleteId === selectedProduct.id ? (
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={() => handleDelete(selectedProduct.id)} style={{ height: 32, padding: '0 10px', background: '#ef4444', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Удалить</button>
-                  <button onClick={() => setConfirmDeleteId(null)} style={{ height: 32, padding: '0 10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>Отмена</button>
+                  <button onClick={() => handleDelete(selectedProduct.id)} style={{ height: 32, padding: '0 10px', background: '#ef4444', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{t("Удалить", "Удалить")}</button>
+                  <button onClick={() => setConfirmDeleteId(null)} style={{ height: 32, padding: '0 10px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>{t("Отозвать", "Отозвать")}</button>
                 </div>
               ) : (
                 <button onClick={() => setConfirmDeleteId(selectedProduct.id)} style={{ width: 32, height: 32, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -527,39 +531,39 @@ export default function ReferencesProductsPage() {
             <form onSubmit={handleSave} style={{ overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', gap: 16 }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-primary)' }}>
-                  <input type="radio" name="ptype" checked={formData.type === 'Товар'} onChange={() => setFormData({...formData, type: 'Товар'})} /> Товар
+                  <input type="radio" name="ptype" checked={formData.type === 'Товар'} onChange={() => setFormData({...formData, type: 'Товар'})} />  {t("Товар", "Товар")}
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-primary)' }}>
-                  <input type="radio" name="ptype" checked={formData.type === 'Услуга'} onChange={() => setFormData({...formData, type: 'Услуга'})} /> Услуга
+                  <input type="radio" name="ptype" checked={formData.type === 'Услуга'} onChange={() => setFormData({...formData, type: 'Услуга'})} />  {t("Услуга", "Услуга")}
                 </label>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Наименование *</label>
-                <input required type="text" style={modalInp} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Например: Ноутбук Lenovo" />
+                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Наименование *", "Наименование *")}</label>
+                <input required type="text" style={modalInp} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t("Например: Ноутбук Lenovo", "Например: Ноутбук Lenovo")} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Артикул (SKU)</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Артикул (SKU)", "Артикул (SKU)")}</label>
                   <input type="text" style={modalInp} value={formData.sku || ''} onChange={e => setFormData({...formData, sku: e.target.value})} placeholder="LEN-123" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Ед. измерения</label>
-                  <input type="text" style={modalInp} value={formData.unit || ''} onChange={e => setFormData({...formData, unit: e.target.value})} placeholder="шт, кг, час" />
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Ед. измерения", "Ед. измерения")}</label>
+                  <input type="text" style={modalInp} value={formData.unit || ''} onChange={e => setFormData({...formData, unit: e.target.value})} placeholder={t("шт, кг, час", "шт, кг, час")} />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Категория</label>
-                  <input type="text" style={modalInp} value={formData.category || ''} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="Электроника" />
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Категория", "Категория")}</label>
+                  <input type="text" style={modalInp} value={formData.category || ''} onChange={e => setFormData({...formData, category: e.target.value})} placeholder={t("Электроника", "Электроника")} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Статус</label>
-                  <select style={modalInp} value={formData.status || 'Активен'} onChange={e => setFormData({...formData, status: e.target.value as 'Активен' | 'В архиве'})}>
-                    <option value="Активен">Активен</option>
-                    <option value="В архиве">В архиве</option>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Статус", "Статус")}</label>
+                  <select style={modalInp} value={formData.status || 'Активные'} onChange={e => setFormData({...formData, status: e.target.value as 'Активные' | 'В архиве'})}>
+                    <option value={t("Активные", "Активные")}>{t("Активные", "Активные")}</option>
+                    <option value={t("В архиве", "В архиве")}>{t("В архиве", "В архиве")}</option>
                   </select>
                 </div>
               </div>
@@ -568,33 +572,34 @@ export default function ReferencesProductsPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Цена (без НДС) *</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Цена (без НДС) *", "Цена (без НДС) *")}</label>
                   <input required type="number" step="0.01" style={modalInp} value={formData.price ?? ''} onChange={e => setFormData({...formData, price: Number(e.target.value)})} placeholder="0.00" />
                   {(formData.price ?? 0) > 0 && (
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                      С НДС: <strong style={{ color: '#10b981' }}>{new Intl.NumberFormat('ru-RU').format(Number(formData.price) * (1 + Number(formData.vatRate ?? 20) / 100))}</strong>
+                      
+                      {t("С НДС:", "С НДС:")} <strong style={{ color: '#10b981' }}>{new Intl.NumberFormat('ru-RU').format(Number(formData.price) * (1 + Number(formData.vatRate ?? 20) / 100))}</strong>
                     </div>
                   )}
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Ставка НДС (%)</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Ставка НДС (%)", "Ставка НДС (%)")}</label>
                   <select style={modalInp} value={formData.vatRate ?? 20} onChange={e => setFormData({...formData, vatRate: Number(e.target.value)})}>
                     <option value="20">20%</option>
                     <option value="12">12%</option>
                     <option value="10">10%</option>
-                    <option value="0">0% (Без НДС)</option>
+                    <option value="0">{t("0% (Без НДС)", "0% (Без НДС)")}</option>
                   </select>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Себестоимость</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Себестоимость", "Себестоимость")}</label>
                   <input type="number" step="0.01" style={modalInp} value={formData.costPrice ?? ''} onChange={e => setFormData({...formData, costPrice: Number(e.target.value)})} placeholder="0.00" />
                 </div>
                 {formData.type === 'Товар' && (
                   <div>
-                    <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Остаток</label>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Остаток", "Остаток")}</label>
                     <input type="number" step="0.01" style={modalInp} value={formData.stockBalance ?? ''} onChange={e => setFormData({...formData, stockBalance: Number(e.target.value)})} placeholder="0" />
                   </div>
                 )}
@@ -602,7 +607,8 @@ export default function ReferencesProductsPage() {
 
               <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 12, position: 'sticky', bottom: 0, background: 'var(--bg-surface)' }}>
                 <button type="button" onClick={() => setModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                  Отмена
+                  
+                  {t("Отозвать", "Отозвать")}
                 </button>
                 <button type="submit" disabled={isSaving} className="header-btn header-btn-primary" style={{ padding: '8px 16px', height: 'auto', opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}>
                   <Save size={14} /> {isSaving ? 'Сохранение...' : 'Сохранить'}

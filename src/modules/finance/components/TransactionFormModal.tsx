@@ -5,6 +5,7 @@ import type { TransactionType } from '../financeStore';
 import { X, Info, CheckCircle, Paperclip, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   isOpen: boolean;
@@ -25,7 +26,8 @@ const FieldRow: React.FC<{ label: string, required?: boolean, children: React.Re
 );
 
 export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxId }) => {
-  const { categories, accounts, contractors, projects, addTransaction, updateTransaction, transactions } = useFinanceStore();
+  const { t } = useTranslation();
+    const { categories, accounts, contractors, projects, addTransaction, updateTransaction, transactions } = useFinanceStore();
 
   const [type, setType] = useState<TransactionType>('income');
   const [amount, setAmount] = useState('');
@@ -185,7 +187,7 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
       console.error('File upload failed', err);
     }
   };  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Новая операция" width="980px" hideHeader noPadding>
+    <Modal isOpen={isOpen} onClose={onClose} title={t("Новая операция", "Новая операция")} width="980px" hideHeader noPadding>
       <form onSubmit={handleSubmit} style={{ display: 'flex', height: '620px' }}>
         
         {/* LEFT COLUMN - FORM */}
@@ -198,7 +200,7 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                 {editTxId ? 'Редактировать операцию' : 'Новая операция'}
               </h2>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {format(new Date(), "d MMM yy 'в' HH:mm", { locale: ru })}
+                {format(new Date(), "d MMM yy 'час' HH:mm", { locale: ru })}
               </span>
             </div>
             <button type="button" onClick={() => { resetForm(); onClose(); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
@@ -225,7 +227,7 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                       boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
                     }}
                   >
-                    {t === 'income' ? 'Поступление' : t === 'expense' ? 'Выплата' : 'Перемещение'}
+                    {t === 'income' ? 'Поступление' : t === 'expense' ? "Выплата" : 'Перемещение'}
                   </button>
                 );
               })}
@@ -237,7 +239,7 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
             
             {type !== 'transfer' && (
               <>
-                <FieldRow label="Дата оплаты">
+                <FieldRow label={t("Дата оплаты", "Дата оплаты")}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <input type="date" value={date} onChange={e => setDate(e.target.value)} required style={{ ...inputStyle, width: 140 }} />
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>
@@ -246,19 +248,20 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                         style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} />
                       <CheckCircle size={16} color={isPaidConfirmed ? 'var(--color-primary)' : 'var(--text-muted)'}
                         style={{ cursor: 'pointer' }} onClick={() => setIsPaidConfirmed(v => !v)} />
-                      Подтвердить оплату
+                      
+                      {t("Подтвердить оплату", "Подтвердить оплату")}
                     </label>
                   </div>
                 </FieldRow>
 
-                <FieldRow label="Счет и юрлицо">
+                <FieldRow label={t("Счет и юрлицо", "Счет и юрлицо")}>
                   <select value={accountId} onChange={e => setAccountId(e.target.value)} required style={inputStyle}>
-                    <option value="" disabled>Выберите счет...</option>
+                    <option value="" disabled>{t("Выберите счет...", "Выберите счет...")}</option>
                     {accounts.map(a => <option key={a.id} value={a.id}>{a.name} [{a.currency}]</option>)}
                   </select>
                 </FieldRow>
 
-                <FieldRow label="Сумма">
+                <FieldRow label={t("Сумма", "Сумма")}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <input type="number" value={amount} onChange={e => setAmount(e.target.value)} required min="0" step="0.01" style={{ ...inputStyle, width: 200, fontSize: 16 }} />
                     {/* Fix #3: dynamic currency from selected account */}
@@ -267,40 +270,40 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                   {/* Fix #5: removed stub "Разбить сумму" / "Добавить начисление" buttons */}
                 </FieldRow>
 
-                <FieldRow label="Контрагент">
+                <FieldRow label={t("Контрагент", "Контрагент")}>
                   <select value={contractorId} onChange={e => setContractorId(e.target.value)} style={inputStyle}>
-                    <option value="">Не выбран</option>
+                    <option value="">{t("Не выбран", "Не выбран")}</option>
                     {contractors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </FieldRow>
 
-                <FieldRow label="Статья">
+                <FieldRow label={t("Статья", "Статья")}>
                   <select value={categoryId} onChange={e => setCategoryId(e.target.value)} style={inputStyle}>
-                    <option value="">Не выбрана</option>
+                    <option value="">{t("Не выбрана", "Не выбрана")}</option>
                     {filteredCategories.map(c => <option key={c.id} value={c.id}>{c.parentId ? '— ' : ''}{c.name}</option>)}
                   </select>
                 </FieldRow>
 
-                <FieldRow label="Проект" tooltip="Группа для похожих операций, из которых формируются отчеты">
+                <FieldRow label={t("Проект", "Проект")} tooltip={t("Группа для похожих операций, из которых формируются отчеты", "Группа для похожих операций, из которых формируются отчеты")}>
                   <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
-                    <option value="">Не выбран</option>
+                    <option value="">{t("Не выбран", "Не выбран")}</option>
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </FieldRow>
 
                 {type === 'expense' && (
-                  <FieldRow label="Сделка закупки">
+                  <FieldRow label={t("Сделка закупки", "Сделка закупки")}>
                     <select disabled style={{ ...inputStyle, background: 'var(--bg-hover)', color: 'var(--text-muted)' }}>
-                      <option>Не выбран</option>
+                      <option>{t("Не выбран", "Не выбран")}</option>
                     </select>
                   </FieldRow>
                 )}
 
-                <FieldRow label="Назначение платежа">
+                <FieldRow label={t("Назначение платежа", "Назначение платежа")}>
                   {/* Bug #2 fix: remove height from inputStyle spread so textarea respects minHeight */}
                   <textarea
                     value={description} onChange={e => setDescription(e.target.value)}
-                    placeholder="Назначение платежа"
+                    placeholder={t("Назначение платежа", "Назначение платежа")}
                     style={{ ...inputStyle, height: 'auto', resize: 'vertical', minHeight: 60, paddingTop: 6, paddingBottom: 6 }}
                   />
                 </FieldRow>
@@ -313,12 +316,12 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                    <div style={{ width: 140 }}></div>
                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>ОТКУДА</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>{t("ОТКУДА", "ОТКУДА")}</div>
                       <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
                    </div>
                  </div>
 
-                 <FieldRow label="Дата оплаты">
+                 <FieldRow label={t("Дата оплаты", "Дата оплаты")}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <input type="date" value={date} onChange={e => setDate(e.target.value)} required style={{ ...inputStyle, width: 140 }} />
                     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>
@@ -327,28 +330,29 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                         style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} />
                       <CheckCircle size={16} color={isPaidConfirmed ? 'var(--color-primary)' : 'var(--text-muted)'}
                         style={{ cursor: 'pointer' }} onClick={() => setIsPaidConfirmed(v => !v)} />
-                      Подтвердить оплату
+                      
+                      {t("Подтвердить оплату", "Подтвердить оплату")}
                     </label>
                   </div>
                 </FieldRow>
 
-                <FieldRow label="Счет и юрлицо">
+                <FieldRow label={t("Счет и юрлицо", "Счет и юрлицо")}>
                   <select value={accountId} onChange={e => setAccountId(e.target.value)} required style={inputStyle}>
-                    <option value="" disabled>Выберите счет...</option>
+                    <option value="" disabled>{t("Выберите счет...", "Выберите счет...")}</option>
                     {accounts.map(a => <option key={a.id} value={a.id}>{a.name} [{a.currency}]</option>)}
                   </select>
                 </FieldRow>
 
-                <FieldRow label="Сумма списания">
+                <FieldRow label={t("Сумма списания", "Сумма списания")}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <input type="number" value={amount} onChange={e => setAmount(e.target.value)} required min="0" step="0.01" style={{ ...inputStyle, width: 200, fontSize: 16 }} />
                     <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{currencyLabel}</div>
                   </div>
                 </FieldRow>
                 
-                <FieldRow label="Проект">
+                <FieldRow label={t("Проект", "Проект")}>
                   <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inputStyle}>
-                    <option value="">Не выбран</option>
+                    <option value="">{t("Не выбран", "Не выбран")}</option>
                     {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
                 </FieldRow>
@@ -357,37 +361,37 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
                    <div style={{ width: 140 }}></div>
                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>КУДА</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.05em' }}>{t("КУДА", "КУДА")}</div>
                       <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
                    </div>
                  </div>
 
-                 <FieldRow label="Дата">
+                 <FieldRow label={t("Дата", "Дата")}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} required style={{ ...inputStyle, width: 140 }} />
                   </div>
                 </FieldRow>
 
-                <FieldRow label="Счет и юрлицо">
+                <FieldRow label={t("Счет и юрлицо", "Счет и юрлицо")}>
                   {/* Bug #3: filter out both the source account AND prevent same-account selection */}
                   <select value={toAccountId} onChange={e => setToAccountId(e.target.value)} required style={{
                     ...inputStyle,
                     borderColor: toAccountId && toAccountId === accountId ? '#ef4444' : undefined,
                   }}>
-                    <option value="" disabled>Выберите счет-получатель...</option>
+                    <option value="" disabled>{t("Выберите счет-получатель...", "Выберите счет-получатель...")}</option>
                     {accounts.filter(a => a.id !== accountId).map(a => <option key={a.id} value={a.id}>{a.name} [{a.currency}]</option>)}
                   </select>
                 </FieldRow>
 
-                <FieldRow label="Сумма зачисления">
+                <FieldRow label={t("Сумма зачисления", "Сумма зачисления")}>
                   <input type="number" value={transferAmount} onChange={e => setTransferAmount(e.target.value)} placeholder={amount || "0"} min="0" step="0.01" style={{ ...inputStyle, width: 200, fontSize: 16 }} />
                 </FieldRow>
 
-                <FieldRow label="Назначение платежа">
+                <FieldRow label={t("Назначение платежа", "Назначение платежа")}>
                   {/* Bug #2 fix: height: auto so textarea is resizable */}
                   <textarea
                     value={description} onChange={e => setDescription(e.target.value)}
-                    placeholder="Назначение платежа"
+                    placeholder={t("Назначение платежа", "Назначение платежа")}
                     style={{ ...inputStyle, height: 'auto', resize: 'vertical', minHeight: 60, paddingTop: 6, paddingBottom: 6 }}
                   />
                 </FieldRow>
@@ -400,14 +404,16 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
           {/* Footer Actions */}
           <div style={{ padding: '24px 32px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 16 }}>
             <button type="button" onClick={() => { resetForm(); onClose(); }} style={{ background: 'none', border: 'none', color: 'var(--color-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-              Отменить
+              
+              {t("Отозвать", "Отозвать")}
             </button>
             <button type="submit" style={{ 
               background: 'var(--color-primary)', 
               color: 'var(--text-primary)', border: 'none', borderRadius: 8, padding: '0 20px', height: 36, fontSize: 13, fontWeight: 600, cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
             }}>
-              Сохранить
+              
+              {t("Сохранить", "Сохранить")}
             </button>
           </div>
 
@@ -420,7 +426,7 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
           <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ background: 'var(--bg-hover)', padding: '6px 12px', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
                <MessageSquare size={14} color="var(--text-primary)" />
-               <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>Файлы и комментарии</span>
+               <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{t("Файлы и комментарии", "Файлы и комментарии")}</span>
             </div>
           </div>
 
@@ -449,13 +455,16 @@ export const TransactionFormModal: React.FC<Props> = ({ isOpen, onClose, editTxI
             </label>
             
             <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 600, lineHeight: 1.5, marginBottom: 24 }}>
-              Прикрепляйте к операциям файлы,<br/>например, акты или счета,<br/>добавляйте комментарии
+              
+              {t("Прикрепляйте к операциям файлы,", "Прикрепляйте к операциям файлы,")}<br/>{t("например, акты или счета,", "например, акты или счета,")}<br/>{t("добавляйте комментарии", "добавляйте комментарии")}
             </div>
             
             <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              Не более 10 файлов к операции<br/><br/>
-              Максимальный размер файла — 5 МБ<br/><br/>
-              <span style={{ color: 'var(--color-primary)', opacity: 0.8 }}>Поддерживаемые форматы:<br/>
+              
+              {t("Не более 10 файлов к операции", "Не более 10 файлов к операции")}<br/><br/>
+              
+              {t("Максимальный размер файла — 5 МБ", "Максимальный размер файла — 5 МБ")}<br/><br/>
+              <span style={{ color: 'var(--color-primary)', opacity: 0.8 }}>{t("Поддерживаемые форматы:", "Поддерживаемые форматы:")}<br/>
               pdf, doc, docx, xls, xlsx, jpeg,<br/>
               png, zip, rar, txt, csv, xml</span>
             </div>

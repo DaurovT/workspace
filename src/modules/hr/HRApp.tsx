@@ -7,11 +7,13 @@ import AbsencesPage from './pages/AbsencesPage';
 import PayrollPage from './pages/PayrollPage';
 import OrgChartPage from './pages/OrgChartPage';
 import MyHRDashboard from './pages/MyHRDashboard';
+import ShiftSchedulesPage from './pages/ShiftSchedulesPage';
+import WorkCalendarPage from './pages/WorkCalendarPage';
 import { useHRStore } from './hrStore';
 import { useStore } from '../../store';
 
 const HRApp: React.FC = () => {
-  const { activeView, fetchInitialData, fetchMyProfile } = useHRStore();
+  const { activeView, fetchInitialData, fetchMyProfile, fetchShiftSchedules } = useHRStore();
   const { currentUserId, users } = useStore();
   const user = users.find(u => u.id === currentUserId);
   const isHRAdmin = user?.role === 'admin' || user?.role === 'cfo' || (user?.role as string) === 'hr';
@@ -19,6 +21,7 @@ const HRApp: React.FC = () => {
   React.useEffect(() => {
     if (isHRAdmin) {
       fetchInitialData();
+      fetchShiftSchedules();
     } else {
       fetchMyProfile();
     }
@@ -36,6 +39,8 @@ const HRApp: React.FC = () => {
       case 'absences': content = <AbsencesPage />; break;
       case 'payroll': content = <PayrollPage />; break;
       case 'org': content = <OrgChartPage />; break;
+      case 'schedules': content = <ShiftSchedulesPage />; break;
+      case 'calendar': content = <WorkCalendarPage />; break;
       default: content = <HRDashboard />;
     }
   }

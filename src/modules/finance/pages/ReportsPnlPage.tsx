@@ -4,6 +4,7 @@ import { Filter, ChevronDown, ChevronRight, Download, HelpCircle, Calendar } fro
 import { format, parseISO, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { exportToCSV } from '../utils/exportData';
+import { useTranslation } from 'react-i18next';
 
 
 type GroupBy = 'month' | 'quarter';
@@ -13,7 +14,8 @@ const getQ = (m: number) => `Q${Math.ceil(m / 3)}`;
 interface Col { label: string; month: number; year: number; }
 
 const ReportsPnlPage: React.FC = () => {
-  const { transactions, categories, settings } = useFinanceStore();
+  const { t } = useTranslation();
+    const { transactions, categories, settings } = useFinanceStore();
   const currencySymbol = settings.baseCurrency === 'UZS' ? 'сум' : '$';
   const now = new Date();
   const [dateFrom, setDateFrom] = useState(format(new Date(now.getFullYear(), now.getMonth() - 5, 1), 'yyyy-MM-dd'));
@@ -120,6 +122,7 @@ const ReportsPnlPage: React.FC = () => {
   const inp: React.CSSProperties = { padding: '0 8px', height: 28, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, outline: 'none' };
 
   const Sparkline = ({ vals, positive }: { vals: number[]; positive?: boolean }) => {
+    const { t } = useTranslation(); void t;
     const max = Math.max(...vals.map(Math.abs), 1);
     return (
       <div style={{ display: 'flex', alignItems: 'flex-end', height: 14, gap: 2 }}>
@@ -207,7 +210,7 @@ const ReportsPnlPage: React.FC = () => {
       ['Операционные расходы (OPEX)', ...opexVals.map(String), String(opexVals.reduce((a,b)=>a+b,0))],
       ['EBITDA', ...ebitdaVals.map(String), String(ebitdaVals.reduce((a,b)=>a+b,0))],
       ['Налоги / Финансовые', ...taxVals.map(String), String(taxVals.reduce((a,b)=>a+b,0))],
-      ['Чистая прибыль', ...netVals.map(String), String(netVals.reduce((a,b)=>a+b,0))],
+      ['Чистая прибыль (Net Profit)', ...netVals.map(String), String(netVals.reduce((a,b)=>a+b,0))],
     ];
     exportToCSV('ОПУ', headers, rows);
   };
@@ -221,7 +224,7 @@ const ReportsPnlPage: React.FC = () => {
           <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={13} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры отчёта</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры отчёта", "Параметры отчёта")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
           </div>
@@ -230,7 +233,7 @@ const ReportsPnlPage: React.FC = () => {
 
             {/* Period */}
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Период</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Период", "Период")}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Calendar size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
@@ -259,11 +262,11 @@ const ReportsPnlPage: React.FC = () => {
 
             {/* Summary KPIs */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>Итого за период</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>{t("Итого за период", "Итого за период")}</div>
               {[
                 { label: 'Выручка',         val: incVals.reduce((a,b)=>a+b,0),    color: '#10b981' },
                 { label: 'EBITDA',          val: ebitdaVals.reduce((a,b)=>a+b,0), color: '#6366f1' },
-                { label: 'Чистая прибыль',  val: netVals.reduce((a,b)=>a+b,0),    color: netVals.reduce((a,b)=>a+b,0) >= 0 ? '#10b981' : '#dc2626' },
+                { label: 'Чистая прибыль (Net Profit)',  val: netVals.reduce((a,b)=>a+b,0),    color: netVals.reduce((a,b)=>a+b,0) >= 0 ? '#10b981' : '#dc2626' },
                 { label: 'EBITDA margin',   val: ebitdaVals.reduce((a,b)=>a+b,0), color: '#6366f1', isPercent: true, base: incVals.reduce((a,b)=>a+b,0) },
 
               ].map(({ label, val, color, isPercent, base }: { label: string; val: number; color: string; isPercent?: boolean; base?: number }) => (
@@ -292,8 +295,8 @@ const ReportsPnlPage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>ОПУ: Отчёт о прибылях и убытках</span>
-              <span title="Отчёт о прибылях и убытках: доходы, расходы, прибыль" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("ОПУ: Отчёт о прибылях и убытках", "ОПУ: Отчёт о прибылях и убытках")}</span>
+              <span title={t("Отчёт о прибылях и убытках: доходы, расходы, прибыль", "Отчёт о прибылях и убытках: доходы, расходы, прибыль")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -301,7 +304,7 @@ const ReportsPnlPage: React.FC = () => {
           <button onClick={exportCSV} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', height: 28, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 160ms ease' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}>
-            <Download size={12} /> В CSV
+            <Download size={12} />  {t("В CSV", "В CSV")}
           </button>
         </div>
 
@@ -309,18 +312,19 @@ const ReportsPnlPage: React.FC = () => {
         <div style={{ flex: 1, overflow: 'auto' }}>
           {displayCols.length === 0 ? (
             <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
-              Выберите корректный период
+              
+              {t("Выберите корректный период", "Выберите корректный период")}
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr style={{ background: 'var(--bg-surface)', boxShadow: '0 1px 0 var(--border-subtle)' }}>
-                  <th style={{ ...tdS, textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', width: 260, position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 20 }}>По статьям учёта</th>
-                  <th style={{ ...tdS, width: 56, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Тренд</th>
+                  <th style={{ ...tdS, textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', width: 260, position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 20 }}>{t("По статьям учёта", "По статьям учёта")}</th>
+                  <th style={{ ...tdS, width: 56, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{t("Тренд", "Тренд")}</th>
                   {displayCols.map((c, i) => (
                     <th key={i} style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{c.label}</th>
                   ))}
-                  <th style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-primary)', background: 'var(--bg-hover)' }}>Итого</th>
+                  <th style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-primary)', background: 'var(--bg-hover)' }}>{t("Итого", "Итого")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -329,7 +333,7 @@ const ReportsPnlPage: React.FC = () => {
                 {expanded['inc'] && incCats.map(c => catRow(c, false))}
 
                 {/* OPEX = all operating expenses */}
-                {sectionLabel('opex', settings.pnlMode === 'fixed_variable' ? 'Операционные расходы (Пост. и Перем.)' : 'Операционные расходы (Прямые и Косвенные)', opexVals, true)}
+                {sectionLabel('opex', settings.pnlMode === 'fixed_variable' ? "Операционные расходы (Пост. и Перем.)" : 'Операционные расходы (Прямые и Косвенные)', opexVals, true)}
                 {expanded['opex'] && opexRootCats.map(c => catRow(c, true))}
 
                 {/* EBITDA */}

@@ -4,6 +4,7 @@ import { Filter, ChevronDown, ChevronRight, Download, HelpCircle, Calendar, Shie
 import { format, parseISO, eachMonthOfInterval, endOfMonth, lastDayOfMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { APP_CURRENCY, APP_CURRENCY_SYMBOL } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 type GroupBy = 'month' | 'quarter';
 const fmtN = (n: number) => new Intl.NumberFormat('ru-RU').format(Math.round(Math.abs(n)));
@@ -15,7 +16,8 @@ const tdS: React.CSSProperties = { padding: '8px 14px', borderBottom: '1px solid
 const inp: React.CSSProperties = { padding: '0 8px', height: 28, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, outline: 'none' };
 
 const Sparkline = ({ vals, color = '#6366f1' }: { vals: number[]; color?: string }) => {
-  const max = Math.max(...vals.map(Math.abs), 1);
+  const { t } = useTranslation(); void t;
+    const max = Math.max(...vals.map(Math.abs), 1);
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', height: 14, gap: 2 }}>
       {vals.map((v, i) => (
@@ -26,7 +28,8 @@ const Sparkline = ({ vals, color = '#6366f1' }: { vals: number[]; color?: string
 };
 
 const ReportsBalancePage: React.FC = () => {
-  const { transactions, accounts, assets, loans } = useFinanceStore();
+  const { t } = useTranslation();
+    const { transactions, accounts, assets, loans } = useFinanceStore();
   const now = new Date();
 
   const [dateFrom, setDateFrom] = useState(format(new Date(now.getFullYear(), now.getMonth() - 5, 1), 'yyyy-MM-dd'));
@@ -169,8 +172,8 @@ const ReportsBalancePage: React.FC = () => {
       ['Дебиторская задолженность', ...receivablesPerCol.map(String)].join(';'),
       ['Основные средства', ...fixedAssetsPerCol.map(String)].join(';'),
       ['ИТОГО Активы', ...totalAssetsPerCol.map(String)].join(';'),
-      ['Займы и кредиты', ...loansPerCol.map(String)].join(';'),
-      ['Собственный капитал', ...equityPerCol.map(String)].join(';'),
+      ['Кредиты и займы', ...loansPerCol.map(String)].join(';'),
+      ["Собственный капитал", ...equityPerCol.map(String)].join(';'),
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Баланс.csv'; a.click();
@@ -184,7 +187,7 @@ const ReportsBalancePage: React.FC = () => {
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <Filter size={13} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры отчёта</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры отчёта", "Параметры отчёта")}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
         </div>
@@ -192,7 +195,7 @@ const ReportsBalancePage: React.FC = () => {
         <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Period */}
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Период</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Период", "Период")}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Calendar size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
@@ -227,10 +230,10 @@ const ReportsBalancePage: React.FC = () => {
 
           {/* KPI summary */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>На конец периода</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>{t("На конец периода", "На конец периода")}</div>
             {[
               { label: 'Активы',         val: totalAssetsPerCol[totalAssetsPerCol.length - 1] ?? 0, color: '#6366f1' },
-              { label: 'Обязательства',  val: loansPerCol[loansPerCol.length - 1] ?? 0,            color: '#dc2626' },
+              { label: 'ОБЯЗАТЕЛЬСТВА',  val: loansPerCol[loansPerCol.length - 1] ?? 0,            color: '#dc2626' },
               { label: 'Собств. капитал',val: equityPerCol[equityPerCol.length - 1] ?? 0,           color: '#10b981' },
             ].map(({ label, val, color }) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--bg-elevated)', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
@@ -252,8 +255,8 @@ const ReportsBalancePage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Управленческий Баланс</span>
-              <span title="Активы = Обязательства + Собственный капитал" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Управленческий Баланс", "Управленческий Баланс")}</span>
+              <span title={t("Активы = Обязательства + Собственный капитал", "Активы = Обязательства + Собственный капитал")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -261,55 +264,56 @@ const ReportsBalancePage: React.FC = () => {
           <button onClick={exportCSV} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '0 10px', height: 28, background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 160ms ease' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}>
-            <Download size={12} /> В CSV
+            <Download size={12} />  {t("В CSV", "В CSV")}
           </button>
         </div>
 
         {/* Table */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           {displayCols.length === 0 ? (
-            <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Выберите корректный период</div>
+            <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>{t("Выберите корректный период", "Выберите корректный период")}</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr style={{ background: 'var(--bg-surface)', boxShadow: '0 1px 0 var(--border-subtle)' }}>
-                  <th style={{ ...tdS, textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', width: 280, position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 20 }}>Статьи баланса</th>
-                  <th style={{ ...tdS, width: 56, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>Тренд</th>
+                  <th style={{ ...tdS, textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', width: 280, position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 20 }}>{t("Статьи баланса", "Статьи баланса")}</th>
+                  <th style={{ ...tdS, width: 56, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{t("Тренд", "Тренд")}</th>
                   {displayCols.map((c, i) => (
                     <th key={i} style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)' }}>{c.label}</th>
                   ))}
-                  <th style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-primary)', background: 'var(--bg-hover)' }}>Последний</th>
+                  <th style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-primary)', background: 'var(--bg-hover)' }}>{t("Последний", "Последний")}</th>
                 </tr>
               </thead>
               <tbody>
                 {/* ── ASSETS ── */}
-                <SectionRow id="assets" label="АКТИВЫ" vals={totalAssetsPerCol} color="#6366f1" />
+                <SectionRow id="assets" label={t("АКТИВЫ", "АКТИВЫ")} vals={totalAssetsPerCol} color="#6366f1" />
                 {expanded['assets'] && <>
-                  <SubRow label="Денежные средства" vals={cashPerCol} color="#6366f1" />
-                  <SubRow label="Дебиторская задолженность" vals={receivablesPerCol} color="#6366f1" />
-                  <SubRow label="Основные средства (остаточная стоимость)" vals={fixedAssetsPerCol} color="#6366f1" />
+                  <SubRow label={t("Денежные средства", "Денежные средства")} vals={cashPerCol} color="#6366f1" />
+                  <SubRow label={t("Дебиторская задолженность", "Дебиторская задолженность")} vals={receivablesPerCol} color="#6366f1" />
+                  <SubRow label={t("Основные средства (остаточная стоимость)", "Основные средства (остаточная стоимость)")} vals={fixedAssetsPerCol} color="#6366f1" />
                 </>}
-                <TotalRow label="ИТОГО Активы" vals={totalAssetsPerCol} color="#6366f1" bgHighlight />
+                <TotalRow label={t("ИТОГО Активы", "ИТОГО Активы")} vals={totalAssetsPerCol} color="#6366f1" bgHighlight />
 
                 {/* ── LIABILITIES ── */}
-                <SectionRow id="liab" label="ОБЯЗАТЕЛЬСТВА" vals={loansPerCol} color="#dc2626" />
+                <SectionRow id="liab" label={t("ОБЯЗАТЕЛЬСТВА", "ОБЯЗАТЕЛЬСТВА")} vals={loansPerCol} color="#dc2626" />
                 {expanded['liab'] && <>
-                  <SubRow label="Займы и кредиты (остаток)" vals={loansPerCol} color="#dc2626" />
+                  <SubRow label={t("Займы и кредиты (остаток)", "Займы и кредиты (остаток)")} vals={loansPerCol} color="#dc2626" />
                 </>}
 
                 {/* ── EQUITY ── */}
-                <SectionRow id="equity" label="СОБСТВЕННЫЙ КАПИТАЛ" vals={equityPerCol} color="#10b981" />
+                <SectionRow id="equity" label={t("СОБСТВЕННЫЙ КАПИТАЛ", "СОБСТВЕННЫЙ КАПИТАЛ")} vals={equityPerCol} color="#10b981" />
                 {expanded['equity'] && <>
-                  <SubRow label="Нераспределённая прибыль" vals={equityPerCol} color="#10b981" />
+                  <SubRow label={t("Нераспределённая прибыль", "Нераспределённая прибыль")} vals={equityPerCol} color="#10b981" />
                 </>}
-                <TotalRow label="ИТОГО Пассивы" vals={totalPassivesPerCol} color="#6366f1" bgHighlight />
+                <TotalRow label={t("ИТОГО Пассивы", "ИТОГО Пассивы")} vals={totalPassivesPerCol} color="#6366f1" bgHighlight />
 
                 {/* Balance check */}
                 <tr style={{ background: isBalanced ? 'rgba(16,185,129,0.05)' : 'rgba(220,38,38,0.06)' }}>
                   <td style={{ ...tdS, paddingLeft: 14, fontWeight: 600, fontSize: 11, color: isBalanced ? '#10b981' : '#dc2626' }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                       {isBalanced ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
-                      Балансовый контроль (Активы − Пассивы)
+                      
+                      {t("Балансовый контроль (Активы − Пассивы)", "Балансовый контроль (Активы − Пассивы)")}
                     </span>
                   </td>
                   <td style={tdS} />

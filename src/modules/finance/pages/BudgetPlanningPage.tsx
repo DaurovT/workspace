@@ -3,14 +3,16 @@ import { useFinanceStore } from '../financeStore';
 import { ChevronLeft, ChevronRight, Calendar, ChevronDown, HelpCircle, MoreHorizontal, Copy,
   Download, FileText, Printer, EyeOff, Eye, Filter } from 'lucide-react';
 import { PaymentCalendarTable } from '../components/PaymentCalendarTable';
+import { useTranslation } from 'react-i18next';
 
-const MONTH_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTH_SHORT = ['Янв','Фев','март','апрель','Май','Июн','Июл','август','Сен','Окт','Ноя','Дек'];
 const MONTH_FULL  = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 
 // ─── TopBarSelect ─────────────────────────────────────────────────────────────
 const TopBarSelect: React.FC<{ label: string; value: string; options: string[]; onChange: (v: string) => void }> =
 ({ label, value, options, onChange }) => {
-  const [open, setOpen] = useState(false);
+  const { t } = useTranslation(); void t;
+    const [open, setOpen] = useState(false);
   return (
     <div style={{ position: 'relative', flexShrink: 0 }}>
       <div style={{ fontSize: 10, color: 'var(--text-muted)', position: 'absolute', top: -7, left: 8,
@@ -49,7 +51,8 @@ const PeriodPicker: React.FC<{
   year: number; month: number; viewMode: string;
   onYear: (y: number) => void; onMonth: (m: number) => void;
 }> = ({ year, month, viewMode, onYear, onMonth }) => {
-  const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
 
   const label = viewMode === 'По дням'
     ? `${MONTH_SHORT[month]} ${year}`
@@ -57,7 +60,7 @@ const PeriodPicker: React.FC<{
 
   return (
     <div style={{ position: 'relative', marginBottom: 16 }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Период</div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t("Период", "Период")}</div>
       <button onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '7px 10px',
         display: 'flex', alignItems: 'center', gap: 8,
         background: 'var(--bg-base)', border: '1px solid var(--border-subtle)',
@@ -98,7 +101,8 @@ const PeriodPicker: React.FC<{
           </div>
           {viewMode !== 'По дням' && (
             <div style={{ marginTop: 12, padding: '8px 0 0', borderTop: '1px solid var(--border-subtle)', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
-              Выбор месяца доступен в режиме «По дням»
+              
+              {t("Выбор месяца доступен в режиме «По дням»", "Выбор месяца доступен в режиме «По дням»")}
             </div>
           )}
         </div>
@@ -110,7 +114,8 @@ const PeriodPicker: React.FC<{
 // ─── FilterSelect ─────────────────────────────────────────────────────────────
 const FilterSelect: React.FC<{ placeholder: string; options?: string[]; value?: string; onChange?: (v: string) => void }> =
 ({ placeholder, options = [], value = '', onChange }) => {
-  const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
   return (
     <div style={{ marginBottom: 10, position: 'relative' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '7px 10px',
@@ -127,7 +132,8 @@ const FilterSelect: React.FC<{ placeholder: string; options?: string[]; value?: 
           borderRadius: 8, boxShadow: 'var(--shadow-md)', zIndex: 100, overflow: 'hidden', maxHeight: 220, overflowY: 'auto' }}>
           <div onClick={() => { onChange?.(''); setOpen(false); }}
             style={{ padding: '8px 12px', fontSize: 13, cursor: 'pointer', color: 'var(--text-muted)' }}>
-            Все
+            
+            {t("Все", "Все")}
           </div>
           {options.map(o => (
             <div key={o} onClick={() => { onChange?.(o); setOpen(false); }}
@@ -153,7 +159,8 @@ const MoreMenu: React.FC<{
   onExportExcel: () => void;
   onPrint: () => void;
 }> = ({ hideZeroRows, onToggleZeroRows, onExportCsv, onExportExcel, onPrint }) => {
-  const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
 
   const item = (icon: React.ReactNode, label: string, onClick: () => void, active = false) => (
     <div onClick={() => { onClick(); setOpen(false); }}
@@ -182,13 +189,13 @@ const MoreMenu: React.FC<{
           background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
           borderRadius: 10, boxShadow: 'var(--shadow-lg)', zIndex: 100, overflow: 'hidden', paddingBlock: 4 }}>
 
-          <div style={{ padding: '4px 14px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Экспорт</div>
+          <div style={{ padding: '4px 14px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("Экспорт", "Экспорт")}</div>
           {item(<Download size={14} />, 'Скачать CSV', onExportCsv)}
           {item(<FileText size={14} />, 'Скачать Excel (.xls)', onExportExcel)}
           {item(<Printer size={14} />, 'Печать', onPrint)}
 
           <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 0' }} />
-          <div style={{ padding: '4px 14px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Вид</div>
+          <div style={{ padding: '4px 14px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("Вид", "Вид")}</div>
           {item(
             hideZeroRows ? <Eye size={14} /> : <EyeOff size={14} />,
             hideZeroRows ? 'Показать нулевые строки' : 'Скрыть нулевые строки',
@@ -203,7 +210,8 @@ const MoreMenu: React.FC<{
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const BudgetPlanningPage: React.FC = () => {
-  const { budgetScenarios, cloneBudgetScenario, accounts, projects,
+  const { t } = useTranslation();
+    const { budgetScenarios, cloneBudgetScenario, accounts, projects,
     categories, transactions, budgetLines, deals } = useFinanceStore();
   const today = new Date();
 
@@ -255,7 +263,7 @@ const BudgetPlanningPage: React.FC = () => {
 
   // ── Export helpers ────────────────────────────────────────────────────────────
   const buildCsvData = () => {
-    const MONTH_LABELS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+    const MONTH_LABELS = ['янв','Фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
     const incCats = categories.filter(c => c.type === 'income' && !c.parentId);
     const expCats = categories.filter(c => c.type === 'expense' && !c.parentId);
     const months = Array.from({ length: 12 }, (_, m) => m);
@@ -316,7 +324,7 @@ const BudgetPlanningPage: React.FC = () => {
           <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={13} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Фильтры и параметры</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Фильтры и параметры", "Фильтры и параметры")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
           </div>
@@ -327,19 +335,19 @@ const BudgetPlanningPage: React.FC = () => {
               onYear={setPeriodYear} onMonth={setPeriodMonth} />
 
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase',
-              letterSpacing: '0.06em', marginBottom: 8, marginTop: 4 }}>Параметры</div>
+              letterSpacing: '0.06em', marginBottom: 8, marginTop: 4 }}>{t("Параметры", "Параметры")}</div>
 
-            <FilterSelect placeholder="Юрлица и счета" options={accounts.map(a => a.name)}
+            <FilterSelect placeholder={t("Юрлица и счета", "Юрлица и счета")} options={accounts.map(a => a.name)}
               value={filterAccount} onChange={setFilterAccount} />
-            <FilterSelect placeholder="Проекты" options={projects.map(p => p.name)}
+            <FilterSelect placeholder={t("Проектов", "Проектов")} options={projects.map(p => p.name)}
               value={filterProject} onChange={setFilterProject} />
-            <FilterSelect placeholder="Сделки" options={deals.map(d => d.name)}
+            <FilterSelect placeholder={t("Сделки", "Сделки")} options={deals.map(d => d.name)}
               value={filterDeal} onChange={setFilterDeal} />
 
             <div style={{ height: 1, background: 'var(--border-subtle)', margin: '14px 0' }} />
 
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase',
-              letterSpacing: '0.06em', marginBottom: 8 }}>Сценарий планирования</div>
+              letterSpacing: '0.06em', marginBottom: 8 }}>{t("Сценарий планирования", "Сценарий планирования")}</div>
 
             <select value={scenarioId} onChange={e => setScenarioId(e.target.value)}
               style={{ width: '100%', height: 32, padding: '0 8px', marginBottom: 8,
@@ -356,7 +364,7 @@ const BudgetPlanningPage: React.FC = () => {
                 borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-base)'}>
-              <Copy size={13} /> Создать форк сценария
+              <Copy size={13} />  {t("Создать форк сценария", "Создать форк сценария")}
             </button>
           </div>
         </div>
@@ -372,7 +380,7 @@ const BudgetPlanningPage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Платежный календарь</span>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Платежный календарь", "Платежный календарь")}</span>
               <HelpCircle size={13} color="var(--text-muted)" style={{ cursor: 'pointer', flexShrink: 0 }} />
             </div>
 
@@ -407,16 +415,17 @@ const BudgetPlanningPage: React.FC = () => {
               style={{ height: 28, padding: '0 10px', fontSize: 12, fontWeight: 500,
                 background: 'var(--bg-base)', border: '1px solid var(--border-subtle)',
                 borderRadius: 6, cursor: 'pointer', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-              На сегодня
+              
+              {t("На сегодня", "На сегодня")}
             </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            <TopBarSelect label="Отображение" value={viewMode}
+            <TopBarSelect label={t("Отображение", "Отображение")} value={viewMode}
               options={['По месяцам','По дням','По кварталам']} onChange={setViewMode} />
-            <TopBarSelect label="Источник" value={source}
+            <TopBarSelect label={t("Источник", "Источник")} value={source}
               options={['Доходы и расходы','Баланс денег (ДДС)']} onChange={setSource} />
-            <TopBarSelect label="Учет" value={accounting}
+            <TopBarSelect label={t("Начисление", "Начисление")} value={accounting}
               options={['Кассовый метод','Метод начисления']} onChange={setAccounting} />
             <MoreMenu
               hideZeroRows={hideZeroRows}

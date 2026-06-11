@@ -4,10 +4,12 @@ import { DealsTable } from '../components/DealsTable';
 import { DealDetailsModal } from '../components/DealDetailsModal';
 import { Plus, HelpCircle, X, Filter } from 'lucide-react';
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 // ─── Create Deal Form Modal ───────────────────────────────────────────────────
 const CreateDealModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { contractors, projects, addDeal } = useFinanceStore();
+  const { t } = useTranslation();
+    const { contractors, projects, addDeal } = useFinanceStore();
   const [name, setName] = useState('');
   const [contractorId, setContractorId] = useState(contractors[0]?.id ?? '');
   const [projectId, setProjectId] = useState('');
@@ -54,7 +56,7 @@ const CreateDealModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           padding: '18px 24px', borderBottom: '1px solid var(--border-subtle)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         }}>
-          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>Новая сделка (продажа)</h2>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{t("Новая сделка (продажа)", "Новая сделка (продажа)")}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}>
             <X size={18} />
           </button>
@@ -63,31 +65,32 @@ const CreateDealModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>
-                Название сделки *
+                
+                {t("Название сделки *", "Название сделки *")}
               </label>
-              <input value={name} onChange={e => setName(e.target.value)} required placeholder="Договор №..." style={inp} />
+              <input value={name} onChange={e => setName(e.target.value)} required placeholder={t("Договор №...", "Договор №...")} style={inp} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>Клиент *</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Клиент *", "Клиент *")}</label>
                 <select value={contractorId} onChange={e => setContractorId(e.target.value)} required style={inp}>
-                  <option value="" disabled>Выберите клиента...</option>
+                  <option value="" disabled>{t("Выберите клиента...", "Выберите клиента...")}</option>
                   {contractors.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>Проект</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Проект", "Проект")}</label>
                 <select value={projectId} onChange={e => setProjectId(e.target.value)} style={inp}>
-                  <option value="">Без проекта</option>
+                  <option value="">{t("Без проекта", "Без проекта")}</option>
                   {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>Сумма сделки (сум) *</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Сумма сделки (сум) *", "Сумма сделки (сум) *")}</label>
                 <input type="number" min="0" value={amount} onChange={e => setAmount(e.target.value)} required placeholder="0" style={inp} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>Срок завершения</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 6 }}>{t("Срок завершения", "Срок завершения")}</label>
                 <input type="date" value={deadline} onChange={e => setDeadline(e.target.value)} style={inp} />
               </div>
             </div>
@@ -100,12 +103,12 @@ const CreateDealModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               padding: '0 16px', height: 32, background: 'transparent',
               border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-primary)',
               cursor: 'pointer', fontSize: 12, fontWeight: 500
-            }}>Отмена</button>
+            }}>{t("Отозвать", "Отозвать")}</button>
             <button type="submit" style={{
               padding: '0 20px', height: 32, background: 'var(--color-primary)',
               border: 'none', borderRadius: 8, color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 12,
               boxShadow: '0 4px 12px rgba(124,58,237,0.3)'
-            }}>Создать сделку</button>
+            }}>{t("Создать сделку", "Создать сделку")}</button>
           </div>
         </form>
       </div>
@@ -115,7 +118,8 @@ const CreateDealModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const DealsSalesPage: React.FC = () => {
-  const { deals } = useFinanceStore();
+  const { t } = useTranslation();
+    const { deals } = useFinanceStore();
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<DealStatus | 'all'>('all');
 
@@ -156,7 +160,7 @@ const DealsSalesPage: React.FC = () => {
           <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
               <Filter size={13} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры и KPI</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры и KPI", "Параметры и KPI")}</span>
             </div>
             <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
           </div>
@@ -165,24 +169,24 @@ const DealsSalesPage: React.FC = () => {
             {/* Filters */}
 
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Статус сделки</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Статус сделки", "Статус сделки")}</div>
               <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as DealStatus | 'all')} style={inp}>
-                <option value="all">Все статусы</option>
-                <option value="new">Новая</option>
-                <option value="in_progress">В работе</option>
-                <option value="completed">Завершена</option>
-                <option value="cancelled">Отменена</option>
+                <option value="all">{t("Все статусы", "Все статусы")}</option>
+                <option value="new">{t("Новая", "Новая")}</option>
+                <option value="in_progress">{t("В работе", "В работе")}</option>
+                <option value="completed">{t("Завершена", "Завершена")}</option>
+                <option value="cancelled">{t("Отменена", "Отменена")}</option>
               </select>
             </div>
 
             {/* KPI Summary */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>Итого по выборке</div>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 2 }}>{t("Итого по выборке", "Итого по выборке")}</div>
               {[
                 { label: 'Всего сделок', val: filteredDeals.length, type: 'count' },
                 { label: 'Общая сумма', val: totalSum, color: 'var(--text-primary)' },
                 { label: 'Оплачено', val: totalPaid, color: '#10b981' },
-                { label: 'Дебиторка', val: totalDebt, color: totalDebt > 0 ? '#ef4444' : '#10b981' },
+                { label: 'Дебиторская задолженность', val: totalDebt, color: totalDebt > 0 ? '#ef4444' : '#10b981' },
               ].map((kpi, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', background: 'var(--bg-elevated)', borderRadius: 6, border: '1px solid var(--border-subtle)' }}>
                   <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{kpi.label}</span>
@@ -205,8 +209,8 @@ const DealsSalesPage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Сделки по продажам</span>
-              <span title="Контролируйте учёт обязательств перед клиентами" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Сделки по продажам", "Сделки по продажам")}</span>
+              <span title={t("Контролируйте учёт обязательств перед клиентами", "Контролируйте учёт обязательств перед клиентами")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -218,7 +222,7 @@ const DealsSalesPage: React.FC = () => {
               borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
               cursor: 'pointer', transition: 'transform 100ms'
             }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <Plus size={13} /> Новая сделка
+              <Plus size={13} />  {t("Новая сделка", "Новая сделка")}
             </button>
           </div>
         </div>

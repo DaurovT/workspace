@@ -50,7 +50,7 @@ router.post('/', async (req: Request, res: Response) => {
     const { month, year, type = 'final' } = req.body;
 
     // Get all active employees with their absences for the specific month
-    const employeesData = await prisma.employee.findMany({ 
+    const employeesData = await prisma.employee.findMany({
       where: { status: 'active' },
       include: {
         absences: {
@@ -58,9 +58,10 @@ router.post('/', async (req: Request, res: Response) => {
             status: 'approved',
             startDate: { startsWith: `${year}-${String(month).padStart(2, '0')}` }
           }
-        }
+        },
+        shiftSchedule: true,
       }
-    });
+    } as any);
 
     const monthStr = `${year}-${String(month).padStart(2, '0')}`;
     const allTimeLogs = await prisma.timeLog.findMany({

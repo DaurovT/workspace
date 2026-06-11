@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useFinanceStore } from '../modules/finance/financeStore';
 import { useStore } from '../store';
 import { X, Send, Bot, TrendingUp, DollarSign, AlertTriangle, ArrowLeft, Plus, MessageSquare, Sparkles } from 'lucide-react';
-import { APP_CURRENCY, APP_CURRENCY_SYMBOL } from '../modules/finance/config/currency';
+import { useTranslation } from 'react-i18next';
 
 interface MiniBarData { label: string; value: number; }
 
@@ -15,9 +15,10 @@ interface ChatMessage {
 }
 
 export const GlobalAICopilot: React.FC = () => {
+  const { t } = useTranslation();
   const isGlobalAIOpen = useStore(state => state.isGlobalAIOpen);
-      const setGlobalAIOpen = useStore(state => state.setGlobalAIOpen);
-  const { accounts, transactions, contractors, categories, funds, copilotConversations, activeCopilotConversationId, setActiveCopilotConversationId, createCopilotConversation, updateCopilotConversation } = useFinanceStore();
+  const setGlobalAIOpen = useStore(state => state.setGlobalAIOpen);
+  const { copilotConversations, activeCopilotConversationId, setActiveCopilotConversationId } = useFinanceStore();
   const [isTyping, setIsTyping] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -36,7 +37,7 @@ export const GlobalAICopilot: React.FC = () => {
     {
       id: '0',
       sender: 'ai',
-      text: 'Привет! Я ваш финансовый помощник. Чем могу помочь сегодня?',
+      text: t('Привет! Я ваш финансовый помощник. Чем могу помочь сегодня?'),
     }
   ];
 
@@ -67,178 +68,61 @@ export const GlobalAICopilot: React.FC = () => {
     }
   }, [messages, isTyping, isGlobalAIOpen, showHistory]);
 
-  const processQuery = useCallback((q: string): ChatMessage => {
-    const lower = q.toLowerCase();
-    
-    // --- Tasks / Tracker ---
-    if (lower.includes('задач') || lower.includes('проект') || lower.includes('сделат')) {
-      const activeTasks = useStore.getState().tasks.filter(t => t.status === 'in_progress' || t.status === 'todo');
-      const urgent = activeTasks.filter(t => t.priority === 'urgent');
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `📋 **Анализ ваших задач:**\n\nВсего активных задач: ${activeTasks.length}\n🔥 Срочных задач: ${urgent.length}\n\nРекомендую сначала заняться срочными задачами. Вы можете нажать \`Cmd+K\` чтобы быстро найти нужную задачу.`
-      };
-    }
-
-    // --- Free Cash Balance ---
-    if (lower.includes('свободн') || lower.includes('free cash') || lower.includes('реально') || lower.includes('доступ')) {
-      const total = accounts.filter(a => a.currency === APP_CURRENCY).reduce((s, a) => s + a.balance, 0);
-      const reserved = funds.reduce((s, f) => s + f.currentBalance, 0);
-      const free = total - reserved;
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `💰 **Свободные средства (Free Cash Balance)**: **${new Intl.NumberFormat('ru-RU').format(free)} сум**\n\nВсего на счетах: ${new Intl.NumberFormat('ru-RU').format(total)} сум\nЗаморожено в сейфах: −${new Intl.NumberFormat('ru-RU').format(reserved)} сум\n\n${free < 0 ? '⚠️ Внимание: кассовый разрыв! Суммы в сейфах превышают остаток.' : '✅ Кассовый разрыв не обнаружен.'}`,
-        widget: free < 0 ? 'warning' : 'balance',
-      };
-    }
-
-    // --- Total Balance ---
-    if (lower.includes('остаток') || lower.includes('денег') || lower.includes('сколько') || lower.includes('счет') || lower.includes('баланс')) {
-      const sorted = [...accounts].sort((a, b) => b.balance - a.balance);
-      const total = accounts.reduce((s, a) => s + (a.currency === APP_CURRENCY ? a.balance : 0), 0);
-      const bars = sorted.slice(0, 4).map(a => ({ label: a.name.substring(0, 18), value: a.balance }));
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `Общий остаток на сумвых счетах: **${new Intl.NumberFormat('ru-RU').format(total)} сум**\n\nНаибольший остаток на счёте «${sorted[0]?.name}» — ${new Intl.NumberFormat('ru-RU').format(sorted[0]?.balance || 0)} сум.`,
-        widget: 'bar',
-        widgetData: { title: 'Остатки по счетам', bars },
-      };
-    }
-
-    // --- Top Clients ---
-    if (lower.includes('клиент') || lower.includes('выручк') || lower.includes('доход') || lower.includes('лучший')) {
-      const map = new Map<string, number>();
-      transactions.filter(t => t.type === 'income').forEach(t => {
-        const c = contractors.find(c => c.id === t.contractorId)?.name || 'Без контрагента';
-        map.set(c, (map.get(c) || 0) + (t.baseAmount ?? t.amount));
-      });
-      const top = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      if (!top.length) return { id: Date.now().toString(), sender: 'ai', text: 'Пока нет данных о доходах по клиентам.' };
-      const bars = top.map(([label, value]) => ({ label: label.substring(0, 16), value }));
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `🏆 **Топ-5 клиентов по выручке:**\n\n${top.map(([n, v], i) => `${i + 1}. ${n} — ${new Intl.NumberFormat('ru-RU').format(v)} ${APP_CURRENCY_SYMBOL}`).join('\n')}`,
-        widget: 'bar',
-        widgetData: { title: 'Выручка по клиентам', bars },
-      };
-    }
-
-    // --- Expenses / overspend ---
-    if (lower.includes('расход') || lower.includes('траты') || lower.includes('перетратил') || lower.includes('категор')) {
-      const map = new Map<string, number>();
-      transactions.filter(t => t.type === 'expense').forEach(t => {
-        const cat = categories.find(c => c.id === t.categoryId)?.name || 'Прочее';
-        map.set(cat, (map.get(cat) || 0) + (t.baseAmount ?? t.amount));
-      });
-      const top = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const bars = top.map(([label, value]) => ({ label: label.substring(0, 18), value }));
-      const totalExp = top.reduce((s, [, v]) => s + v, 0);
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `📊 **Топ расходных статей:**\n\n${top.map(([n, v], i) => `${i + 1}. ${n} — ${new Intl.NumberFormat('ru-RU').format(v)} ${APP_CURRENCY_SYMBOL}`).join('\n')}\n\nВсего расходов: **${new Intl.NumberFormat('ru-RU').format(totalExp)} сум**`,
-        widget: 'bar',
-        widgetData: { title: 'Структура расходов', bars },
-      };
-    }
-
-    // --- Cash gap / разрыв ---
-    if (lower.includes('разрыв') || lower.includes('кассов') || lower.includes('хватит') || lower.includes('хватает')) {
-      const totalUzs = accounts.filter(a => a.currency === APP_CURRENCY).reduce((s, a) => s + a.balance, 0);
-      const reserved = funds.reduce((s, f) => s + f.currentBalance, 0);
-      const free = totalUzs - reserved;
-      const avgExpPerMonth = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + (t.baseAmount ?? t.amount), 0) / 6;
-      const monthsCovered = avgExpPerMonth > 0 ? (free / avgExpPerMonth).toFixed(1) : '∞';
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: free < 0
-          ? `🚨 **Кассовый разрыв!**\nСвободный остаток отрицательный: **${new Intl.NumberFormat('ru-RU').format(free)} сум**.\nРекомендую срочно пополнить операционный счёт или разморозить часть резервов.`
-          : `✅ Кассового разрыва нет. Свободных средств: **${new Intl.NumberFormat('ru-RU').format(free)} сум**\nПри текущем темпе расходов хватит примерно на **${monthsCovered} мес.**`,
-        widget: free < 0 ? 'warning' : 'balance',
-      };
-    }
-
-    // --- What-if scenario ---
-    const amountMatch = lower.match(/(\d[\d\s]+)(млн|тыс|к|000)/);
-    if ((lower.includes('куплю') || lower.includes('трачу') || lower.includes('заплачу') || lower.includes('what if')) && amountMatch) {
-      let amt = parseInt(amountMatch[1].replace(/\s/g, ''));
-      if (amountMatch[2].includes('млн')) amt *= 1_000_000;
-      else if (amountMatch[2].includes('тыс') || amountMatch[2].includes('к')) amt *= 1_000;
-      const free = accounts.filter(a => a.currency === APP_CURRENCY).reduce((s, a) => s + a.balance, 0) - funds.reduce((s, f) => s + f.currentBalance, 0);
-      const after = free - amt;
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `📐 **What-if анализ:**\nЕсли вы потратите **${new Intl.NumberFormat('ru-RU').format(amt)} сум**, то после операции свободный остаток составит:\n\n${after >= 0 ? `✅ **${new Intl.NumberFormat('ru-RU').format(after)} сум** — всё в порядке` : `🚨 **${new Intl.NumberFormat('ru-RU').format(after)} сум** — кассовый разрыв! Рекомендую рассмотреть рассрочку или лизинг.`}`,
-        widget: after < 0 ? 'warning' : 'balance',
-      };
-    }
-
-    // --- Funds / Safes ---
-    if (lower.includes('сейф') || lower.includes('резерв') || lower.includes('фонд') || lower.includes('налог')) {
-      const bars = funds.map(f => ({ label: f.name.substring(0, 18), value: f.currentBalance }));
-      const total = funds.reduce((s, f) => s + f.currentBalance, 0);
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `🔒 **Резервные фонды (Сейфы):**\n\n${funds.map(f => `• ${f.name}: **${new Intl.NumberFormat('ru-RU').format(f.currentBalance)} сум** (цель: ${new Intl.NumberFormat('ru-RU').format(f.targetAmount)} сум)`).join('\n')}\n\nИтого зарезервировано: **${new Intl.NumberFormat('ru-RU').format(total)} сум**`,
-        widget: 'bar',
-        widgetData: { title: 'Сейфы', bars },
-      };
-    }
-
-    // --- Profit / рентабельность ---
-    if (lower.includes('прибыл') || lower.includes('рентабел') || lower.includes('маржа') || lower.includes('p&l') || lower.includes('pnl')) {
-      const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
-      const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
-      const profit = income - expense;
-      const margin = income > 0 ? ((profit / income) * 100).toFixed(1) : '0';
-      return {
-        id: Date.now().toString(), sender: 'ai',
-        text: `📈 **Анализ P&L (ОПУ):**\n\nВыручка: ${new Intl.NumberFormat('ru-RU').format(income)} сум\nРасходы: ${new Intl.NumberFormat('ru-RU').format(expense)} сум\nЧистая прибыль: **${new Intl.NumberFormat('ru-RU').format(profit)} сум**\nМаржинальность: **${margin}%**\n\n${parseFloat(margin) > 20 ? '✅ Отличная рентабельность!' : parseFloat(margin) > 10 ? '⚡ Средняя рентабельность. Есть пространство для роста.' : '⚠️ Низкая маржа. Рекомендую провести анализ расходов.'}`,
-        widget: profit > 0 ? 'cashflow' : 'warning',
-      };
-    }
-
-    // --- Greeting ---
-    if (lower.includes('привет') || lower.includes('здравств') || lower.includes('добр')) {
-      return { id: Date.now().toString(), sender: 'ai', text: 'Привет! 👋 Готов анализировать ваши финансы. Попробуйте спросить:\n\n• «Сколько денег на счетах?»\n• «Топ клиентов по выручке»\n• «Есть ли кассовый разрыв?»\n• «Если я куплю оборудование за 3 млн...»' };
-    }
-
-    return {
-      id: Date.now().toString(), sender: 'ai',
-      text: 'Я не совсем понял вопрос. Попробуйте переформулировать. Примеры:\n\n• «Сколько свободных денег?»\n• «Где мы перетратили?»\n• «Если я куплю склад за 5 млн, хватит ли денег?»',
-    };
-  }, [accounts, transactions, contractors, categories, funds]);
-
-  const handleSend = useCallback((text?: string) => {
+  // Send message and get AI response from server
+  const handleSend = useCallback(async (text?: string) => {
     const q = text || inputValue;
     if (!q.trim()) return;
 
-    const userMsg: ChatMessage = { id: Date.now().toString(), sender: 'user', text: q };
-    
+    const userMsg: ChatMessage & { role?: string } = { id: Date.now().toString(), sender: 'user', text: q, role: 'user' };
+
     let currentConvId = activeCopilotConversationId;
-    let currentMessages = [...messages];
-    
-    if (!currentConvId) {
-      currentConvId = Date.now().toString();
-      const newMessages = [...defaultMessages, userMsg];
-      createCopilotConversation({ id: currentConvId, title: q.substring(0, 40), updatedAt: new Date().toISOString(), messages: newMessages as any });
-      setActiveCopilotConversationId(currentConvId);
-    } else {
-      updateCopilotConversation(currentConvId, { messages: [...currentMessages, userMsg] as any });
-    }
+    const currentMessages = [...messages];
+    const storeState = useFinanceStore.getState();
 
     setInputValue('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiMsg = processQuery(q);
-      setIsTyping(false);
-      const storeState = useFinanceStore.getState();
-      const updatedConv = storeState.copilotConversations.find(c => c.id === currentConvId);
-      if (updatedConv) {
-         storeState.updateCopilotConversation(currentConvId!, { messages: [...updatedConv.messages, aiMsg] as any });
+    try {
+      let responseConv: any;
+
+      if (!currentConvId) {
+        // Create new conversation — server generates AI reply
+        const newMessages = [...defaultMessages.map(m => ({ ...m, role: 'assistant' })), userMsg];
+        const res = await fetch('/api/copilot-conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+          body: JSON.stringify({
+            id: Date.now().toString(),
+            title: q.substring(0, 40),
+            updatedAt: new Date().toISOString(),
+            messages: newMessages,
+          }),
+        });
+        responseConv = await res.json();
+        setActiveCopilotConversationId(responseConv.id);
+        storeState.createCopilotConversation(responseConv);
+      } else {
+        // Update existing conversation — server generates AI reply
+        const newMessages = [...currentMessages.map(m => ({ ...m, role: m.sender === 'ai' ? 'assistant' : 'user' })), userMsg];
+        const res = await fetch(`/api/copilot-conversations/${currentConvId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'include',
+          body: JSON.stringify({
+            updatedAt: new Date().toISOString(),
+            messages: newMessages,
+          }),
+        });
+        responseConv = await res.json();
+        storeState.updateCopilotConversation(currentConvId, responseConv);
       }
-    }, 900 + Math.random() * 600);
-  }, [inputValue, processQuery, activeCopilotConversationId, messages, createCopilotConversation, updateCopilotConversation, setActiveCopilotConversationId]);
+    } catch (e) {
+      console.error('AI request failed:', e);
+    } finally {
+      setIsTyping(false);
+    }
+  }, [inputValue, activeCopilotConversationId, messages, setActiveCopilotConversationId, defaultMessages]);
 
   // Mini bar chart renderer
   const MiniBarChart: React.FC<{ data: MiniBarData[]; title: string }> = ({ data, title }) => {
@@ -266,14 +150,22 @@ export const GlobalAICopilot: React.FC = () => {
   // Render message text with markdown-ish bold
   const renderText = (text: string) =>
     text.split('\n').map((line, i) => {
-      const parts = line.split(/(\*\*[^*]+\*\*)/g);
-      return (
-        <div key={i} style={{ minHeight: line === '' ? 8 : 'auto' }}>
-          {parts.map((p, j) =>
-            p.startsWith('**') ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{p.slice(2, -2)}</strong> : <span key={j}>{p}</span>
-          )}
-        </div>
+      const trimmed = line.trimStart();
+      const isBullet = /^[-*\u2022]\s+/.test(trimmed);
+      const content = isBullet ? trimmed.replace(/^[-*\u2022]\s+/, '') : line;
+      const parts = content.split(/(\*\*[^*]+\*\*)/g);
+      const rendered = parts.map((p, j) =>
+        p.startsWith('**') ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{p.slice(2, -2)}</strong> : <span key={j}>{p}</span>
       );
+      if (isBullet) {
+        return (
+          <div key={i} style={{ display: 'flex', gap: 8, padding: '1px 0' }}>
+            <span style={{ color: 'var(--color-primary)', flexShrink: 0 }}>•</span>
+            <span style={{ minWidth: 0 }}>{rendered}</span>
+          </div>
+        );
+      }
+      return <div key={i} style={{ minHeight: line === '' ? 8 : 'auto' }}>{rendered}</div>;
     });
 
   return (
@@ -284,7 +176,7 @@ export const GlobalAICopilot: React.FC = () => {
           right: 0,
           top: 0,
           zIndex: 1000,
-          width: isGlobalAIOpen ? 380 : 0, 
+          width: isGlobalAIOpen ? 420 : 0, 
           height: '100vh',
           background: 'var(--bg-surface)', 
           borderLeft: isGlobalAIOpen ? '1px solid var(--border-subtle)' : 'none', 
@@ -297,7 +189,7 @@ export const GlobalAICopilot: React.FC = () => {
           boxSizing: 'border-box'
         }}
       >
-        <div style={{ width: 380, display: 'flex', flexDirection: 'column', height: '100%', flexShrink: 0, boxSizing: 'border-box' }}>
+        <div style={{ width: 420, display: 'flex', flexDirection: 'column', height: '100%', flexShrink: 0, boxSizing: 'border-box' }}>
 
           {/* Header */}
           <div style={{ padding: '14px 20px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, boxSizing: 'border-box' }}>
@@ -308,7 +200,7 @@ export const GlobalAICopilot: React.FC = () => {
               </button>
               <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Bot size={18} color="var(--color-primary)" />
-                История чатов
+                {t('История чатов')}
               </h3>
             </div>
           ) : (
@@ -317,11 +209,16 @@ export const GlobalAICopilot: React.FC = () => {
               AI Copilot
             </h3>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              onClick={() => setGlobalAIOpen(false)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {!showHistory && (<>
+              <button onClick={() => { setActiveCopilotConversationId(null); setMessages(defaultMessages); }} title={t('Новый чат')} aria-label={t('Новый чат')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 5, borderRadius: 6 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <Plus size={18} />
+              </button>
+              <button onClick={() => setShowHistory(true)} title={t('История чатов')} aria-label={t('История чатов')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 5, borderRadius: 6 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
+                <MessageSquare size={17} />
+              </button>
+            </>)}
+            <button onClick={() => setGlobalAIOpen(false)} title={t('Закрыть')} aria-label={t('Закрыть')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 5, borderRadius: 6 }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>
               <X size={20} />
             </button>
           </div>
@@ -335,15 +232,15 @@ export const GlobalAICopilot: React.FC = () => {
                 onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
                 onMouseLeave={e => e.currentTarget.style.opacity = '1'}
               >
-                <Plus size={16} /> Новый чат
+                <Plus size={16} /> {t('Новый чат')}
               </button>
               
-              {copilotConversations.length > 0 && <div style={{ marginTop: 12, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Ваши диалоги</div>}
+              {copilotConversations.length > 0 && <div style={{ marginTop: 12, fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('Ваши диалоги')}</div>}
               
               {copilotConversations.length === 0 ? (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                   <MessageSquare size={32} opacity={0.3} />
-                  У вас пока нет сохраненных чатов.
+                  {t('У вас пока нет сохраненных чатов.')}
                 </div>
               ) : (
                 copilotConversations.map(c => (
@@ -375,17 +272,17 @@ export const GlobalAICopilot: React.FC = () => {
                     </div>
                     {msg.widget === 'warning' && (
                       <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 400, color: '#ef4444' }}>
-                        <AlertTriangle size={12} /> Требует внимания
+                        <AlertTriangle size={12} /> {t('Требует внимания')}
                       </div>
                     )}
                     {msg.widget === 'balance' && (
                       <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 400, color: '#10b981' }}>
-                        <DollarSign size={12} /> Баланс в норме
+                        <DollarSign size={12} /> {t('Баланс в норме')}
                       </div>
                     )}
                     {msg.widget === 'cashflow' && (
                       <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 400, color: '#3b82f6' }}>
-                        <TrendingUp size={12} /> Выручка растет
+                        <TrendingUp size={12} /> {t('Выручка растет')}
                       </div>
                     )}
                     {msg.widget === 'bar' && msg.widgetData?.bars && (
@@ -431,18 +328,12 @@ export const GlobalAICopilot: React.FC = () => {
                     if (!isTyping) handleSend();
                   }
                 }}
-                placeholder="Type a message..."
+                placeholder={t('Спросите про ваши финансы…')}
                 disabled={isTyping}
-                style={{ width: '100%', minHeight: 48, height: 48, maxHeight: 120, background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-subtle)', padding: '14px 16px', color: 'var(--text-primary)', fontSize: 13, fontWeight: 400, outline: 'none', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit', lineHeight: 1.4, wordBreak: 'break-all' }}
+                style={{ width: '100%', minHeight: 48, height: 48, maxHeight: 120, background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-subtle)', padding: '14px 16px', color: 'var(--text-primary)', fontSize: 13, fontWeight: 400, outline: 'none', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit', lineHeight: 1.4 }}
               />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
-                <button
-                  style={{ width: 28, height: 28, background: 'transparent', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'color 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-                >
-                  <Plus size={16} />
-                </button>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', userSelect: 'none' }}>{t('Enter — отправить')}</span>
                 <button
                   onClick={() => handleSend()}
                   disabled={!inputValue.trim() || isTyping}

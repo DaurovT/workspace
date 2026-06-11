@@ -4,6 +4,7 @@ import { ChevronRight, ArrowLeft, ArrowRight, ArrowRightLeft, Target, MoreVertic
 import { format, isToday, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { APP_CURRENCY } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 const Th: React.FC<{ children?: React.ReactNode; width?: string }> = ({ children, width }) => (
   <th style={{
@@ -52,7 +53,8 @@ interface TransactionsTableProps {
 export const TransactionsTable: React.FC<TransactionsTableProps> = ({
   columns = { contractor: true, category: true, project: true, deal: true }
 }) => {
-  const {
+  const { t } = useTranslation();
+    const {
     transactions, accounts, contractors, categories, projects, deals,
     selectedTxIds, typeFilter, searchQuery, toggleTxSelection,
     filterStatusPaid, filterStatusUnpaid,
@@ -162,7 +164,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
               {tx.date ? format(parseISO(tx.date), 'dd MMM yyyy', { locale: ru }) : '—'}
             </div>
             {!tx.isPaidConfirmed && (
-              <div style={{ fontSize: 10, color: '#f59e0b', fontWeight: 600, marginTop: 2 }}>ПЛАН</div>
+              <div style={{ fontSize: 10, color: '#f59e0b', fontWeight: 600, marginTop: 2 }}>{t("ПЛАН", "ПЛАН")}</div>
             )}
           </Td>
           <Td>
@@ -192,7 +194,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <div style={{ color: 'var(--text-primary)', fontWeight: 400, fontSize: 12, whiteSpace: 'nowrap',
                   overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {contractors.find(c => c.id === tx.contractorId)?.name ?? (
-                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Без контрагента</span>
+                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{t("Kontragentsiz", "Kontragentsiz")}</span>
                   )}
                 </div>
               </div>
@@ -242,7 +244,7 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 <Td>
                   <div style={{ paddingLeft: 26, borderLeft: '2px solid var(--color-primary)', marginLeft: 8, display: 'flex', alignItems: 'center' }}>
                     <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
-                      {contractors.find(c => c.id === sub.contractorId)?.name ?? 'Без контрагента'}
+                      {contractors.find(c => c.id === sub.contractorId)?.name ?? 'Kontragentsiz'}
                     </span>
                   </div>
                 </Td>
@@ -284,14 +286,14 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
               <input type="checkbox" onChange={handleSelectAll} checked={allSelected}
                 style={{ accentColor: 'var(--color-primary)', width: 14, height: 14 }} />
             </Th>
-            <Th width="110px">Дата</Th>
-            <Th width="140px">Счёт</Th>
-            <Th width="36px">Тип</Th>
-            {columns.contractor && <Th>Контрагент</Th>}
-            {columns.category && <Th>Статья</Th>}
-            {columns.project && <Th width="140px">Проект</Th>}
-            {columns.deal && <Th width="140px">Сделка</Th>}
-            <Th width="130px">Сумма</Th>
+            <Th width="110px">{t("Дата", "Дата")}</Th>
+            <Th width="140px">{t("Счёт", "Счёт")}</Th>
+            <Th width="36px">{t("Тип", "Тип")}</Th>
+            {columns.contractor && <Th>{t("Контрагент", "Контрагент")}</Th>}
+            {columns.category && <Th>{t("Статья", "Статья")}</Th>}
+            {columns.project && <Th width="140px">{t("Проект", "Проект")}</Th>}
+            {columns.deal && <Th width="140px">{t("Сделка", "Сделка")}</Th>}
+            <Th width="130px">{t("Сумма", "Сумма")}</Th>
             <Th width="36px" />
           </tr>
         </thead>
@@ -300,21 +302,22 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
             <tr>
               <td colSpan={10} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
-                Операции не найдены
-                <div style={{ fontSize: 11, marginTop: 6, color: 'var(--text-muted)' }}>Попробуйте изменить фильтры</div>
+                
+                {t("Операции не найдены", "Операции не найдены")}
+                <div style={{ fontSize: 11, marginTop: 6, color: 'var(--text-muted)' }}>{t("Попробуйте изменить фильтры", "Попробуйте изменить фильтры")}</div>
               </td>
             </tr>
           ) : (
             <>
               {todayTxs.length > 0 && (
                 <>
-                  <GroupHeader title="Сегодня" count={todayTxs.length} />
+                  <GroupHeader title={t("Сегодня", "Сегодня")} count={todayTxs.length} />
                   {todayTxs.map(renderTxRow)}
                 </>
               )}
               {pastTxs.length > 0 && (
                 <>
-                  <GroupHeader title="Ранее" count={pastTxs.length} />
+                  <GroupHeader title={t("Ранее", "Ранее")} count={pastTxs.length} />
                   {pastTxs.map(renderTxRow)}
                 </>
               )}

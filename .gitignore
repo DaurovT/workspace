@@ -30,3 +30,18 @@ backend-contador/.env
 /src/generated/prisma
 .env
 uploads/
+
+# DB backups & session artifacts (not for the repo)
+backup_*.sql
+*.tar.gz
+cleanup_manor.sql
+nameuz_*.sql
+restore_bok.mjs
+import_debts.mjs
+backfill_ledger.mjs
+add_user.mjs
+# scratch data
+bookmarks.jsonl
+bookmarks_coords.txt
+extracted*.json
+yandex_bookmarks*.html

@@ -4,6 +4,7 @@ import { Filter, ChevronDown, ChevronRight, Download, Activity, HelpCircle, Cale
 import { format, parseISO, eachMonthOfInterval, endOfMonth } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { APP_CURRENCY } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 type GroupBy = 'month' | 'quarter';
 const fmtN = (n: number) => n === 0 ? '—' : new Intl.NumberFormat('ru-RU').format(Math.round(n));
@@ -17,7 +18,8 @@ interface Col { label: string; month: number; year: number; }
 const getQuarterLabel = (m: number) => `Q${Math.ceil(m / 3)}`;
 
 const ReportsCashflowPage: React.FC = () => {
-  const { transactions, categories, accounts, projects } = useFinanceStore();
+  const { t } = useTranslation();
+    const { transactions, categories, accounts, projects } = useFinanceStore();
 
   const now = new Date();
   const defaultFrom = new Date(now.getFullYear(), now.getMonth() - 5, 1);
@@ -290,7 +292,7 @@ const ReportsCashflowPage: React.FC = () => {
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <Filter size={13} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Параметры отчёта</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Параметры отчёта", "Параметры отчёта")}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
         </div>
@@ -299,7 +301,7 @@ const ReportsCashflowPage: React.FC = () => {
 
           {/* Period */}
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Период</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Период", "Период")}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Calendar size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
@@ -331,7 +333,7 @@ const ReportsCashflowPage: React.FC = () => {
 
           {/* Accounts */}
           <div style={{ position: 'relative' }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Счета</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{t("Счета", "Счета")}</div>
             <button onClick={() => { setShowAcctDrop(p => !p); setShowProjDrop(false); }}
               style={{ ...inp, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
               <span>{acctFilter.length ? `${acctFilter.length} выбрано` : 'Все счета'}</span>
@@ -340,7 +342,7 @@ const ReportsCashflowPage: React.FC = () => {
             {showAcctDrop && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, zIndex: 50, padding: 8, marginTop: 4, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
                 <label style={{ display: 'flex', gap: 6, fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={acctFilter.length === 0} onChange={() => setAcctFilter([])} /> Все счета
+                  <input type="checkbox" checked={acctFilter.length === 0} onChange={() => setAcctFilter([])} />  {t("Все счета", "Все счета")}
                 </label>
                 {accounts.filter(a => a.currency === APP_CURRENCY).map(a => (
                   <label key={a.id} style={{ display: 'flex', gap: 6, fontSize: 12, color: 'var(--text-primary)', marginBottom: 4, cursor: 'pointer' }}>
@@ -355,7 +357,7 @@ const ReportsCashflowPage: React.FC = () => {
 
           {/* Projects */}
           <div style={{ position: 'relative' }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Проекты</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{t("Проектов", "Проектов")}</div>
             <button onClick={() => { setShowProjDrop(p => !p); setShowAcctDrop(false); }}
               style={{ ...inp, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
               <span>{projFilter.length ? `${projFilter.length} выбрано` : 'Все проекты'}</span>
@@ -364,7 +366,7 @@ const ReportsCashflowPage: React.FC = () => {
             {showProjDrop && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 8, zIndex: 50, padding: 8, marginTop: 4, boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
                 <label style={{ display: 'flex', gap: 6, fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={projFilter.length === 0} onChange={() => setProjFilter([])} /> Все проекты
+                  <input type="checkbox" checked={projFilter.length === 0} onChange={() => setProjFilter([])} />  {t("Все проекты", "Все проекты")}
                 </label>
                 {projects.map(p => (
                   <label key={p.id} style={{ display: 'flex', gap: 6, fontSize: 12, color: 'var(--text-primary)', marginBottom: 4, cursor: 'pointer' }}>
@@ -381,7 +383,8 @@ const ReportsCashflowPage: React.FC = () => {
           {(acctFilter.length > 0 || projFilter.length > 0) && (
             <button onClick={() => { setAcctFilter([]); setProjFilter([]); }}
               style={{ fontSize: 11, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
-              ✕ Сбросить фильтры
+              
+              {t("✕ Сбросить фильтры", "✕ Сбросить фильтры")}
             </button>
           )}
         </div>
@@ -402,7 +405,7 @@ const ReportsCashflowPage: React.FC = () => {
           }}>
             <Activity size={14} color="var(--color-danger)" />
             <span style={{ fontSize: 11, color: 'var(--color-danger)', fontWeight: 500 }}>
-              <b>Внимание:</b> Кассовый разрыв в {displayCols.filter((_, i) => gapCols[i]).map(c => c.label).join(', ')}
+              <b>{t("Внимание:", "Внимание:")}</b>  {t("Кассовый разрыв в", "Кассовый разрыв в")} {displayCols.filter((_, i) => gapCols[i]).map(c => c.label).join(', ')}
             </span>
           </div>
         )}
@@ -419,8 +422,8 @@ const ReportsCashflowPage: React.FC = () => {
               <Filter size={13} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>ОДДС: Движение денежных средств</span>
-              <span title="Отчёт о движении денежных средств: операционный, инвестиционный, финансовый потоки" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("ОДДС: Движение денежных средств", "ОДДС: Движение денежных средств")}</span>
+              <span title={t("Отчёт о движении денежных средств: операционный, инвестиционный, финансовый потоки", "Отчёт о движении денежных средств: операционный, инвестиционный, финансовый потоки")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -436,7 +439,7 @@ const ReportsCashflowPage: React.FC = () => {
           }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}>
-            <Download size={12} /> В CSV
+            <Download size={12} />  {t("В CSV", "В CSV")}
           </button>
         </div>
 
@@ -444,23 +447,24 @@ const ReportsCashflowPage: React.FC = () => {
         <div style={{ flex: 1, overflow: 'auto' }}>
           {displayCols.length === 0 ? (
             <div style={{ padding: 60, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-              Выберите корректный период (начало ≤ конец)
+              
+              {t("Выберите корректный период (начало ≤ конец)", "Выберите корректный период (начало ≤ конец)")}
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
               <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr style={{ background: 'var(--bg-surface)', boxShadow: '0 1px 0 var(--border-subtle)' }}>
-                  <th style={{ ...tdS, textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, width: 260, position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 20 }}>По статьям учёта</th>
-                  <th style={{ ...tdS, width: 60, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-muted)' }}>Тренд</th>
+                  <th style={{ ...tdS, textAlign: 'left', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, width: 260, position: 'sticky', left: 0, background: 'var(--bg-surface)', zIndex: 20 }}>{t("По статьям учёта", "По статьям учёта")}</th>
+                  <th style={{ ...tdS, width: 60, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-muted)' }}>{t("Тренд", "Тренд")}</th>
                   {displayCols.map((c, i) => (
                     <th key={i} style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5,
                       color: gapCols[i] ? '#ef4444' : 'var(--text-muted)',
                       background: gapCols[i] ? 'rgba(239,68,68,0.06)' : 'var(--bg-surface)' }}>
                       {c.label}
-                      {gapCols[i] && <span title="Кассовый разрыв"> ⚠</span>}
+                      {gapCols[i] && <span title={t("Кассовый разрыв", "Кассовый разрыв")}> ⚠</span>}
                     </th>
                   ))}
-                  <th style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, background: 'var(--bg-hover)', color: 'var(--color-primary)' }}>Итого</th>
+                  <th style={{ ...tdS, textAlign: 'right', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, background: 'var(--bg-hover)', color: 'var(--color-primary)' }}>{t("Итого", "Итого")}</th>
                 </tr>
               </thead>
               <tbody>

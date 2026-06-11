@@ -9,6 +9,8 @@ const VIEW_TITLES: Record<HRViewState, string> = {
   payroll: 'Зарплатная ведомость',
   org: 'Оргструктура',
   'my-dashboard': 'Мой кабинет',
+  schedules: 'Графики работы',
+  calendar: 'Производственный календарь',
 };
 
 const HRHeader: React.FC = () => {

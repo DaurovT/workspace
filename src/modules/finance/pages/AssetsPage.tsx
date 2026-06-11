@@ -4,12 +4,13 @@ import { useFinanceStore } from '../financeStore';
 import { differenceInMonths, parseISO, format } from 'date-fns';
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
 import { apiUrl } from '../config/api';
+import { useTranslation } from 'react-i18next';
 
 export interface Asset {
   id: string;
   name: string;
   category: 'Основное средство' | 'НМА' | 'Запас';
-  type: 'Транспорт' | 'Оборудование' | 'Недвижимость' | 'ПО' | 'Прочее';
+  type: 'Транспорт' | 'Оборудование' | "Недвижимость" | 'ПО' | 'Прочее';
   acquisitionDate: string;
   initialCost: number;
   usefulLifeMonths: number;
@@ -30,7 +31,8 @@ const Td: React.FC<{ children: React.ReactNode, align?: 'left'|'right'|'center' 
 );
 
 const AssetsPage: React.FC = () => {
-  const { assets, addAsset, updateAsset, deleteAsset } = useFinanceStore();
+  const { t } = useTranslation();
+    const { assets, addAsset, updateAsset, deleteAsset } = useFinanceStore();
   const [error, setError] = useState<string | null>(null);
   
   const searchQuery = useFinanceStore(s => s.searchQuery);
@@ -49,7 +51,7 @@ const AssetsPage: React.FC = () => {
   const [filterTypes, setFilterTypes] = useState<Record<string, boolean>>({
     'Оборудование': true,
     'Транспорт': true,
-    'Недвижимость': true,
+    "Недвижимость": true,
     'ПО': true,
     'Прочее': true
   });
@@ -233,7 +235,7 @@ const AssetsPage: React.FC = () => {
     try {
       await deleteAsset(id);
     } catch {
-      setError('Ошибка удаления');
+      setError("Ошибка удаления");
     }
   };
 
@@ -263,7 +265,7 @@ const AssetsPage: React.FC = () => {
     switch(type) {
       case 'Оборудование': return <Server size={18} color="#3b82f6" />;
       case 'Транспорт': return <Car size={18} color="#f59e0b" />;
-      case 'Недвижимость': return <Building2 size={18} color="#8b5cf6" />;
+      case "Недвижимость": return <Building2 size={18} color="#8b5cf6" />;
       case 'ПО': return <Code size={18} color="#10b981" />;
       default: return <Package size={18} color="#64748b" />;
     }
@@ -279,7 +281,7 @@ const AssetsPage: React.FC = () => {
     { label: 'Оборудование', color: '#3b82f6', assets: enrichedAssets.filter(a => a.type === 'Оборудование') },
     { label: 'Транспорт', color: '#f59e0b', assets: enrichedAssets.filter(a => a.type === 'Транспорт') },
     { label: 'ПО / НМА', color: '#10b981', assets: enrichedAssets.filter(a => a.type === 'ПО' || a.category === 'НМА') },
-    { label: 'Недвижимость', color: '#8b5cf6', assets: enrichedAssets.filter(a => a.type === 'Недвижимость') },
+    { label: "Недвижимость", color: '#8b5cf6', assets: enrichedAssets.filter(a => a.type === "Недвижимость") },
   ].filter(c => c.assets.length > 0), [enrichedAssets]);
 
   const modalInp: React.CSSProperties = { width: '100%', padding: '8px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 13, outline: 'none' };
@@ -292,22 +294,22 @@ const AssetsPage: React.FC = () => {
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <Filter size={12} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Фильтры</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("Фильтры", "Фильтры")}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={16} /></button>
         </div>
 
         <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Тип актива</div>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Тип актива", "Тип актива")}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-            {['Оборудование', 'Транспорт', 'Недвижимость', 'ПО', 'Прочее'].map(t => (
+            {['Оборудование', 'Транспорт', "Недвижимость", 'ПО', 'Прочее'].map(t => (
               <label key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>
                 <input type="checkbox" checked={filterTypes[t]} onChange={e => setFilterTypes(p => ({...p, [t]: e.target.checked}))} style={{ accentColor: 'var(--color-primary)' }} /> {t}
               </label>
             ))}
           </div>
 
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Статус</div>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Статус", "Статус")}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
             {['В эксплуатации', 'На складе', 'Списан', 'Продан'].map(s => (
               <label key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>
@@ -319,17 +321,19 @@ const AssetsPage: React.FC = () => {
           {/* Depreciation Engine Panel */}
           <div style={{ marginTop: 'auto', background: 'rgba(139,92,246,0.07)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 10, padding: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#8b5cf6', fontWeight: 600, fontSize: 13, marginBottom: 8 }}>
-              <Zap size={14} /> Движок амортизации
+              <Zap size={14} />  {t("Движок амортизации", "Движок амортизации")}
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: 12, marginBottom: 12, lineHeight: 1.5 }}>
-              Начисляет амортизацию на все активные ОС за текущий месяц.
+              
+              {t("Начисляет амортизацию на все активные ОС за текущий месяц.", "Начисляет амортизацию на все активные ОС за текущий месяц.")}
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10 }}>
-              К начислению: <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{new Intl.NumberFormat('ru-RU').format(Math.round(totalMonthly))} {APP_CURRENCY_SYMBOL}/мес</span>
+              
+              {t("К начислению:", "К начислению:")} <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{new Intl.NumberFormat('ru-RU').format(Math.round(totalMonthly))} {APP_CURRENCY_SYMBOL}{t("/мес", "/мес")}</span>
             </div>
             {fullyDepreciated > 0 && (
               <div style={{ fontSize: 11, color: '#f59e0b', marginBottom: 10 }}>
-                ⚠️ {fullyDepreciated} актив(а) самортизированы
+                ⚠️ {fullyDepreciated}  {t("актив(а) самортизированы", "актив(а) самортизированы")}
               </div>
             )}
             <button
@@ -338,11 +342,11 @@ const AssetsPage: React.FC = () => {
               style={{ width: '100%', padding: '8px', background: accrued ? '#10b981' : 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: isAccruing || totalMonthly <= 0 || accrued ? 'not-allowed' : 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: (totalMonthly <= 0 || accrued) ? 0.6 : 1 }}
             >
               {isAccruing ? (
-                <><span className="loading-spinner" /> Начисляем...</>
+                <><span className="loading-spinner" />  {t("Начисляем...", "Начисляем...")}</>
               ) : accrued ? (
                 '✅ Начислено!'
               ) : (
-                <><TrendingDown size={14} /> Начислить</>
+                <><TrendingDown size={14} />  {t("Начисление", "Начисление")}</>
               )}
             </button>
           </div>
@@ -359,8 +363,8 @@ const AssetsPage: React.FC = () => {
               <Filter size={12} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Имущество и Активы</span>
-              <span title="Реестр инвентаря · CAPEX учёт · Амортизация ОС" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Имущество и Активы", "Имущество и Активы")}</span>
+              <span title={t("Реестр инвентаря · CAPEX учёт · Амортизация ОС", "Реестр инвентаря · CAPEX учёт · Амортизация ОС")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -368,7 +372,7 @@ const AssetsPage: React.FC = () => {
 
           <div style={{ display: 'flex', gap: 12 }}>
             <button onClick={openCreateModal} className="header-btn header-btn-primary">
-              <Plus size={13} /> Добавить актив
+              <Plus size={13} />  {t("Добавить актив", "Добавить актив")}
             </button>
           </div>
         </div>
@@ -386,19 +390,19 @@ const AssetsPage: React.FC = () => {
         {/* KPI Row */}
         <div style={{ padding: '16px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
           <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '12px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 4 }}>Первоначальная</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 4 }}>{t("Первоначальная", "Первоначальная")}</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(totalInitial)} {APP_CURRENCY_SYMBOL}</div>
           </div>
           <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)', borderRadius: 10, padding: '12px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#3b82f6', marginBottom: 4, opacity: 0.8 }}>Балансовая</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#3b82f6', marginBottom: 4, opacity: 0.8 }}>{t("Балансовая", "Балансовая")}</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-primary)' }}>{new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(totalCurrent)} {APP_CURRENCY_SYMBOL}</div>
           </div>
           <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', borderRadius: 10, padding: '12px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#ef4444', marginBottom: 4, opacity: 0.8 }}>Амортизация / мес.</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#ef4444', marginBottom: 4, opacity: 0.8 }}>{t("Амортизация / мес.", "Амортизация / мес.")}</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#ef4444' }}>{new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(Math.round(totalMonthly))} {APP_CURRENCY_SYMBOL}</div>
           </div>
           <div style={{ background: fullyDepreciated > 0 ? 'rgba(245,158,11,0.07)' : 'rgba(16,185,129,0.06)', border: `1px solid ${fullyDepreciated > 0 ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.15)'}`, borderRadius: 10, padding: '12px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: fullyDepreciated > 0 ? '#f59e0b' : '#10b981', marginBottom: 4, opacity: 0.8 }}>Требуют списания</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: fullyDepreciated > 0 ? '#f59e0b' : '#10b981', marginBottom: 4, opacity: 0.8 }}>{t("Требуют списания", "Требуют списания")}</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: fullyDepreciated > 0 ? '#f59e0b' : '#10b981' }}>{fullyDepreciated}</div>
           </div>
         </div>
@@ -414,7 +418,7 @@ const AssetsPage: React.FC = () => {
                 <div key={cat.label} style={{ flex: 1, minWidth: 150, background: 'var(--bg-surface)', border: `1px solid var(--border-subtle)`, borderRadius: 10, padding: '10px 14px', borderTop: `3px solid ${cat.color}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                     <span style={{ fontSize: 12, color: cat.color, fontWeight: 700 }}>{cat.label}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: `${cat.color}22`, color: cat.color }}>{cat.assets.length} ед.</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: `${cat.color}22`, color: cat.color }}>{cat.assets.length}  {t("шт.", "шт.")}</span>
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
                     {new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(Math.round(catTotal))} {APP_CURRENCY_SYMBOL}
@@ -441,7 +445,7 @@ const AssetsPage: React.FC = () => {
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={openCreateModal} style={{ padding: '6px 14px', background: 'var(--color-primary)', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <Plus size={12} /> Добавить ОС
+                  <Plus size={12} />  {t("Добавить ОС", "Добавить ОС")}
                 </button>
               </div>
             </div>
@@ -450,14 +454,14 @@ const AssetsPage: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
                 <thead style={{ background: 'var(--bg-base)' }}>
                   <tr>
-                    <Th align="left">Объект учета</Th>
-                    <Th align="left">Категория</Th>
-                    <Th align="left">Статус</Th>
-                    <Th>Постановка</Th>
-                    <Th>Перв. стоимость</Th>
-                    <Th>Накопл. аморт.</Th>
-                    <Th>Балансовая</Th>
-                    <Th align="left" width="160px">Износ</Th>
+                    <Th align="left">{t("Объект учета", "Объект учета")}</Th>
+                    <Th align="left">{t("Категория", "Категория")}</Th>
+                    <Th align="left">{t("Статус", "Статус")}</Th>
+                    <Th>{t("Постановка", "Постановка")}</Th>
+                    <Th>{t("Перв. стоимость", "Перв. стоимость")}</Th>
+                    <Th>{t("Накопл. аморт.", "Накопл. аморт.")}</Th>
+                    <Th>{t("Балансовая", "Балансовая")}</Th>
+                    <Th align="left" width="160px">{t("Износ", "Износ")}</Th>
                     <Th align="center" width="80px"> </Th>
                   </tr>
                 </thead>
@@ -474,14 +478,14 @@ const AssetsPage: React.FC = () => {
                             <div>
                               <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{asset.name}</div>
                               <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                                {asset.usefulLifeMonths} мес. • Ост: {asset.usefulLifeMonths - asset.elapsed} мес.
+                                {asset.usefulLifeMonths}  {t("мес. • Ост:", "мес. • Ост:")} {asset.usefulLifeMonths - asset.elapsed}  {t("мес.", "мес.")}
                               </div>
                             </div>
                           </div>
                         </Td>
                         <Td align="left">
                           <span style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg-elevated)', padding: '4px 8px', borderRadius: 6, fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                            {asset.category === 'Основное средство' ? 'Осн. средство' : asset.category}
+                            {asset.category === 'Основное средство' ? 'Основные средства' : asset.category}
                           </span>
                         </Td>
                         <Td align="left">
@@ -510,14 +514,14 @@ const AssetsPage: React.FC = () => {
                             {new Intl.NumberFormat('ru-RU').format(Math.round(asset.accumulatedDepreciation))}
                           </div>
                           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                            {new Intl.NumberFormat('ru-RU').format(Math.round(asset.monthlyDepreciation))} / мес.
+                            {new Intl.NumberFormat('ru-RU').format(Math.round(asset.monthlyDepreciation))}  {t("/ мес.", "/ мес.")}
                           </div>
                         </Td>
                         <Td>
                           {asset.status === 'Списан' ? (
-                            <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through', fontSize: 12 }}>Списан</span>
+                            <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through', fontSize: 12 }}>{t("Списан", "Списан")}</span>
                           ) : asset.status === 'Продан' ? (
-                            <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through', fontSize: 12 }}>Продан</span>
+                            <span style={{ color: 'var(--text-muted)', textDecoration: 'line-through', fontSize: 12 }}>{t("Продан", "Продан")}</span>
                           ) : (
                             <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{new Intl.NumberFormat('ru-RU').format(Math.round(asset.currentValue))}</span>
                           )}
@@ -535,13 +539,13 @@ const AssetsPage: React.FC = () => {
                         <Td align="center">
                           {confirmDeleteId === asset.id ? (
                             <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
-                              <button onClick={() => handleDelete(asset.id)} style={{ padding: '4px 8px', background: '#ef4444', border: 'none', borderRadius: 4, color: '#fff', fontSize: 11, cursor: 'pointer' }}>Да</button>
-                              <button onClick={() => setConfirmDeleteId(null)} style={{ padding: '4px 8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 4, color: 'var(--text-primary)', fontSize: 11, cursor: 'pointer' }}>Отмена</button>
+                              <button onClick={() => handleDelete(asset.id)} style={{ padding: '4px 8px', background: '#ef4444', border: 'none', borderRadius: 4, color: '#fff', fontSize: 11, cursor: 'pointer' }}>{t("Да", "Да")}</button>
+                              <button onClick={() => setConfirmDeleteId(null)} style={{ padding: '4px 8px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 4, color: 'var(--text-primary)', fontSize: 11, cursor: 'pointer' }}>{t("Отозвать", "Отозвать")}</button>
                             </div>
                           ) : (
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-                               <button onClick={() => openEditModal(asset)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} title="Редактировать"><Edit2 size={14}/></button>
-                               <button onClick={() => setConfirmDeleteId(asset.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title="Удалить"><Trash2 size={14}/></button>
+                               <button onClick={() => openEditModal(asset)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} title={t("Редактировать", "Редактировать")}><Edit2 size={14}/></button>
+                               <button onClick={() => setConfirmDeleteId(asset.id)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }} title={t("Удалить", "Удалить")}><Trash2 size={14}/></button>
                             </div>
                           )}
                         </Td>
@@ -569,43 +573,43 @@ const AssetsPage: React.FC = () => {
             
             <form onSubmit={handleSave} style={{ overflowY: 'auto', padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Наименование *</label>
-                <input required type="text" style={modalInp} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Например: Сервер Dell R740" />
+                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Наименование *", "Наименование *")}</label>
+                <input required type="text" style={modalInp} value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder={t("Например: Сервер Dell R740", "Например: Сервер Dell R740")} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Тип</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Тип", "Тип")}</label>
                   <select style={modalInp} value={formData.type || 'Оборудование'} onChange={e => setFormData({...formData, type: e.target.value as any})}>
-                    <option value="Оборудование">Оборудование</option>
-                    <option value="Транспорт">Транспорт</option>
-                    <option value="Недвижимость">Недвижимость</option>
-                    <option value="ПО">ПО</option>
-                    <option value="Прочее">Прочее</option>
+                    <option value={t("Оборудование", "Оборудование")}>{t("Оборудование", "Оборудование")}</option>
+                    <option value={t("Транспорт", "Транспорт")}>{t("Транспорт", "Транспорт")}</option>
+                    <option value={t("Недвижимость", "Недвижимость")}>{t("Недвижимость", "Недвижимость")}</option>
+                    <option value={t("ПО", "ПО")}>{t("ПО", "ПО")}</option>
+                    <option value={t("Прочее", "Прочее")}>{t("Прочее", "Прочее")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Категория</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Категория", "Категория")}</label>
                   <select style={modalInp} value={formData.category || 'Основное средство'} onChange={e => setFormData({...formData, category: e.target.value as any})}>
-                    <option value="Основное средство">Основное средство</option>
-                    <option value="НМА">НМА</option>
-                    <option value="Запас">Запас</option>
+                    <option value={t("Основное средство", "Основное средство")}>{t("Основное средство", "Основное средство")}</option>
+                    <option value={t("НМА", "НМА")}>{t("НМА", "НМА")}</option>
+                    <option value={t("Запас", "Запас")}>{t("Запас", "Запас")}</option>
                   </select>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Статус</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Статус", "Статус")}</label>
                   <select style={modalInp} value={formData.status || 'В эксплуатации'} onChange={e => setFormData({...formData, status: e.target.value as any})}>
-                    <option value="В эксплуатации">В эксплуатации</option>
-                    <option value="На складе">На складе</option>
-                    <option value="Списан">Списан</option>
-                    <option value="Продан">Продан</option>
+                    <option value={t("В эксплуатации", "В эксплуатации")}>{t("В эксплуатации", "В эксплуатации")}</option>
+                    <option value={t("На складе", "На складе")}>{t("На складе", "На складе")}</option>
+                    <option value={t("Списан", "Списан")}>{t("Списан", "Списан")}</option>
+                    <option value={t("Продан", "Продан")}>{t("Продан", "Продан")}</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Дата постановки</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Дата постановки", "Дата постановки")}</label>
                   <input required type="date" style={modalInp} value={formData.acquisitionDate || ''} onChange={e => setFormData({...formData, acquisitionDate: e.target.value})} />
                 </div>
               </div>
@@ -614,24 +618,25 @@ const AssetsPage: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Первоначальная стоимость *</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Первоначальная стоимость *", "Первоначальная стоимость *")}</label>
                   <input required type="number" step="0.01" style={modalInp} value={formData.initialCost ?? ''} onChange={e => setFormData({...formData, initialCost: Number(e.target.value)})} placeholder="0" />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Срок полезного использования (мес) *</label>
+                  <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Срок полезного использования (мес) *", "Срок полезного использования (мес) *")}</label>
                   <input required type="number" style={modalInp} value={formData.usefulLifeMonths ?? ''} onChange={e => setFormData({...formData, usefulLifeMonths: Number(e.target.value)})} placeholder="12" />
                 </div>
               </div>
               
               <div>
-                 <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>Ликвидационная стоимость</label>
+                 <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>{t("Ликвидационная стоимость", "Ликвидационная стоимость")}</label>
                  <input type="number" step="0.01" style={modalInp} value={formData.salvageValue ?? ''} onChange={e => setFormData({...formData, salvageValue: Number(e.target.value)})} placeholder="0" />
-                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Стоимость, ниже которой актив не амортизируется</div>
+                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{t("Стоимость, ниже которой актив не амортизируется", "Стоимость, ниже которой актив не амортизируется")}</div>
               </div>
 
               <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 12, position: 'sticky', bottom: 0, background: 'var(--bg-surface)', margin: '16px -20px -20px' }}>
                 <button type="button" onClick={() => setModalOpen(false)} style={{ padding: '8px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)', borderRadius: 6, color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                  Отмена
+                  
+                  {t("Отозвать", "Отозвать")}
                 </button>
                 <button type="submit" disabled={isSaving} className="header-btn header-btn-primary" style={{ padding: '8px 16px', height: 'auto', opacity: isSaving ? 0.7 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}>
                   <Save size={14} /> {isSaving ? 'Сохранение...' : 'Сохранить'}

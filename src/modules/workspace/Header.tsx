@@ -1,7 +1,8 @@
 import React from 'react';
 import { useStore } from '../../store';
-import { Search, Plus, Sun, Moon, Settings, Sparkles } from 'lucide-react';
+import { Sparkles, Search, Sun, Moon, Plus, Settings } from 'lucide-react';
 import { GlobalNotificationDropdown } from './GlobalNotificationDropdown';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 const Header: React.FC = () => {
   const projects = useStore(state => state.projects);
@@ -81,6 +82,9 @@ const Header: React.FC = () => {
       <button className="theme-toggle" onClick={toggleTheme} id="btn-theme" data-tooltip={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
         {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
       </button>
+
+      {/* Language Switcher */}
+      <LanguageSwitcher />
 
       {/* AI Copilot */}
       <button 

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Briefcase, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import type { Project } from '../financeStore';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 const fmt = (n: number) => n === 0 ? '—' : new Intl.NumberFormat('ru-RU').format(Math.round(n));
 const fmtD = (s?: string) => { try { return s ? format(parseISO(s), 'dd.MM.yy') : '—'; } catch { return '—'; } };
@@ -35,7 +36,8 @@ const th: React.CSSProperties = {
 };
 
 const GroupRow: React.FC<{ name: string; items: EnrichedProject[]; onEdit: Props['onEdit']; onDelete: Props['onDelete'] }> = ({ name, items, onEdit, onDelete }) => {
-  const [open, setOpen] = useState(true);
+  const { t } = useTranslation();
+    const [open, setOpen] = useState(true);
   const gIncome  = items.reduce((s, p) => s + p.income, 0);
   const gExpense = items.reduce((s, p) => s + p.expense, 0);
   const gProfit  = gIncome - gExpense;
@@ -85,7 +87,7 @@ const GroupRow: React.FC<{ name: string; items: EnrichedProject[]; onEdit: Props
             <td style={{ ...td, paddingLeft: 28, maxWidth: 240 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {p.isOverdue && p.status !== 'Завершен' && (
-                  <span title="Просрочен"><AlertTriangle size={12} color="#f59e0b" /></span>
+                  <span title={t("Просрочено", "Просрочено")}><AlertTriangle size={12} color="#f59e0b" /></span>
                 )}
                 <div>
                   <div style={{ fontWeight: 600, fontSize: 12, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 190 }}>{p.name}</div>
@@ -127,13 +129,13 @@ const GroupRow: React.FC<{ name: string; items: EnrichedProject[]; onEdit: Props
             {/* Actions */}
             <td style={{ ...td, textAlign: 'center' }}>
               <div style={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                <button onClick={() => onEdit(p)} title="Редактировать"
+                <button onClick={() => onEdit(p)} title={t("Редактировать", "Редактировать")}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
                   onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
                   <Pencil size={12} />
                 </button>
-                <button onClick={() => onDelete(p.id)} title="Удалить"
+                <button onClick={() => onDelete(p.id)} title={t("Удалить", "Удалить")}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
@@ -149,7 +151,8 @@ const GroupRow: React.FC<{ name: string; items: EnrichedProject[]; onEdit: Props
 };
 
 export const ProjectsTable: React.FC<Props> = ({ data, onEdit, onDelete }) => {
-  const grouped = useMemo(() => {
+  const { t } = useTranslation();
+    const grouped = useMemo(() => {
     const map = new Map<string, EnrichedProject[]>();
     data.forEach(p => {
       const g = p.group || 'Без группы';
@@ -166,16 +169,16 @@ export const ProjectsTable: React.FC<Props> = ({ data, onEdit, onDelete }) => {
       <thead>
         <tr>
           <th style={{ ...th, width: 32 }} />
-          <th style={{ ...th, textAlign: 'left' }}>Проект</th>
-          <th style={{ ...th, textAlign: 'left' }}>Статус</th>
-          <th style={{ ...th, textAlign: 'left' }}>Начало</th>
-          <th style={{ ...th, textAlign: 'left' }}>Конец</th>
-          <th style={{ ...th, textAlign: 'right' }}>Бюджет</th>
-          <th style={{ ...th, textAlign: 'right' }}>Доходы</th>
-          <th style={{ ...th, textAlign: 'right' }}>Расходы</th>
-          <th style={{ ...th, textAlign: 'right' }}>Прибыль</th>
-          <th style={{ ...th, textAlign: 'right' }}>Рент-ть</th>
-          <th style={{ ...th, textAlign: 'center' }}>Действия</th>
+          <th style={{ ...th, textAlign: 'left' }}>{t("Проект", "Проект")}</th>
+          <th style={{ ...th, textAlign: 'left' }}>{t("Статус", "Статус")}</th>
+          <th style={{ ...th, textAlign: 'left' }}>{t("Начало", "Начало")}</th>
+          <th style={{ ...th, textAlign: 'left' }}>{t("Конец", "Конец")}</th>
+          <th style={{ ...th, textAlign: 'right' }}>{t("Бюджет", "Бюджет")}</th>
+          <th style={{ ...th, textAlign: 'right' }}>{t("Выручка (Revenue)", "Выручка (Revenue)")}</th>
+          <th style={{ ...th, textAlign: 'right' }}>{t("Расходы", "Расходы")}</th>
+          <th style={{ ...th, textAlign: 'right' }}>{t("Прибыль", "Прибыль")}</th>
+          <th style={{ ...th, textAlign: 'right' }}>{t("Рент-ть", "Рент-ть")}</th>
+          <th style={{ ...th, textAlign: 'center' }}>{t("Действия", "Действия")}</th>
         </tr>
       </thead>
       <tbody>

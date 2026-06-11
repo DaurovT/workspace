@@ -3,7 +3,7 @@ import { useStore } from './store';
 import { useFinanceStore } from './modules/finance/financeStore';
 import { useServiceStore } from './modules/service/serviceStore';
 
-const socket = io(import.meta.env.PROD ? '/' : 'http://localhost:3001');
+const socket = io();
 
 socket.on('db_mutation', (data: { model: string, action: string, userId: string, resultId: string, data?: any }) => {
   const currentUserId = useStore.getState().currentUserId;

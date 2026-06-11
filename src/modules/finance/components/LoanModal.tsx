@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useFinanceStore } from '../financeStore';
 import type { Loan } from '../financeStore';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LoanModalProps {
   isOpen: boolean;
@@ -10,7 +11,8 @@ interface LoanModalProps {
 }
 
 export const LoanModal: React.FC<LoanModalProps> = ({ isOpen, onClose, loanToEdit }) => {
-  const { addLoan, updateLoan, accounts, addTransaction, categories } = useFinanceStore();
+  const { t } = useTranslation();
+    const { addLoan, updateLoan, accounts, addTransaction, categories } = useFinanceStore();
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [formData, setFormData] = useState<Partial<Loan>>(loanToEdit || {
     name: '',
@@ -62,48 +64,56 @@ export const LoanModal: React.FC<LoanModalProps> = ({ isOpen, onClose, loanToEdi
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-            Название (Обязательство)
+            
+            {t("Название (Обязательство)", "Название (Обязательство)")}
             <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }} />
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-            Кредитор (Банк)
+            
+            {t("Кредитор (Банк)", "Кредитор (Банк)")}
             <input required type="text" value={formData.bankName} onChange={e => setFormData({...formData, bankName: e.target.value})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }} />
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-              Тип
+              
+              {t("Тип", "Тип")}
               <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value as any})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
-                <option value="Кредит">Кредит</option>
-                <option value="Лизинг">Лизинг</option>
-                <option value="Займ">Займ</option>
-                <option value="Овердрафт">Овердрафт</option>
+                <option value={t("Кредит", "Кредит")}>{t("Кредит", "Кредит")}</option>
+                <option value={t("Лизинг", "Лизинг")}>{t("Лизинг", "Лизинг")}</option>
+                <option value={t("Займ", "Займ")}>{t("Займ", "Займ")}</option>
+                <option value={t("Овердрафт", "Овердрафт")}>{t("Овердрафт", "Овердрафт")}</option>
               </select>
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-              Сумма тела (Баланс)
+              
+              {t("Сумма тела (Баланс)", "Сумма тела (Баланс)")}
               <input required type="number" min="0" value={formData.principalAmount} onChange={e => setFormData({...formData, principalAmount: Number(e.target.value)})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }} />
             </label>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-              Ставка (% годовых)
+              
+              {t("Ставка (% годовых)", "Ставка (% годовых)")}
               <input required type="number" step="0.1" min="0" value={formData.interestRate} onChange={e => setFormData({...formData, interestRate: Number(e.target.value)})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }} />
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-              Срок (мес.)
+              
+              {t("Срок (мес.)", "Срок (мес.)")}
               <input required type="number" min="1" value={formData.termMonths} onChange={e => setFormData({...formData, termMonths: Number(e.target.value)})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }} />
             </label>
           </div>
           <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-            Дата старта
+            
+            {t("Дата старта", "Дата старта")}
             <input required type="date" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }} />
           </label>
 
           {!loanToEdit && (
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
-              Счет зачисления (ДДС)
+              
+              {t("Счет зачисления (ДДС)", "Счет зачисления (ДДС)")}
               <select value={selectedAccountId} onChange={e => setSelectedAccountId(e.target.value)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--text-primary)' }}>
-                <option value="">Не отражать в ДДС (Только баланс)</option>
+                <option value="">{t("Не отражать в ДДС (Только баланс)", "Не отражать в ДДС (Только баланс)")}</option>
                 {accounts.map(acc => (
                   <option key={acc.id} value={acc.id}>{acc.name} ({acc.currency})</option>
                 ))}
@@ -112,7 +122,7 @@ export const LoanModal: React.FC<LoanModalProps> = ({ isOpen, onClose, loanToEdi
           )}
           
           <button type="submit" style={{ marginTop: 12, background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '10px', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-            {loanToEdit ? 'Сохранить изменения' : 'Создать обязательство'}
+            {loanToEdit ? "Сохранить изменения" : 'Создать обязательство'}
           </button>
         </form>
       </div>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useFinanceStore } from '../financeStore';
 import { MoreVertical, Package, Wrench } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const ProductsTable: React.FC = () => {
-  const { products } = useFinanceStore();
+  const { t } = useTranslation();
+    const { products } = useFinanceStore();
 
   const thS: React.CSSProperties = {
     padding: '8px 14px',
@@ -33,13 +35,13 @@ export const ProductsTable: React.FC = () => {
             <th style={{ ...thS, textAlign: 'center', width: 36 }}>
               <input id="products-checkbox-1" name="products-checkbox-1" type="checkbox" style={{ accentColor: 'var(--color-primary)' }} />
             </th>
-            <th style={{ ...thS, textAlign: 'left' }}>Номенклатура / Артикул</th>
-            <th style={{ ...thS, textAlign: 'left' }}>Свойства</th>
-            <th style={{ ...thS }}>Цена продажи<br />(без НДС)</th>
-            <th style={{ ...thS }}>Цена<br />(с НДС)</th>
-            <th style={{ ...thS }}>Себестоимость<br />(закупка)</th>
-            <th style={{ ...thS }}>Остаток</th>
-            <th style={{ ...thS, textAlign: 'center' }}>Действия</th>
+            <th style={{ ...thS, textAlign: 'left' }}>{t("Номенклатура / Артикул", "Номенклатура / Артикул")}</th>
+            <th style={{ ...thS, textAlign: 'left' }}>{t("Свойства", "Свойства")}</th>
+            <th style={{ ...thS }}>{t("Цена продажи", "Цена продажи")}<br />{t("(без НДС)", "(без НДС)")}</th>
+            <th style={{ ...thS }}>{t("Цена", "Цена")}<br />{t("(с НДС)", "(с НДС)")}</th>
+            <th style={{ ...thS }}>{t("Себестоимость", "Себестоимость")}<br />{t("(закупка)", "(закупка)")}</th>
+            <th style={{ ...thS }}>{t("Остаток", "Остаток")}</th>
+            <th style={{ ...thS, textAlign: 'center' }}>{t("Действия", "Действия")}</th>
           </tr>
         </thead>
         <tbody>
@@ -72,14 +74,14 @@ export const ProductsTable: React.FC = () => {
                   <span style={{ display: 'inline-block', background: 'var(--bg-elevated)', padding: '3px 8px', borderRadius: 4, fontSize: 11, border: '1px solid var(--border-subtle)', marginBottom: 4 }}>
                     {pr.category}
                   </span>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ед. изм: {pr.unit}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("Ед. изм:", "Ед. изм:")} {pr.unit}</div>
                 </td>
                 <td style={{ ...tdS, textAlign: 'right' }}>
                   <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{new Intl.NumberFormat('ru-RU').format(pr.price)}</span>
                 </td>
                 <td style={{ ...tdS, textAlign: 'right' }}>
                   <span style={{ fontWeight: 700, color: '#10b981' }}>{new Intl.NumberFormat('ru-RU').format(priceWithVat)}</span>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>НДС: {pr.vatRate}%</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{t("НДС:", "НДС:")} {pr.vatRate}%</div>
                 </td>
                 <td style={{ ...tdS, textAlign: 'right' }}>
                   {pr.costPrice > 0
@@ -89,7 +91,7 @@ export const ProductsTable: React.FC = () => {
                 <td style={{ ...tdS, textAlign: 'right' }}>
                   {pr.type === 'Товар'
                     ? <span style={{ fontWeight: 600, color: pr.stockBalance > 0 ? 'var(--text-primary)' : 'var(--color-danger)' }}>{pr.stockBalance} {pr.unit}</span>
-                    : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>N/A (услуга)</span>}
+                    : <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("N/A (услуга)", "N/A (услуга)")}</span>}
                 </td>
                 <td style={{ ...tdS, textAlign: 'center' }}>
                   <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>

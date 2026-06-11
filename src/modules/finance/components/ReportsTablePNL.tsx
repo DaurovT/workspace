@@ -4,6 +4,7 @@ import { LineChart, Line } from 'recharts';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { format, startOfMonth, parseISO } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 interface FlowRow {
   id: string;
@@ -17,7 +18,8 @@ interface FlowRow {
 }
 
 export const ReportsTablePNL: React.FC = () => {
-  const { transactions, categories } = useFinanceStore();
+  const { t } = useTranslation();
+    const { transactions, categories } = useFinanceStore();
   const [expandedRows, setExpandedRows] = useState<string[]>(['group_revenue', 'group_expenses']);
 
   const toggleRow = (id: string) => {
@@ -91,7 +93,7 @@ export const ReportsTablePNL: React.FC = () => {
     opProfit.trend = opProfit.values.map(v => ({ value: v }));
 
     const netProfit: FlowRow = {
-      id: 'total_net_profit', name: 'Чистая прибыль', type: 'total',
+      id: 'total_net_profit', name: 'Чистая прибыль (Net Profit)', type: 'total',
       values: months.map((_, i) => opProfit.values[i] - taxesDivsGroup.values[i]),
       total: opProfit.total - taxesDivsGroup.total, trend: []
     };
@@ -108,7 +110,7 @@ export const ReportsTablePNL: React.FC = () => {
         <LineChart width={60} height={20} data={data}>
           <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
         </LineChart>
-      ) : <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>Нет тренда</div>}
+      ) : <div style={{ color: 'var(--text-muted)', fontSize: 10 }}>{t("Нет тренда", "Нет тренда")}</div>}
     </div>
   );
 
@@ -179,12 +181,12 @@ export const ReportsTablePNL: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 800 }}>
           <thead>
             <tr>
-              <Th align="left">По статьям учета</Th>
-              <Th align="left">Тренд</Th>
+              <Th align="left">{t("По статьям учета", "По статьям учета")}</Th>
+              <Th align="left">{t("Тренд", "Тренд")}</Th>
               {months.map(m => (
                 <Th key={m}>{format(parseISO(m), "MMM ''yy", { locale: ru })}</Th>
               ))}
-              <Th>Итого</Th>
+              <Th>{t("Итого", "Итого")}</Th>
             </tr>
           </thead>
           <tbody>

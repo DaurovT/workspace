@@ -2,6 +2,8 @@ import React from 'react';
 import { useStore } from '../../../store';
 import { useFinanceStore } from '../financeStore';
 import { HelpCircle, Sun, Moon, Sparkles, Search, Share2 } from 'lucide-react';
+import { LanguageSwitcher } from '../../../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 import { GlobalNotificationDropdown } from '../../workspace/GlobalNotificationDropdown';
 
 
@@ -14,22 +16,23 @@ const FinanceHeader: React.FC = () => {
       const setSidebarMobileOpen = useFinanceStore(state => state.setSidebarMobileOpen);
 
   const { activeView } = useFinanceStore();
+  const { t } = useTranslation();
 
   const getTitle = () => {
     switch (activeView) {
-      case 'main': return 'Показатели';
-      case 'transactions': return 'Операции';
-      case 'deals': return 'Сделки';
-      case 'plan': return 'План';
-      case 'projects': return 'Проекты';
-      case 'reports': return 'Отчёты';
-      case 'references': return 'Справочники';
-      case 'assets': return 'Активы';
-      case 'liabilities': return 'Займы';
-      case 'treasury': return 'Казначейство';
-      case 'documents': return 'Документы';
-      case 'settings': return 'Настройки';
-      default: return 'Финансы';
+      case 'main': return t('Показатели');
+      case 'transactions': return t('Операционная деятельность');
+      case 'deals': return t('Сделки');
+      case 'plan': return t('План');
+      case 'projects': return t('Проекты');
+      case 'reports': return t('Отчёты');
+      case 'references': return t('Справочники');
+      case 'assets': return t('Учет активов');
+      case 'liabilities': return t('Кредиты и займы');
+      case 'treasury': return t('Казначейство');
+      case 'documents': return t('Документооборот');
+      case 'settings': return t('Настройки');
+      default: return t('Финансы');
     }
   };
 
@@ -65,23 +68,26 @@ const FinanceHeader: React.FC = () => {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Search className="header-search-icon" style={{ position: 'static' }} />
-          <span className="hide-on-mobile" style={{ fontSize: 13, color: 'var(--text-muted)' }}>Поиск...</span>
+          <span className="hide-on-mobile" style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t("Поиск...", "Поиск...")}</span>
         </div>
         <kbd className="hide-on-mobile" style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 3, padding: '1px 4px', marginLeft: 8 }}>⌘K</kbd>
       </div>
 
+      {/* Язык */}
+      <LanguageSwitcher />
+
       {/* Тема */}
-      <button className="theme-toggle" onClick={toggleTheme} data-tooltip-bottom={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+      <button className="theme-toggle" onClick={toggleTheme} data-tooltip-bottom={theme === 'dark' ? 'Светлая тема' : "Тёмная тема"}>
         {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
       </button>
 
       {/* Help Toggle */}
-      <button className="theme-toggle hide-on-mobile" data-tooltip-bottom="Система помощи">
+      <button className="theme-toggle hide-on-mobile" data-tooltip-bottom={t("Система помощи", "Система помощи")}>
         <HelpCircle size={12} />
       </button>
 
       {/* Share Toggle */}
-      <button className="theme-toggle hide-on-mobile" data-tooltip-bottom="Поделиться">
+      <button className="theme-toggle hide-on-mobile" data-tooltip-bottom={t("Поделиться", "Поделиться")}>
         <Share2 size={12} />
       </button>
 

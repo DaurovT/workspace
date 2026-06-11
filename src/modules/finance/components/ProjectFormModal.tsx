@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, Check, Briefcase } from 'lucide-react';
 import type { Project } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
 type Status = 'Плановый' | 'В работе' | 'Завершен';
 const STATUSES: Status[] = ['Плановый', 'В работе', 'Завершен'];
@@ -19,7 +20,8 @@ interface Props {
 }
 
 export const ProjectFormModal: React.FC<Props> = ({ project, onSave, onClose }) => {
-  const [name, setName]           = useState(project?.name ?? '');
+  const { t } = useTranslation();
+    const [name, setName]           = useState(project?.name ?? '');
   const [group, setGroup]         = useState(project?.group ?? '');
   const [status, setStatus]       = useState<Status>((project?.status as Status) ?? 'Плановый');
   const [dateStart, setDateStart] = useState(project?.dateStart ?? '');
@@ -60,7 +62,7 @@ export const ProjectFormModal: React.FC<Props> = ({ project, onSave, onClose }) 
             <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
               {project ? 'Редактировать проект' : 'Новый проект'}
             </h2>
-            <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>Заполните параметры проекта</p>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{t("Заполните параметры проекта", "Заполните параметры проекта")}</p>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, borderRadius: 6 }}>
             <X size={18} />
@@ -69,8 +71,8 @@ export const ProjectFormModal: React.FC<Props> = ({ project, onSave, onClose }) 
 
         {/* Name */}
         <div style={{ marginBottom: 14 }}>
-          <label style={label}>НАЗВАНИЕ *</label>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Название проекта"
+          <label style={label}>{t("НАЗВАНИЕ *", "НАЗВАНИЕ *")}</label>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder={t("Название проекта", "Название проекта")}
             style={{ ...inp, borderColor: !name.trim() ? 'rgba(239,68,68,0.4)' : 'var(--border-subtle)' }}
             autoFocus />
         </div>
@@ -78,18 +80,18 @@ export const ProjectFormModal: React.FC<Props> = ({ project, onSave, onClose }) 
         {/* Group + Status side by side */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
           <div>
-            <label style={label}>ГРУППА</label>
+            <label style={label}>{t("ГРУППА", "ГРУППА")}</label>
             <div style={{ position: 'relative' }}>
               <select value={group} onChange={e => setGroup(e.target.value)}
                 style={{ ...inp, paddingRight: 28, appearance: 'none', cursor: 'pointer' }}>
-                <option value="">Без группы</option>
+                <option value="">{t("Без группы", "Без группы")}</option>
                 {ALL_GROUPS.map(g => <option key={g}>{g}</option>)}
               </select>
               <ChevronDown size={12} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }} />
             </div>
           </div>
           <div>
-            <label style={label}>СТАТУС</label>
+            <label style={label}>{t("СТАТУС", "СТАТУС")}</label>
             <div style={{ display: 'flex', gap: 4 }}>
               {STATUSES.map(s => {
                 const c = STATUS_COLORS[s];
@@ -112,34 +114,35 @@ export const ProjectFormModal: React.FC<Props> = ({ project, onSave, onClose }) 
         {/* Dates */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
           <div>
-            <label style={label}>НАЧАЛО</label>
+            <label style={label}>{t("НАЧАЛО", "НАЧАЛО")}</label>
             <input type="date" value={dateStart} onChange={e => setDateStart(e.target.value)} style={inp} />
           </div>
           <div>
-            <label style={label}>КОНЕЦ</label>
+            <label style={label}>{t("КОНЕЦ", "КОНЕЦ")}</label>
             <input type="date" value={dateEnd} onChange={e => setDateEnd(e.target.value)} style={inp} />
           </div>
         </div>
 
         {/* Budget */}
         <div style={{ marginBottom: 14 }}>
-          <label style={label}>ПЛАНОВЫЙ БЮДЖЕТ (сум)</label>
+          <label style={label}>{t("ПЛАНОВЫЙ БЮДЖЕТ (сум)", "ПЛАНОВЫЙ БЮДЖЕТ (сум)")}</label>
           <input type="number" value={budget} onChange={e => setBudget(e.target.value)}
             placeholder="0" min="0" style={inp} />
         </div>
 
         {/* Description */}
         <div style={{ marginBottom: 22 }}>
-          <label style={label}>ОПИСАНИЕ</label>
+          <label style={label}>{t("ОПИСАНИЕ", "ОПИСАНИЕ")}</label>
           <textarea value={description} onChange={e => setDescription(e.target.value)}
-            placeholder="Краткое описание проекта..."
+            placeholder={t("Краткое описание проекта...", "Краткое описание проекта...")}
             style={{ ...inp, height: 'auto', minHeight: 56, paddingTop: 8, paddingBottom: 8, resize: 'vertical' }} />
         </div>
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ flex: 1, height: 36, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 8, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer', fontWeight: 500 }}>
-            Отмена
+            
+            {t("Отозвать", "Отозвать")}
           </button>
           <button onClick={handleSave} disabled={!valid} style={{
             flex: 2, height: 36, background: valid ? 'var(--color-primary)' : 'var(--bg-hover)',
@@ -147,7 +150,7 @@ export const ProjectFormModal: React.FC<Props> = ({ project, onSave, onClose }) 
             fontSize: 12, fontWeight: 600, cursor: valid ? 'pointer' : 'not-allowed',
             boxShadow: valid ? '0 4px 12px rgba(99,102,241,0.3)' : 'none',
           }}>
-            {project ? 'Сохранить изменения' : 'Создать проект'}
+            {project ? "Сохранить изменения" : 'Создать проект'}
           </button>
         </div>
       </div>

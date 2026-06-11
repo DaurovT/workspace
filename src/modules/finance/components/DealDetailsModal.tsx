@@ -5,6 +5,7 @@ import { useFinanceStore } from '../financeStore';
 import { DocumentViewerModal } from './DocumentViewerModal';
 import { FileText, Plus, CheckCircle, Clock } from 'lucide-react';
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   dealId: string;
@@ -13,7 +14,8 @@ interface Props {
 }
 
 export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) => {
-  const { deals, contractors, projects, documents, addDocument } = useFinanceStore();
+  const { t } = useTranslation();
+    const { deals, contractors, projects, documents, addDocument } = useFinanceStore();
   const [activeTab, setActiveTab] = useState<'info' | 'documents'>('info');
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
 
@@ -59,7 +61,8 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
               boxShadow: activeTab === 'info' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s'
             }}
           >
-            Информация
+            
+            {t("Информация", "Информация")}
           </button>
           <button 
             onClick={() => setActiveTab('documents')}
@@ -71,7 +74,8 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
               boxShadow: activeTab === 'documents' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none', transition: 'all 0.2s'
             }}
           >
-            Документы ({docs.length})
+            
+            {t("Документы (", "Документы (")}{docs.length})
           </button>
         </div>
 
@@ -93,22 +97,22 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
               </div>
             ))}
             <div style={{ gridColumn: '1 / -1', padding: 14, background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 10 }}>
-              <div style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Финансы</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{t("Финансы", "Финансы")}</div>
               <div style={{ display: 'flex', gap: 32 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Сумма сделки</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Сумма сделки", "Сумма сделки")}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{new Intl.NumberFormat('ru-RU').format(deal.amount)} {deal.currency}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Оплачено</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Оплачено", "Оплачено")}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: '#10b981', fontFamily: 'monospace' }}>{new Intl.NumberFormat('ru-RU').format(deal.paidAmount)} {deal.currency}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Остаток</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Остаток", "Остаток")}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: deal.amount - deal.paidAmount > 0 ? '#ef4444' : '#10b981', fontFamily: 'monospace' }}>{new Intl.NumberFormat('ru-RU').format(deal.amount - deal.paidAmount)} {deal.currency}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>Отгружено</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>{t("Отгружено", "Отгружено")}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{new Intl.NumberFormat('ru-RU').format(deal.shippedAmount)} {deal.currency}</div>
                 </div>
               </div>
@@ -119,13 +123,14 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
         {activeTab === 'documents' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 14, fontWeight: 600 }}>Закрывающие документы</h3>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 14, fontWeight: 600 }}>{t("Закрывающие документы", "Закрывающие документы")}</h3>
               <div style={{ display: 'flex', gap: 12 }}>
                 <button onClick={() => handleCreateDocument('act')} style={{ background: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', height: 28, padding: '0 16px', borderRadius: 6, fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-                  Создать Акт
+                  
+                  {t("Создать Акт", "Создать Акт")}
                 </button>
                 <button onClick={() => handleCreateDocument('invoice')} style={{ background: 'var(--color-primary)', color: 'var(--text-primary)', border: 'none', height: 28, padding: '0 16px', borderRadius: 6, fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', boxShadow: '0 2px 6px rgba(124, 58, 237, 0.2)' }}>
-                  <Plus size={12} /> Создать Счет
+                  <Plus size={12} />  {t("Создать Счет", "Создать Счет")}
                 </button>
               </div>
             </div>
@@ -133,8 +138,8 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
             {docs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 40, background: 'var(--bg-card)', borderRadius: 12, border: '1px dashed var(--border-subtle)' }}>
                 <FileText size={32} color="var(--border-subtle)" style={{ marginBottom: 16 }} />
-                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Нет документов</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Сгенерируйте счет на оплату или акт для этой сделки.</div>
+                <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{t("Нет документов", "Нет документов")}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t("Сгенерируйте счет на оплату или акт для этой сделки.", "Сгенерируйте счет на оплату или акт для этой сделки.")}</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -148,7 +153,7 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
                         <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 13, marginBottom: 2 }}>
                           {doc.type === 'invoice' ? 'Счет на оплату' : 'Акт выполненных работ'} № {doc.number}
                         </div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>от {new Date(doc.date).toLocaleDateString()}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t("От", "От")} {new Date(doc.date).toLocaleDateString()}</div>
                       </div>
                     </div>
                     
@@ -156,9 +161,9 @@ export const DealDetailsModal: React.FC<Props> = ({ dealId, isOpen, onClose }) =
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{new Intl.NumberFormat('ru-RU').format(doc.totalAmount)} {deal.currency === APP_CURRENCY_SYMBOL ? APP_CURRENCY_SYMBOL : deal.currency}</div>
                         
-                        {doc.status === 'paid' && <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10b981', fontSize: 11, justifyContent: 'flex-end', fontWeight: 500 }}><CheckCircle size={10}/> Оплачен</div>}
-                        {doc.status === 'issued' && <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#3b82f6', fontSize: 11, justifyContent: 'flex-end', fontWeight: 500 }}><Clock size={10}/> Ожидает</div>}
-                        {doc.status === 'draft' && <div style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 500 }}>Черновик</div>}
+                        {doc.status === 'paid' && <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10b981', fontSize: 11, justifyContent: 'flex-end', fontWeight: 500 }}><CheckCircle size={10}/>  {t("Оплачено", "Оплачено")}</div>}
+                        {doc.status === 'issued' && <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#3b82f6', fontSize: 11, justifyContent: 'flex-end', fontWeight: 500 }}><Clock size={10}/>  {t("Ожидается", "Ожидается")}</div>}
+                        {doc.status === 'draft' && <div style={{ color: 'var(--text-muted)', fontSize: 11, fontWeight: 500 }}>{t("Черновик", "Черновик")}</div>}
                       </div>
                     </div>
                   </div>

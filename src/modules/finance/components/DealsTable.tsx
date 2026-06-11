@@ -1,6 +1,7 @@
 import React from 'react';
 import { useFinanceStore, type DealStatus, type Deal } from '../financeStore';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onRowClick?: (id: string) => void;
@@ -33,7 +34,8 @@ const STATUS_LABELS: Record<DealStatus, { label: string; color: string; bg: stri
 };
 
 const StatusBadge: React.FC<{ status: DealStatus }> = ({ status }) => {
-  const m = STATUS_LABELS[status] || STATUS_LABELS['new'];
+  const { t } = useTranslation(); void t;
+    const m = STATUS_LABELS[status] || STATUS_LABELS['new'];
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px',
       borderRadius: 12, fontSize: 11, fontWeight: 600, color: m.color, background: m.bg,
@@ -44,7 +46,8 @@ const StatusBadge: React.FC<{ status: DealStatus }> = ({ status }) => {
 };
 
 const ProgressBar: React.FC<{ paid: number; total: number; currency: string }> = ({ paid, total, currency }) => {
-  const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+  const { t } = useTranslation(); void t;
+    const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
   const full = pct === 100;
   return (
     <div style={{ minWidth: 110 }}>
@@ -60,7 +63,8 @@ const ProgressBar: React.FC<{ paid: number; total: number; currency: string }> =
 };
 
 export const DealsTable: React.FC<Props> = ({ onRowClick, statusFilter = 'all', searchQuery = '' }) => {
-  const { deals, contractors, projects } = useFinanceStore();
+  const { t } = useTranslation();
+    const { deals, contractors, projects } = useFinanceStore();
 
   const saleDeals = deals
     .filter((d: Deal) => d.type === 'sale')
@@ -76,8 +80,8 @@ export const DealsTable: React.FC<Props> = ({ onRowClick, statusFilter = 'all', 
     return (
       <div style={{ padding: '60px 40px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Сделки не найдены</div>
-        <div style={{ fontSize: 12 }}>Измените фильтры или создайте новую сделку</div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{t("Сделки не найдены", "Сделки не найдены")}</div>
+        <div style={{ fontSize: 12 }}>{t("Измените фильтры или создайте новую сделку", "Измените фильтры или создайте новую сделку")}</div>
       </div>
     );
   }
@@ -87,13 +91,13 @@ export const DealsTable: React.FC<Props> = ({ onRowClick, statusFilter = 'all', 
       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 1000 }}>
         <thead>
           <tr>
-            <Th width="260px" first>Сделка</Th>
-            <Th>Клиент</Th>
-            <Th width="120px">Сумма</Th>
-            <Th width="160px">Оплачено</Th>
-            <Th width="110px">Остаток</Th>
-            <Th width="110px">Статус</Th>
-            <Th width="140px" last>Сроки</Th>
+            <Th width="260px" first>{t("Сделка", "Сделка")}</Th>
+            <Th>{t("Клиент", "Клиент")}</Th>
+            <Th width="120px">{t("Сумма", "Сумма")}</Th>
+            <Th width="160px">{t("Оплачено", "Оплачено")}</Th>
+            <Th width="110px">{t("Остаток", "Остаток")}</Th>
+            <Th width="110px">{t("Статус", "Статус")}</Th>
+            <Th width="140px" last>{t("Сроки", "Сроки")}</Th>
           </tr>
         </thead>
         <tbody>
@@ -134,9 +138,10 @@ export const DealsTable: React.FC<Props> = ({ onRowClick, statusFilter = 'all', 
                 </Td>
                 <Td>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                    <div>с {deal.dateStart ? format(new Date(deal.dateStart as string), 'dd.MM.yy') : '—'}</div>
+                    <div>{t("с", "с")} {deal.dateStart ? format(new Date(deal.dateStart as string), 'dd.MM.yy') : '—'}</div>
                     <div style={{ color: isOverdue ? '#ef4444' : 'inherit', fontWeight: isOverdue ? 700 : 400 }}>
-                      по {deal.dateDeadline ? format(new Date(deal.dateDeadline as string), 'dd.MM.yy') : '—'}
+                      
+                      {t("по", "по")} {deal.dateDeadline ? format(new Date(deal.dateDeadline as string), 'dd.MM.yy') : '—'}
                       {isOverdue && <span style={{ marginLeft: 4, fontSize: 9, background: '#ef4444', color: 'var(--text-primary)', borderRadius: 4, padding: '1px 4px' }}>!!</span>}
                     </div>
                   </div>

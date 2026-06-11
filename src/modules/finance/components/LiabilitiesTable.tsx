@@ -3,6 +3,7 @@ import { useFinanceStore } from '../financeStore';
 import { parseISO, format } from 'date-fns';
 import { Landmark, Banknote, Briefcase } from 'lucide-react';
 import { calculateLoan } from '../utils/loansMath';
+import { useTranslation } from 'react-i18next';
 
 interface LiabilitiesTableProps {
   searchQuery?: string;
@@ -19,7 +20,8 @@ export const LiabilitiesTable: React.FC<LiabilitiesTableProps> = ({
   onToggleSelection = () => {},
   onPay = () => {}
 }) => {
-  const { loans, transactions } = useFinanceStore();
+  const { t } = useTranslation();
+    const { loans, transactions } = useFinanceStore();
 
   const enrichedLoans = useMemo(() => {
     return loans
@@ -72,13 +74,13 @@ export const LiabilitiesTable: React.FC<LiabilitiesTableProps> = ({
                 style={{ accentColor: 'var(--color-primary)' }} 
               />
             </Th>
-            <Th align="left">Обязательство</Th>
-            <Th align="left">Ставка и Срок</Th>
-            <Th align="center">Полный Долг</Th>
-            <Th align="center">Остаток</Th>
-            <Th align="center">Аннуитет</Th>
-            <Th align="left" width="220px">Ближайший платеж</Th>
-            <Th align="center">Действия</Th>
+            <Th align="left">{t("Обязательство", "Обязательство")}</Th>
+            <Th align="left">{t("Ставка и Срок", "Ставка и Срок")}</Th>
+            <Th align="center">{t("Полный Долг", "Полный Долг")}</Th>
+            <Th align="center">{t("Остаток", "Остаток")}</Th>
+            <Th align="center">{t("Аннуитет", "Аннуитет")}</Th>
+            <Th align="left" width="220px">{t("Ближайший платеж", "Ближайший платеж")}</Th>
+            <Th align="center">{t("Действия", "Действия")}</Th>
           </tr>
         </thead>
         <tbody>
@@ -103,15 +105,16 @@ export const LiabilitiesTable: React.FC<LiabilitiesTableProps> = ({
                       <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{loan.name}</div>
                       <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{loan.bankName}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                        Старт: {format(parseISO(loan.startDate), 'dd.MM.yyyy')}
+                        
+                        {t("Старт:", "Старт:")} {format(parseISO(loan.startDate), 'dd.MM.yyyy')}
                       </div>
                     </div>
                   </div>
                 </Td>
                 <Td align="left">
-                  <div style={{ fontWeight: 600, color: 'var(--color-danger)' }}>{loan.interestRate}% <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-secondary)' }}>годовых</span></div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>На {loan.termMonths} мес.</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>Ост: {loan.monthsRemaining} мес.</div>
+                  <div style={{ fontWeight: 600, color: 'var(--color-danger)' }}>{loan.interestRate}% <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-secondary)' }}>{t("годовых", "годовых")}</span></div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{t("На", "На")} {loan.termMonths}  {t("мес.", "мес.")}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{t("Остаток:", "Остаток:")} {loan.monthsRemaining}  {t("мес.", "мес.")}</div>
                 </Td>
                 <Td align="center">
                   <span style={{ fontWeight: 600 }}>{new Intl.NumberFormat('ru-RU').format(loan.principalAmount)}</span>
@@ -119,7 +122,8 @@ export const LiabilitiesTable: React.FC<LiabilitiesTableProps> = ({
                 <Td align="center">
                   <span style={{ fontWeight: 700, color: '#f43f5e' }}>{new Intl.NumberFormat('ru-RU').format(loan.remainingPrincipal)}</span>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                    Уже погашено: {new Intl.NumberFormat('ru-RU').format(loan.accumulatedPrincipalPaid)}
+                    
+                    {t("Уже погашено:", "Уже погашено:")} {new Intl.NumberFormat('ru-RU').format(loan.accumulatedPrincipalPaid)}
                   </div>
                 </Td>
                 <Td align="center">
@@ -129,7 +133,7 @@ export const LiabilitiesTable: React.FC<LiabilitiesTableProps> = ({
                   {loan.monthsRemaining > 0 ? (
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
-                        <span style={{ color: '#10b981' }}>Тело (Баланс): {new Intl.NumberFormat('ru-RU').format(Math.round(loan.currentPrincipalPayment))}</span>
+                        <span style={{ color: '#10b981' }}>{t("Тело (Баланс):", "Тело (Баланс):")} {new Intl.NumberFormat('ru-RU').format(Math.round(loan.currentPrincipalPayment))}</span>
                         <span style={{ color: '#f87171' }}>%: {new Intl.NumberFormat('ru-RU').format(Math.round(loan.currentInterestPayment))}</span>
                       </div>
                       <div style={{ display: 'flex', height: 6, background: 'var(--bg-card)', borderRadius: 4, overflow: 'hidden' }}>
@@ -137,16 +141,18 @@ export const LiabilitiesTable: React.FC<LiabilitiesTableProps> = ({
                         <div style={{ height: '100%', width: `${(loan.currentInterestPayment / loan.monthlyPayment) * 100}%`, background: '#f87171' }} />
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>
-                        % уходят в ОПУ. Тело снижает долг.
+                        
+                        {t("% уходят в ОПУ. Тело снижает долг.", "% уходят в ОПУ. Тело снижает долг.")}
                       </div>
                     </div>
                   ) : (
-                    <span style={{ color: '#10b981', fontWeight: 600, fontSize: 13 }}>Погашен полностью</span>
+                    <span style={{ color: '#10b981', fontWeight: 600, fontSize: 13 }}>{t("Погашен полностью", "Погашен полностью")}</span>
                   )}
                 </Td>
                 <Td align="center">
                   <button onClick={() => onPay(loan)} style={{ background: 'var(--color-primary)', border: 'none', color: '#fff', cursor: 'pointer', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}>
-                    Платеж
+                    
+                    {t("Платеж", "Платеж")}
                   </button>
                 </Td>
               </tr>

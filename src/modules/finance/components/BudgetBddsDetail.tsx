@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { ArrowLeft, Download, ChevronDown as ChevDown, Waves, ArrowDown, ArrowUp } from 'lucide-react';
 import { useFinanceStore, type BddsBudget } from '../financeStore';
+import { useTranslation } from 'react-i18next';
 
-const MONTHS_SHORT = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS_SHORT = ['Янв','Фев','март','апрель','Май','Июн','Июл','август','Сен','Окт','Ноя','Дек'];
 const CURRENT_MONTH = new Date().getMonth();
 const CURRENT_YEAR  = new Date().getFullYear();
 
@@ -11,7 +12,8 @@ const fmt = (n: number) => n === 0 ? '—' : new Intl.NumberFormat('ru-RU').form
 interface Props { budget: BddsBudget; onBack: () => void; }
 
 export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
-  const { categories, transactions, budgetLines, budgetScenarios, users, accounts } = useFinanceStore();
+  const { t } = useTranslation();
+    const { categories, transactions, budgetLines, budgetScenarios, users, accounts } = useFinanceStore();
 
   const [showFact, setShowFact]   = useState(true);
   const [period,   setPeriod]     = useState('По месяцам');
@@ -166,7 +168,7 @@ export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
   };
 
   const fmtPeriod = (s: string, e: string) => {
-    const mo=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+    const mo=['янв','Фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
     const [sy,sm]=s.split('-'); const [ey,em]=e.split('-');
     return `${mo[+sm-1]} '${sy.slice(2)} — ${mo[+em-1]} '${ey.slice(2)}`;
   };
@@ -315,7 +317,7 @@ export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
   const authorName   = currentUser?.name ?? '—';
 
   const exportXls = useCallback(() => {
-    const header = ['Название', 'Итого План', 'Итого Факт', ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} План`), ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} Факт`)];
+    const header = ['Наименование', 'Итого План', 'Итого Факт', ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} План`), ...allMonthsList.map(m => `${MONTHS_SHORT[m.m]} '${String(m.y).slice(2)} Факт`)];
     const rows: string[][] = [header];
     const addRow = (name: string, pFn: (m:{m:number,y:number})=>number, fFn: (m:{m:number,y:number})=>number) => {
       rows.push([name,
@@ -369,7 +371,7 @@ export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
           style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)',fontSize:12,display:'flex',alignItems:'center',gap:5,padding:0}}
           onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='var(--color-primary)'}
           onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='var(--text-muted)'}>
-          <ArrowLeft size={13}/> Список БДДС
+          <ArrowLeft size={13}/>  {t("Список БДДС", "Список БДДС")}
         </button>
       </div>
 
@@ -409,11 +411,12 @@ export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
           </div>
         ))}
         <div style={{width:1,height:20,background:'var(--border-subtle)',margin:'0 4px'}}/>
-        {chk(showFact,'Факт',()=>setShowFact(v=>!v))}
+        {chk(showFact,'факт',()=>setShowFact(v=>!v))}
         <div style={{width:1,height:20,background:'var(--border-subtle)',margin:'0 4px'}}/>
         {chk(hideZeros,'Спрятать нулевые',()=>setHideZeros(v=>!v))}
         <span style={{marginLeft:'auto',fontSize:11,color:'var(--text-muted)'}}>
-          Автор: {authorName} · Сценарий: {scenario?.name ?? '—'}
+          
+          {t("Автор:", "Автор:")} {authorName}  {t("· Сценарий:", "· Сценарий:")} {scenario?.name ?? '—'}
         </span>
       </div>
 
@@ -428,8 +431,8 @@ export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
           </colgroup>
           <thead>
             <tr style={{background:'var(--bg-surface)'}}>
-              <th style={stickyThStyle()}>Статья движения средств</th>
-              <th colSpan={showFact?2:1} style={{...thStyle,borderLeft:'1px solid var(--border-subtle)'}}>Итого</th>
+              <th style={stickyThStyle()}>{t("Статья движения средств", "Статья движения средств")}</th>
+              <th colSpan={showFact?2:1} style={{...thStyle,borderLeft:'1px solid var(--border-subtle)'}}>{t("Итого", "Итого")}</th>
               {columns.map(col=>(
                 <th key={col.label} colSpan={showFact?2:1} style={{...thStyle,borderLeft:'1px solid var(--border-subtle)',
                   color:col.months.some(m=>m.y<CURRENT_YEAR||(m.y===CURRENT_YEAR&&m.m<=CURRENT_MONTH))?'var(--text-primary)':'var(--text-muted)'}}>
@@ -443,8 +446,8 @@ export const BudgetBddsDetail: React.FC<Props> = ({ budget, onBack }) => {
               </th>
               {[...Array(1+columns.length)].map((_,i)=>(
                 <React.Fragment key={i}>
-                  <th style={{...thStyle,fontSize:10,borderLeft:i===0?'1px solid var(--border-subtle)':'none'}}>План</th>
-                  {showFact&&<th style={{...thStyle,fontSize:10,color:'#10b981'}}>Факт</th>}
+                  <th style={{...thStyle,fontSize:10,borderLeft:i===0?'1px solid var(--border-subtle)':'none'}}>{t("План", "План")}</th>
+                  {showFact&&<th style={{...thStyle,fontSize:10,color:'#10b981'}}>{t("факт", "факт")}</th>}
                 </React.Fragment>
               ))}
             </tr>
