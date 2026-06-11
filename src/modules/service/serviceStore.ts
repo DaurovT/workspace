@@ -1,3 +1,4 @@
+import { apiFetch } from '../../lib/api';
 import { create } from 'zustand';
 
 export type TicketStatus = 'new' | 'in_progress' | 'blocked' | 'resolved' | 'closed';
@@ -86,7 +87,7 @@ export const useServiceStore = create<ServiceStore>()((set) => ({
   fetchArchiveTickets: async (page = 1, limit = 20) => {
     set({ isLoading: true });
     try {
-      const res = await fetch(`/api/service-tickets/archive?page=${page}&limit=${limit}`);
+      const res = await apiFetch(`/api/service-tickets/archive?page=${page}&limit=${limit}`);
       const data = res.ok ? await res.json() : { tickets: [], total: 0, pages: 0 };
       set({ archiveData: { ...data, tickets: Array.isArray(data.tickets) ? data.tickets : [], currentPage: page } });
     } catch (err) {
@@ -98,7 +99,7 @@ export const useServiceStore = create<ServiceStore>()((set) => ({
 
   createTicket: async (partial) => {
     try {
-      const res = await fetch('/api/service-tickets', {
+      const res = await apiFetch('/api/service-tickets', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ export const useServiceStore = create<ServiceStore>()((set) => ({
     }));
 
     try {
-      await fetch(`/api/service-tickets/${id}`, {
+      await apiFetch(`/api/service-tickets/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -148,7 +149,7 @@ export const useServiceStore = create<ServiceStore>()((set) => ({
 
   postComment: async (id, text) => {
     try {
-      await fetch(`/api/service-tickets/${id}/comments`, {
+      await apiFetch(`/api/service-tickets/${id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })

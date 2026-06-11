@@ -1,3 +1,4 @@
+import { apiFetch } from '../../lib/api';
 import { create } from 'zustand';
 import { apiHeaders, handleRes } from '../../services/api';
 
@@ -83,7 +84,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   loadRequests: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/procurement/requests', { headers: apiHeaders(), credentials: 'include' });
+      const res = await apiFetch('/api/procurement/requests', { headers: apiHeaders(), credentials: 'include' });
       await handleRes(res);
       if (res.ok) set({ requests: await res.json() });
     } finally { set({ loading: false }); }
@@ -92,20 +93,20 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   loadItems: async () => {
     set({ loading: true });
     try {
-      const res = await fetch('/api/procurement/items', { headers: apiHeaders(), credentials: 'include' });
+      const res = await apiFetch('/api/procurement/items', { headers: apiHeaders(), credentials: 'include' });
       await handleRes(res);
       if (res.ok) set({ items: await res.json() });
     } finally { set({ loading: false }); }
   },
 
   loadTenders: async () => {
-    const res = await fetch('/api/procurement/tenders', { headers: apiHeaders(), credentials: 'include' });
+    const res = await apiFetch('/api/procurement/tenders', { headers: apiHeaders(), credentials: 'include' });
     await handleRes(res);
     if (res.ok) set({ tenders: await res.json() });
   },
 
   createRequest: async (data) => {
-    const res = await fetch('/api/procurement/requests', {
+    const res = await apiFetch('/api/procurement/requests', {
       method: 'POST', headers: apiHeaders(), credentials: 'include', body: JSON.stringify(data)
     });
     await handleRes(res);
@@ -116,7 +117,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
 
   updateRequest: async (id, data) => {
     set(state => ({ requests: state.requests.map(r => r.id === id ? { ...r, ...data } : r) }));
-    const res = await fetch(`/api/procurement/requests/${id}`, {
+    const res = await apiFetch(`/api/procurement/requests/${id}`, {
       method: 'PUT', headers: apiHeaders(), credentials: 'include', body: JSON.stringify(data)
     });
     await handleRes(res);
@@ -126,7 +127,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   },
 
   createItem: async (data) => {
-    const res = await fetch('/api/procurement/items', {
+    const res = await apiFetch('/api/procurement/items', {
       method: 'POST', headers: apiHeaders(), credentials: 'include', body: JSON.stringify(data)
     });
     await handleRes(res);
@@ -138,7 +139,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   updateItem: async (id, data) => {
     set(state => ({ items: state.items.map(i => i.id === id ? { ...i, ...data } : i) }));
     try {
-      const res = await fetch(`/api/procurement/items/${id}`, {
+      const res = await apiFetch(`/api/procurement/items/${id}`, {
         method: 'PUT', headers: apiHeaders(), credentials: 'include', body: JSON.stringify(data)
       });
       await handleRes(res);
@@ -146,14 +147,14 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
       set(state => ({ items: state.items.map(i => i.id === id ? updated : i) }));
       return updated;
     } catch (err) {
-      const res = await fetch('/api/procurement/items', { headers: apiHeaders(), credentials: 'include' });
+      const res = await apiFetch('/api/procurement/items', { headers: apiHeaders(), credentials: 'include' });
       if (res.ok) set({ items: await res.json() });
       throw err;
     }
   },
 
   createTender: async (data) => {
-    const res = await fetch('/api/procurement/tenders', {
+    const res = await apiFetch('/api/procurement/tenders', {
       method: 'POST', headers: apiHeaders(), credentials: 'include', body: JSON.stringify(data)
     });
     await handleRes(res);
@@ -163,7 +164,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   },
 
   updateTender: async (id, data) => {
-    const res = await fetch(`/api/procurement/tenders/${id}`, {
+    const res = await apiFetch(`/api/procurement/tenders/${id}`, {
       method: 'PUT', headers: apiHeaders(), credentials: 'include', body: JSON.stringify(data)
     });
     await handleRes(res);
@@ -173,7 +174,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   },
 
   attachItemsToTender: async (tenderId, itemIds) => {
-    const res = await fetch(`/api/procurement/tenders/${tenderId}/items`, {
+    const res = await apiFetch(`/api/procurement/tenders/${tenderId}/items`, {
       method: 'POST', headers: apiHeaders(), credentials: 'include', body: JSON.stringify({ itemIds })
     });
     await handleRes(res);
@@ -186,7 +187,7 @@ export const useProcurementStore = create<ProcurementStore>((set) => ({
   },
 
   removeItemFromTender: async (tenderId, itemId) => {
-    const res = await fetch(`/api/procurement/tenders/${tenderId}/items/${itemId}`, {
+    const res = await apiFetch(`/api/procurement/tenders/${tenderId}/items/${itemId}`, {
       method: 'DELETE', headers: apiHeaders(), credentials: 'include'
     });
     await handleRes(res);
