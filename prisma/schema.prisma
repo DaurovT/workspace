@@ -31,6 +31,7 @@ model User {
 model LegalEntity {
   id            String   @id @default(cuid())
   name          String
+  nameUz        String?
   shortName     String
   inn           String   @unique
   kpp           String?
@@ -54,6 +55,7 @@ model LegalEntity {
 model Category {
   id          String   @id @default(cuid())
   name        String
+  nameUz      String?
   type        String   // 'income' | 'expense' | 'transfer' | 'accrual' | 'asset' | 'liability' | 'equity'
   activity    String?  // 'operating' | 'investing' | 'financing'
   parentId    String?
@@ -65,6 +67,7 @@ model Category {
 model Account {
   id                String   @id @default(cuid())
   name              String
+  nameUz            String?
   balance           Decimal
   currency          String
   type              String?
