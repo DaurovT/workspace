@@ -20,14 +20,7 @@ const FinanceSidebar: React.FC = () => {
         { id: 'invoices', label: t('Выставленные счета') }
       ]
     },
-    {
-      id: 'plan', label: t('План'), icon: Calendar,
-      subItems: [
-        { id: 'calendar', label: t('Платежный календарь') },
-        { id: 'bdr', label: t('Бюджет доходов и расходов') },
-        { id: 'bdds', label: t('Бюджет движения денег') }
-      ]
-    },
+    { id: 'plan', label: t('Бюджет'), icon: Calendar },
     { id: 'projects', label: t('Проекты'), icon: LayoutGrid },
     {
       id: 'reports', label: t('Отчёты'), icon: BarChart3,

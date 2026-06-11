@@ -12,7 +12,7 @@ import ReferencesContractorsPage from './pages/ReferencesContractorsPage';
 import ReferencesAccountsPage from './pages/ReferencesAccountsPage';
 import ReferencesCategoriesPage from './pages/ReferencesCategoriesPage';
 import ReferencesProductsPage from './pages/ReferencesProductsPage';
-import BudgetPlanningPage from './pages/BudgetPlanningPage';
+import BudgetView from './components/BudgetView';
 import AssetsPage from './pages/AssetsPage';
 import LiabilitiesPage from './pages/LiabilitiesPage';
 import SettingsPage from './pages/SettingsPage';
@@ -20,16 +20,16 @@ import PaymentApprovalsPage from './pages/PaymentApprovalsPage';
 import DocumentsPage from './pages/DocumentsPage';
 import DealsPurchasePage from './pages/DealsPurchasePage';
 import DealsInvoicesPage from './pages/DealsInvoicesPage';
-import BudgetBdrPage from './pages/BudgetBdrPage';
-import BudgetBddsPage from './pages/BudgetBddsPage';
 import ReferencesEntitiesPage from './pages/ReferencesEntitiesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import QuickExpenseModal from './components/QuickExpenseModal';
 import { useFinanceStore } from './financeStore';
 import { Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const FinanceApp: React.FC = () => {
-  const { activeView, activeSubView, fetchInitialData } = useFinanceStore();
+  const { t } = useTranslation();
+    const { activeView, activeSubView, fetchInitialData } = useFinanceStore();
   const [showQuickExpense, setShowQuickExpense] = React.useState(false);
 
   React.useEffect(() => {
@@ -42,8 +42,8 @@ const FinanceApp: React.FC = () => {
         🚧
       </div>
       <div>
-        <h2 style={{ margin: '0 0 8px 0', fontSize: 20, fontWeight: 700, textAlign: 'center' }}>В разработке</h2>
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>Данный раздел находится в стадии проектирования.</p>
+        <h2 style={{ margin: '0 0 8px 0', fontSize: 20, fontWeight: 700, textAlign: 'center' }}>{t("В разработке", "В разработке")}</h2>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>{t("Данный раздел находится в стадии проектирования.", "Данный раздел находится в стадии проектирования.")}</p>
       </div>
     </div>
   );
@@ -62,9 +62,7 @@ const FinanceApp: React.FC = () => {
   else if (activeView === 'references' && activeSubView === 'categories') content = <ReferencesCategoriesPage />;
   else if (activeView === 'references' && activeSubView === 'products') content = <ReferencesProductsPage />;
   else if (activeView === 'references' && activeSubView === 'entities') content = <ReferencesEntitiesPage />;
-  else if (activeView === 'plan' && activeSubView === 'calendar') content = <BudgetPlanningPage />;
-  else if (activeView === 'plan' && activeSubView === 'bdr') content = <BudgetBdrPage />;
-  else if (activeView === 'plan' && activeSubView === 'bdds') content = <BudgetBddsPage />;
+  else if (activeView === 'plan') content = <BudgetView />;
   else if (activeView === 'assets') content = <AssetsPage />;
   else if (activeView === 'liabilities') content = <LiabilitiesPage />;
   else if (activeView === 'settings') content = <SettingsPage />;
@@ -86,7 +84,7 @@ const FinanceApp: React.FC = () => {
           <button
             className="fab-quick-expense"
             onClick={() => setShowQuickExpense(true)}
-            title="Быстрый расход"
+            title={t("Быстрый расход", "Быстрый расход")}
           >
             <Zap size={24} />
           </button>
