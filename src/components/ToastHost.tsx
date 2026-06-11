@@ -1,7 +1,7 @@
 import React from 'react';
 import { useToastStore } from '../lib/toast';
 
-const COLORS: Record<string, string> = { success: '#10b981', error: '#ef4444', info: 'var(--color-primary)' };
+const COLORS: Record<string, string> = { success: 'var(--color-success)', error: 'var(--color-danger)', info: 'var(--color-info)' };
 const ICONS: Record<string, string> = { success: '✓', error: '✕', info: 'ℹ' };
 
 export const ToastHost: React.FC = () => {

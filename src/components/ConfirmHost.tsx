@@ -22,7 +22,7 @@ export const ConfirmHost: React.FC = () => {
           <button onClick={() => close(false)} style={{ ...btn, fontWeight: 500, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-primary)' }}>
             {req.cancelLabel || 'Отмена'}
           </button>
-          <button onClick={() => close(true)} style={{ ...btn, fontWeight: 600, border: 'none', background: req.danger ? '#ef4444' : 'var(--color-primary)', color: '#fff' }}>
+          <button onClick={() => close(true)} style={{ ...btn, fontWeight: 600, border: 'none', background: req.danger ? 'var(--color-danger)' : 'var(--color-primary)', color: '#fff' }}>
             {req.confirmLabel || 'Подтвердить'}
           </button>
         </div>

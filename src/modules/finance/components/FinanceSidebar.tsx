@@ -59,7 +59,7 @@ const FinanceSidebar: React.FC = () => {
       <div className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''} ${isSidebarMobileOpen ? 'sidebar-mobile-open' : ''}`} style={{ height: '100%' }}>
         {/* ALIGNED TO ARCANA: Standard Sidebar Logo Area */}
       <div className="sidebar-logo" style={{ cursor: 'pointer', justifyContent: isSidebarCollapsed ? 'center' : 'space-between', padding: isSidebarCollapsed ? '0' : '0 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => toggleSidebar()}>
+        <div role="button" aria-label="Свернуть/развернуть меню" tabIndex={0} style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => toggleSidebar()}>
           <div className="sidebar-logo-icon" style={{ background: 'var(--color-primary)', width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Origami size={16} color="#ffffff" />
           </div>
