@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 
 const fmt = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
 const MONTH_LABELS = ['янв','Фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
-const COL_W = 88;      // width for every period column
-const SUM_W = 96;      // slightly wider for summary (Итого) columns
+const COL_W = 106;     // width for every period column
+const SUM_W = 120;     // slightly wider for summary (Итого) columns
 const LABEL_W = 240;
 
 // ─── Flat column definition (no colSpan!) ─────────────────────────────────────
@@ -92,7 +92,7 @@ const Cell: React.FC<{ value: number; isPlan?: boolean; isToday?: boolean; bold?
     : 'var(--text-primary)';
   return (
     <td style={{ width: w, minWidth: w, maxWidth: w, padding: '6px 8px', textAlign: 'right',
-      fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: bold ? 500 : 400, color,
+      fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: bold ? 500 : 400, color,
       borderBottom: '1px solid var(--border-subtle)', borderRight: '1px solid var(--border-subtle)',
       background: bg, whiteSpace: 'nowrap', overflow: 'hidden' }}>
       {value === 0 ? '—' : fmt.format(value)}
@@ -235,7 +235,7 @@ export const PaymentCalendarTable: React.FC<{
               const isEditing = editingCell === cellKey;
               return (
                 <td key={col.key} style={{ width: w, minWidth: w, maxWidth: w, padding: isEditing ? '2px 4px' : '6px 8px',
-                  textAlign: 'right', fontSize: 13, fontFamily: 'var(--font-mono)', fontWeight: 400,
+                  textAlign: 'right', fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 400,
                   color: 'var(--color-primary)',
                   borderBottom: '1px solid var(--border-subtle)', borderRight: '1px solid var(--border-subtle)',
                   background: col.isToday ? 'rgba(99,102,241,0.07)' : 'transparent',
@@ -251,7 +251,7 @@ export const PaymentCalendarTable: React.FC<{
                         if (e.key === 'Enter') commitEdit(row.id, row.type, col.month);
                         if (e.key === 'Escape') setEditingCell(null);
                       }}
-                      style={{ width: '100%', textAlign: 'right', fontSize: 13, fontFamily: 'var(--font-mono)', color: 'var(--color-primary)',
+                      style={{ width: '100%', textAlign: 'right', fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--color-primary)',
                         background: 'var(--bg-base)', border: '1px solid var(--color-primary)',
                         borderRadius: 4, padding: '2px 6px', outline: 'none' }}
                     />
