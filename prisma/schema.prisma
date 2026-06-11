@@ -172,6 +172,7 @@ model Transaction {
   @@index([accountId])
   @@index([projectId])
   @@index([categoryId])
+  ledgerEntries   LedgerEntry[]
 }
 
 model Fund {
@@ -841,4 +842,21 @@ model WorkCalendarDay {
   createdAt   DateTime @default(now())
 
   @@index([date])
+}
+
+// Double-entry journal line (ledger refactor stage 2).
+// INVARIANT: per transactionId, sum(debit) == sum(credit) — enforced in ledgerService.
+model LedgerEntry {
+  id            String   @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  accountRef    String   // 'acc:<accountId>' | 'cat:<categoryId>'
+  accountKind   String   // 'bank'|'cash'|'income'|'expense'|'asset'|'liability'|'equity'
+  debit         Decimal  @default(0)
+  credit        Decimal  @default(0)
+  currency      String   @default("UZS")
+  createdAt     DateTime @default(now())
+
+  @@index([transactionId])
+  @@index([accountRef])
 }
