@@ -303,7 +303,7 @@ model BudgetLine {
   scenarioId String
   scenario   BudgetScenario @relation(fields: [scenarioId], references: [id])
   categoryId String
-  month      Int
+  month      Int      // 0-based (0=Jan .. 11=Dec), matches Date.getMonth() — see src/modules/finance/lib/financeCalc.ts
   year       Int
   amount     Decimal
 }

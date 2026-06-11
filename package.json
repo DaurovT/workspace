@@ -11,6 +11,7 @@
     "pack-lint": "npx bpmnlint-pack-config -c .bpmnlintrc -o src/bpmnlint.js -t es",
     "build": "npm run pack-lint && tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -36,6 +37,9 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fuse.js": "^7.3.0",
+    "i18next": "^26.3.1",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "i18next-http-backend": "^4.0.0",
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",
     "leaflet": "^1.9.4",
@@ -43,8 +47,10 @@
     "multer": "^2.1.1",
     "multer-s3": "^3.0.1",
     "node-telegram-bot-api": "^0.67.0",
+    "openai": "^6.42.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-i18next": "^17.0.8",
     "react-leaflet": "^5.0.0",
     "react-mentions": "^4.4.10",
     "recharts": "^3.8.1",
@@ -78,7 +84,8 @@
     "ts-node": "^10.9.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
-    "vite": "^8.0.4"
+    "vite": "^8.0.4",
+    "vitest": "^3.2.4"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
