@@ -1,19 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import './index.css';
 import { useStore } from './store';
 
-// Desktop
-import OSDesktop from './desktop/OSDesktop';
+// Desktop (lazy — code-split, audit P1 #9)
+const OSDesktop = lazy(() => import('./desktop/OSDesktop'));
 
 // Public Pages
 import LoginPage, { type AuthUser } from './modules/auth/LoginPage';
-import SettingsApp from './modules/settings/SettingsApp';
-import BpmnApp from './modules/bpmn/BpmnApp';
-import FinanceApp from './modules/finance/FinanceApp';
-import HRApp from './modules/hr/HRApp';
-import TMSApp from './modules/tms/TMSApp';
-import ProcurementApp from './modules/procurement/ProcurementApp';
-import ServiceApp from './modules/service/ServiceApp';
+// Module apps — lazy-loaded so heavy deps (recharts, bpmn-js, leaflet) leave the initial bundle
+const SettingsApp = lazy(() => import('./modules/settings/SettingsApp'));
+const BpmnApp = lazy(() => import('./modules/bpmn/BpmnApp'));
+const FinanceApp = lazy(() => import('./modules/finance/FinanceApp'));
+const HRApp = lazy(() => import('./modules/hr/HRApp'));
+const TMSApp = lazy(() => import('./modules/tms/TMSApp'));
+const ProcurementApp = lazy(() => import('./modules/procurement/ProcurementApp'));
+const ServiceApp = lazy(() => import('./modules/service/ServiceApp'));
+const SchemeApp = lazy(() => import('./modules/scheme/SchemeApp'));
 import { NotificationsModal } from './components/NotificationsModal';
 
 // WorkSpace Pro — Tracker
@@ -33,6 +35,10 @@ import { GlobalAICopilot } from './components/GlobalAICopilot';
 import Analytics from './modules/workspace/Analytics';
 import TeamPage from './modules/workspace/TeamPage';
 import { BulkActionsBar } from './modules/workspace/BulkActionsBar';
+
+const Loading = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: 'var(--text-muted)', fontSize: 14 }}>Загрузка…</div>
+);
 
 function App() {
   const activeApp = useStore(state => state.activeApp);
@@ -71,7 +77,7 @@ function App() {
           const urlApp = params.get('app');
           const urlPage = params.get('page');
           
-          if (urlApp && ['desktop', 'workspace', 'settings', 'bpmn', 'finance', 'hr', 'tms', 'procurement', 'service'].includes(urlApp)) {
+          if (urlApp && ['desktop', 'workspace', 'settings', 'bpmn', 'finance', 'hr', 'tms', 'procurement', 'service', 'scheme'].includes(urlApp)) {
             setActiveApp(urlApp as any);
             if (urlPage && urlApp === 'workspace') {
                useStore.getState().setActivePage(urlPage as any);
@@ -127,7 +133,7 @@ function App() {
   let content = null;
 
   if (activeApp === 'desktop') {
-    return <OSDesktop />;
+    return <Suspense fallback={<Loading />}><OSDesktop /></Suspense>;
   }
 
   if (activeApp === 'login') {
@@ -148,6 +154,8 @@ function App() {
     content = <ProcurementApp />;
   } else if (activeApp === 'service') {
     content = <ServiceApp />;
+  } else if (activeApp === 'scheme') {
+    content = <SchemeApp />;
   } else {
     // Fallback / Default: WorkSpace Pro
     const isKanban   = activePage === 'project' && projectTab === 'kanban';
@@ -184,7 +192,7 @@ function App() {
 
   return (
     <>
-      {content}
+      <Suspense fallback={<Loading />}>{content}</Suspense>
       <TaskModal />
       <CommandPalette />
       <ProjectModal />
