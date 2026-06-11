@@ -119,12 +119,23 @@ function App() {
     window.history.replaceState({}, '', url);
   }, [activeApp, activePage]);
 
-  // Global Shortcut for Command+M to open OS Desktop
+  // Global shortcuts: Cmd/Ctrl+M -> OS Desktop; Alt+1..9 -> jump straight to an app
+  // (power-user path past the desktop metaphor — audit P3 #22). e.code keeps it
+  // keyboard-layout independent.
   useEffect(() => {
+    const APP_KEYS = ['workspace', 'bpmn', 'hr', 'finance', 'service', 'tms', 'procurement', 'settings', 'scheme'] as const;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         setActiveApp('desktop');
+        return;
+      }
+      if (e.altKey && !e.metaKey && !e.ctrlKey && e.code.startsWith('Digit')) {
+        const n = Number(e.code.slice(5));
+        if (n >= 1 && n <= APP_KEYS.length) {
+          e.preventDefault();
+          setActiveApp(APP_KEYS[n - 1]);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
