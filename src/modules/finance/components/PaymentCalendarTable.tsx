@@ -1,85 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useFinanceStore } from '../financeStore';
-import type { Transaction } from '../financeStore';
 import { useTranslation } from 'react-i18next';
+import { buildCols, sumTx, type DataCol } from '../lib/paymentCalendarCols';
 
 const fmt = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
-const MONTH_LABELS = ['янв','Фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 const COL_W = 106;     // width for every period column
 const SUM_W = 120;     // slightly wider for summary (Итого) columns
 const LABEL_W = 240;
-
-// ─── Flat column definition (no colSpan!) ─────────────────────────────────────
-interface DataCol {
-  key: string;
-  headerLabel: string;   // top row label
-  subLabel: string;      // 'факт' | 'план'
-  year: number;
-  month: number;         // 0-based; for summary = selected month (По дням) or 0 (otherwise)
-  summaryMonths?: number[]; // months to aggregate for summary col
-  day?: number;
-  isPlan: boolean;
-  isSummary: boolean;
-  isToday: boolean;
-  isGroupFirst: boolean; // show top-label; false = show empty (grouped visually)
-}
-
-function buildCols(viewMode: string, year: number, month: number): DataCol[] {
-  const today = new Date();
-  const cols: DataCol[] = [];
-
-  // Summary col: fact + plan (2 cells)
-  // In По дням mode: summary = the selected month
-  // In other modes: summary = the whole year (summaryMonths = 0..11)
-  const sumLabel = viewMode === 'По дням'
-    ? `${MONTH_LABELS[month]} '${String(year).slice(2)}`
-    : `Итого '${String(year).slice(2)}`;
-
-  const summaryMonths = viewMode === 'По дням' ? [month] : [0,1,2,3,4,5,6,7,8,9,10,11];
-
-  cols.push({ key: 'sum-f', headerLabel: sumLabel, subLabel: 'факт', year, month: summaryMonths[0], summaryMonths, isPlan: false, isSummary: true, isToday: false, isGroupFirst: true });
-  cols.push({ key: 'sum-p', headerLabel: '',        subLabel: 'план', year, month: summaryMonths[0], summaryMonths, isPlan: true,  isSummary: true, isToday: false, isGroupFirst: false });
-
-  if (viewMode === 'По дням') {
-    const days = new Date(year, month + 1, 0).getDate();
-    for (let d = 1; d <= days; d++) {
-      const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
-      cols.push({ key: `d-${d}`, headerLabel: String(d), subLabel: 'факт', year, month, day: d, isPlan: false, isSummary: false, isToday, isGroupFirst: true });
-    }
-  } else if (viewMode === 'По кварталам') {
-    for (let q = 0; q < 4; q++) {
-      const sm = q * 3;
-      const isToday = today.getFullYear()===year && Math.floor(today.getMonth()/3)===q;
-      cols.push({ key: `q-${q}`, headerLabel: `Q${q+1} '${String(year).slice(2)}`, subLabel: 'факт', year, month: sm, isPlan: false, isSummary: false, isToday, isGroupFirst: true });
-    }
-  } else {
-    for (let m = 0; m < 12; m++) {
-      const isToday = today.getFullYear()===year && today.getMonth()===m;
-      cols.push({ key: `m-${m}`, headerLabel: `${MONTH_LABELS[m]} '${String(year).slice(2)}`, subLabel: 'факт', year, month: m, isPlan: false, isSummary: false, isToday, isGroupFirst: true });
-    }
-  }
-  return cols;
-}
-
-// ─── Data aggregation ─────────────────────────────────────────────────────────
-function sumTx(txs: Transaction[], catId: string, type: string, col: DataCol, viewMode: string): number {
-  return txs.filter(t => {
-    if (t.categoryId !== catId || t.type !== type) return false;
-    const d = new Date(t.date);
-    if (col.isSummary) {
-      // Sum only the months defined in summaryMonths
-      const months = col.summaryMonths ?? [0,1,2,3,4,5,6,7,8,9,10,11];
-      return d.getFullYear() === col.year && months.includes(d.getMonth());
-    }
-    if (d.getFullYear() !== col.year || d.getMonth() !== col.month) return false;
-    if (col.day !== undefined) return d.getDate() === col.day;
-    if (viewMode === 'По кварталам') return d.getMonth() >= col.month && d.getMonth() < col.month + 3;
-    return true;
-  }).reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
-}
-
-
 
 // ─── Cell components ──────────────────────────────────────────────────────────
 const Cell: React.FC<{ value: number; isPlan?: boolean; isToday?: boolean; bold?: boolean; isGroup?: boolean; w?: number }> =
