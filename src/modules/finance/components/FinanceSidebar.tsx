@@ -1,12 +1,12 @@
 import React from 'react';
 import { useFinanceStore } from '../financeStore';
 import { useStore } from '../../../store';
-import { ChevronLeft, ChevronDown, ChevronRight, Activity, CreditCard, Briefcase, Calendar, LayoutGrid, BarChart3, BookOpen, Settings, Send, FileText, Package, Landmark, Origami, MessageCircle, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronRight, Activity, CreditCard, Briefcase, Calendar, LayoutGrid, BarChart3, BookOpen, Settings, Send, FileText, Package, Landmark, Origami } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const FinanceSidebar: React.FC = () => {
   const { t } = useTranslation();
-  const { activeView, activeSubView, setActiveView, expandedMenus, toggleMenu, isSidebarCollapsed, toggleSidebar, copilotConversations, activeCopilotConversationId, setActiveCopilotConversationId, setCopilotOpen, isSidebarMobileOpen, setSidebarMobileOpen } = useFinanceStore();
+  const { activeView, activeSubView, setActiveView, expandedMenus, toggleMenu, isSidebarCollapsed, toggleSidebar, isSidebarMobileOpen, setSidebarMobileOpen } = useFinanceStore();
   const setActiveApp = useStore(state => state.setActiveApp);
 
   const menuItems = [
@@ -169,48 +169,6 @@ const FinanceSidebar: React.FC = () => {
             </div>
           );
         })}
-        {/* AI History */}
-        {!isSidebarCollapsed && (
-          <div style={{ marginTop: 24, padding: '0 8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px 12px' }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>AI History</div>
-              <button onClick={() => { setActiveCopilotConversationId(null); setCopilotOpen(true); if (isSidebarMobileOpen) setSidebarMobileOpen(false); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 0, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'} title={t("Новый чат", "Новый чат")}>
-                <Plus size={12} />
-              </button>
-            </div>
-            {copilotConversations.slice(0, 5).map((conv) => {
-              const isActive = activeCopilotConversationId === conv.id;
-              return (
-                <button 
-                  key={conv.id} 
-                  onClick={() => {
-                    setActiveCopilotConversationId(conv.id);
-                    setCopilotOpen(true);
-                    if (isSidebarMobileOpen) setSidebarMobileOpen(false);
-                  }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px',
-                    color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', 
-                    background: isActive ? 'var(--bg-hover)' : 'transparent', 
-                    border: 'none',
-                    borderRadius: 8, cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', marginBottom: 4
-                  }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--bg-hover)'; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; } }}
-                >
-                  <MessageCircle size={14} style={{ opacity: isActive ? 0.8 : 0.5, flexShrink: 0, color: isActive ? 'var(--color-primary)' : 'inherit' }} />
-                  <span style={{ fontSize: 13, fontWeight: isActive ? 500 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.title}</span>
-                </button>
-              );
-            })}
-            {copilotConversations.length === 0 && (
-              <div style={{ padding: '0 12px', fontSize: 12, color: 'var(--text-muted)' }}>
-                
-                {t("Нет сохраненных чатов", "Нет сохраненных чатов")}
-              </div>
-            )}
-          </div>
-        )}
       </div>
       </div>
     </>
