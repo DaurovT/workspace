@@ -4,10 +4,11 @@ import { create } from 'zustand';
 export type TransactionType = 'income' | 'expense' | 'transfer' | 'accrual' | 'shipment' | 'delivery';
 export type ActivityFlow = 'operating' | 'investing' | 'financing';
 
-export interface Category { id: string; name: string; type: 'income' | 'expense' | 'transfer' | 'accrual' | 'asset' | 'liability' | 'equity'; activity?: ActivityFlow; parentId?: string; }
+export interface Category { id: string; name: string; nameUz?: string; type: 'income' | 'expense' | 'transfer' | 'accrual' | 'asset' | 'liability' | 'equity'; activity?: ActivityFlow; parentId?: string; }
 export interface Account { 
   id: string; 
   name: string; 
+  nameUz?: string; 
   balance: number; 
   currency: string;
   type?: 'Наличный' | 'Безналичный' | 'Карта' | 'Крипто';

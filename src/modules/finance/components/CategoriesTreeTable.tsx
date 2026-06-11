@@ -1,3 +1,4 @@
+import { translateToUz } from '../../../lib/translate';
 import React, { useState, useMemo, useCallback } from 'react';
 import { useFinanceStore } from '../financeStore';
 import type { Category } from '../financeStore';
@@ -9,6 +10,7 @@ import {
   ROOT_GROUPS, ROOT_GROUP_BY_TYPE,
   ACTIVITY_LABELS, TYPE_LABELS
 } from '../config/categoryGroups';
+import { useTranslation } from 'react-i18next';
 
 interface DragState {
   draggedId: string;
@@ -70,10 +72,13 @@ interface ModalProps {
 const CategoryModal: React.FC<ModalProps> = ({
   mode, initial, defaultType, defaultParentId, rootNodes, categories, onSave, onClose
 }) => {
-  const [name, setName] = useState(initial?.name ?? '');
+  const { t } = useTranslation();
+    const [name, setName] = useState(initial?.name ?? '');
   const [type, setType] = useState(initial?.type ?? defaultType ?? 'expense');
   const [activity, setActivity] = useState(initial?.activity ?? '');
   const [parentId, setParentId] = useState(initial?.parentId ?? defaultParentId ?? '');
+  const [nameUz, setNameUz] = useState((initial as any)?.nameUz ?? '');
+  const [translating, setTranslating] = useState(false);
 
   const fieldCss: React.CSSProperties = {
     width: '100%', padding: '0 10px', height: 32,
@@ -117,42 +122,56 @@ const CategoryModal: React.FC<ModalProps> = ({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <label style={labelCss}>Название</label>
+            <label style={labelCss}>{t("Наименование", "Наименование")}</label>
             <input autoFocus value={name} onChange={e => setName(e.target.value)}
-              placeholder="Например: Аренда офиса" style={fieldCss} />
+              placeholder={t("Например: Аренда офиса", "Например: Аренда офиса")} style={fieldCss} />
           </div>
           <div>
-            <label style={labelCss}>Тип</label>
+            <label style={labelCss}>Nomi (UZ)</label>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input value={nameUz} onChange={e => setNameUz(e.target.value)}
+                placeholder="O'zbekcha nomi" style={{ ...fieldCss, flex: 1 }} />
+              <button type="button" disabled={!name.trim() || translating}
+                onClick={async () => { setTranslating(true); const uz = await translateToUz(name.trim()); if (uz) setNameUz(uz); setTranslating(false); }}
+                style={{ flexShrink: 0, height: 32, padding: '0 12px', border: '1px solid var(--border-subtle)', borderRadius: 6, background: 'var(--bg-hover)', color: 'var(--text-secondary)', fontSize: 12, cursor: (name.trim() && !translating) ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>
+                {translating ? '…' : 'Перевести'}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label style={labelCss}>{t("Тип", "Тип")}</label>
             <select value={type} onChange={e => { setType(e.target.value); setParentId(''); }} style={fieldCss}>
               {ROOT_GROUPS.map(g => <option key={g.type} value={g.type}>{g.label}</option>)}
             </select>
           </div>
           <div>
-            <label style={labelCss}>Родительская группа</label>
+            <label style={labelCss}>{t("Родительская группа", "Родительская группа")}</label>
             <select value={parentId} onChange={e => setParentId(e.target.value)} style={fieldCss}>
-              <option value="">— Корневой уровень</option>
+              <option value="">{t("— Корневой уровень", "— Корневой уровень")}</option>
               {parentOptions.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           {(type === 'expense' || type === 'income') && (
             <div>
-              <label style={labelCss}>Вид деятельности (ОДДС)</label>
+              <label style={labelCss}>{t("Вид деятельности (ОДДС)", "Вид деятельности (ОДДС)")}</label>
               <select value={activity} onChange={e => setActivity(e.target.value)} style={fieldCss}>
-                <option value="">— Не указано</option>
-                <option value="operating">Операционная</option>
-                <option value="financing">Финансовая</option>
-                <option value="investing">Инвестиционная</option>
+                <option value="">{t("— Не указано", "— Не указано")}</option>
+                <option value="operating">{t("Операционный", "Операционный")}</option>
+                <option value="financing">{t("Финансовая", "Финансовая")}</option>
+                <option value="investing">{t("Инвестиционный", "Инвестиционный")}</option>
               </select>
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
             <button onClick={onClose} style={{ flex: 1, height: 32, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
-              Отмена
+              
+              {t("Отозвать", "Отозвать")}
             </button>
             <button
               disabled={!name.trim()}
               onClick={() => onSave({
                 name: name.trim(),
+                nameUz: nameUz.trim() || undefined,
                 type: type as Category['type'],
                 activity: (activity as any) || undefined,
                 parentId: parentId || (null as any)
@@ -185,7 +204,8 @@ const GroupRow: React.FC<{
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent) => void;
 }> = ({ node, isOpen, color, isDropTarget, onToggle, onAdd, onDragOver, onDragLeave, onDrop }) => {
-  const totalCount = countDescendants(node);
+  const { t } = useTranslation();
+    const totalCount = countDescendants(node);
   const tdG: React.CSSProperties = {
     padding: '10px 14px', fontSize: 12, fontWeight: 700,
     color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-subtle)',
@@ -220,7 +240,8 @@ const GroupRow: React.FC<{
           )}
           {isDropTarget && (
             <span style={{ fontSize: 10, color: 'var(--color-primary)', fontWeight: 600, letterSpacing: '0.04em' }}>
-              ↓ ПЕРЕНЕСТИ СЮДА
+              
+              {t("↓ ПЕРЕНЕСТИ СЮДА", "↓ ПЕРЕНЕСТИ СЮДА")}
             </span>
           )}
         </div>
@@ -234,7 +255,7 @@ const GroupRow: React.FC<{
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
         >
-          <Plus size={12} /> Добавить
+          <Plus size={12} />  {t("Добавить", "Добавить")}
         </button>
       </td>
     </tr>
@@ -257,7 +278,8 @@ const ItemRow: React.FC<{
 }> = ({ node, level, isOpen, hasChildren, color, usageCount, isDragging, isDropTarget,
         onToggle, onEdit, onDelete, onAddChild,
         onDragStart, onDragOver, onDragLeave, onDrop, onDragEnd }) => {
-  const [hover, setHover] = useState(false);
+  const { t } = useTranslation();
+    const [hover, setHover] = useState(false);
   const descCount = hasChildren ? countDescendants(node) : 0;
 
   const td: React.CSSProperties = {
@@ -314,23 +336,23 @@ const ItemRow: React.FC<{
       <td style={{ ...td, textAlign: 'right' }}>
         {usageCount > 0 && (
           <span style={{ fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.08)', padding: '2px 7px', borderRadius: 4, marginRight: 8, fontWeight: 600 }}>
-            {usageCount} транз.
+            {usageCount}  {t("транз.", "транз.")}
           </span>
         )}
         <div style={{ display: 'inline-flex', gap: 2, transition: 'opacity 0.12s' }}>
-          <button onClick={onAddChild} title="Добавить подстатью"
+          <button onClick={onAddChild} title={t("Добавить подстатью", "Добавить подстатью")}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
             <FolderPlus size={14} />
           </button>
-          <button onClick={onEdit} title="Редактировать"
+          <button onClick={onEdit} title={t("Редактировать", "Редактировать")}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
             <Pencil size={14} />
           </button>
-          <button onClick={onDelete} title="Удалить"
+          <button onClick={onDelete} title={t("Удалить", "Удалить")}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '3px 4px', borderRadius: 4 }}
             onMouseEnter={e => (e.currentTarget.style.color = '#ef4444')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
@@ -350,7 +372,8 @@ export const CategoriesTreeTable: React.FC<{
   searchQuery: string;
   selectedRootType: string;
 }> = ({ searchQuery, selectedRootType }) => {
-  const { categories, transactions, addCategory, updateCategory, deleteCategory } = useFinanceStore();
+  const { t } = useTranslation();
+    const { categories, transactions, addCategory, updateCategory, deleteCategory } = useFinanceStore();
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['root_income', 'root_expense']));
   const [modal, setModal] = useState<{
@@ -495,10 +518,10 @@ export const CategoriesTreeTable: React.FC<{
         <thead>
           <tr>
             <th style={{ ...th, width: 32 }} />
-            <th style={th}>Статья</th>
-            <th style={{ ...th, width: 160 }}>Тип</th>
-            <th style={{ ...th, width: 180 }}>Вид деятельности</th>
-            <th style={{ ...th, width: 120, textAlign: 'right' }}>Транзакции / Действия</th>
+            <th style={th}>{t("Статья", "Статья")}</th>
+            <th style={{ ...th, width: 160 }}>{t("Тип", "Тип")}</th>
+            <th style={{ ...th, width: 180 }}>{t("Вид деятельности", "Вид деятельности")}</th>
+            <th style={{ ...th, width: 120, textAlign: 'right' }}>{t("Транзакции / Действия", "Транзакции / Действия")}</th>
           </tr>
         </thead>
         <tbody>
@@ -511,7 +534,8 @@ export const CategoriesTreeTable: React.FC<{
                 {!searchQuery && (
                   <button onClick={() => setModal({ mode: 'create' })}
                     style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 }}>
-                    Создать первую
+                    
+                    {t("Создать первую", "Создать первую")}
                   </button>
                 )}
               </td>
@@ -566,13 +590,15 @@ export const CategoriesTreeTable: React.FC<{
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
-                  Удалить статью?
+                  
+                  {t("Удалить статью?", "Удалить статью?")}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  «{deleteTarget?.name}» будет удалена безвозвратно.
+                  «{deleteTarget?.name}{t("» будет удалена безвозвратно.", "» будет удалена безвозвратно.")}
                   {deleteTarget && categories.some(c => c.parentId === deleteTarget.id) && (
                     <span style={{ display: 'block', marginTop: 6, color: '#f59e0b' }}>
-                      ⚠ Все вложенные подстатьи также будут удалены.
+                      
+                      {t("⚠ Все вложенные подстатьи также будут удалены.", "⚠ Все вложенные подстатьи также будут удалены.")}
                     </span>
                   )}
                 </div>
@@ -581,11 +607,13 @@ export const CategoriesTreeTable: React.FC<{
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setDeleteId(null)}
                 style={{ flex: 1, height: 32, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 6, color: 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
-                Отмена
+                
+                {t("Отозвать", "Отозвать")}
               </button>
               <button onClick={() => { deleteCategory(deleteId); setDeleteId(null); }}
                 style={{ flex: 1, height: 32, background: '#ef4444', border: 'none', borderRadius: 6, color: 'var(--text-primary)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                Удалить
+                
+                {t("Удалить", "Удалить")}
               </button>
             </div>
           </div>
