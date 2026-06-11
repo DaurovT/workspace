@@ -63,7 +63,7 @@ const FinanceSidebar: React.FC = () => {
           <div className="sidebar-logo-icon" style={{ background: 'var(--color-primary)', width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Origami size={16} color="#ffffff" />
           </div>
-          {!isSidebarCollapsed && <div className="sidebar-logo-text" style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>Manor</div>}
+          {!isSidebarCollapsed && <div className="sidebar-logo-text" style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>Manor Finance</div>}
         </div>
         {!isSidebarCollapsed && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
