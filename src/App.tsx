@@ -130,7 +130,9 @@ function App() {
         setActiveApp('desktop');
         return;
       }
-      if (e.altKey && !e.metaKey && !e.ctrlKey && e.code.startsWith('Digit')) {
+      // Alt(⌥ Option на Mac)+1..9, либо Ctrl+1..9 (на Mac Ctrl+цифра свободна)
+      const mod = (e.altKey && !e.metaKey && !e.ctrlKey) || (e.ctrlKey && !e.metaKey && !e.altKey);
+      if (mod && e.code.startsWith('Digit')) {
         const n = Number(e.code.slice(5));
         if (n >= 1 && n <= APP_KEYS.length) {
           e.preventDefault();
