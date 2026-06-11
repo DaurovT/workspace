@@ -35,9 +35,30 @@ const MainDashboard: React.FC = () => {
 
   const { transactions, categories, accounts, deals, contractors, projects } = useFinanceStore();
 
+  const selectedYearNum = parseInt((selectedYear.match(/\d{4}/) || [])[0] || '', 10) || new Date().getFullYear();
+
+  // ── Single filtered set driving every chart (audit #1: wire filters to data) ──
+  const filteredTx = React.useMemo(() => {
+    const proj = selectedProjects !== 'Все проекты' ? projects.find(p => p.name === selectedProjects) : null;
+    const now = new Date();
+    return transactions.filter(t => {
+      const d = new Date(t.date);
+      if (d.getFullYear() !== selectedYearNum) return false;
+      if (proj && t.projectId !== proj.id) return false;
+      if (selectedPeriod === 'За прошлый месяц') {
+        const pm = (now.getMonth() + 11) % 12;
+        const pmy = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+        if (!(d.getMonth() === pm && d.getFullYear() === pmy)) return false;
+      } else if (selectedPeriod === 'За текущий квартал') {
+        if (Math.floor(d.getMonth() / 3) !== Math.floor(now.getMonth() / 3) || d.getFullYear() !== now.getFullYear()) return false;
+      }
+      return true;
+    });
+  }, [transactions, selectedYearNum, selectedPeriod, selectedProjects, projects]);
+
   // ── Computed KPIs from real data ─────────────────────────────────────────
   const computedKPIs = React.useMemo(() => {
-    const confirmedTx = transactions.filter(t => t.isPaidConfirmed);
+    const confirmedTx = filteredTx.filter(t => t.isPaidConfirmed);
     const totalIncome = confirmedTx.filter(t => t.type === 'income').reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
     const totalExpense = confirmedTx.filter(t => t.type === 'expense').reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
     const netProfit = totalIncome - totalExpense;
@@ -46,14 +67,13 @@ const MainDashboard: React.FC = () => {
     const netCashFlow = totalIncome - totalExpense;
     const liquidity = totalBalance > totalExpense ? 'Высокая' : totalBalance > totalExpense * 0.5 ? 'Средняя' : 'Низкая';
     return { totalIncome, totalExpense, netProfit, rentabilityPct, totalBalance, netCashFlow, liquidity };
-  }, [transactions, accounts]);
+  }, [filteredTx, accounts]);
 
   // Compute monthlyData from real transactions
   const realMonthlyData = React.useMemo(() => {
-    const confirmedTx = transactions.filter(t => t.isPaidConfirmed);
-    const months = ['янв', 'Фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-    const now = new Date();
-    const year = now.getFullYear();
+    const confirmedTx = filteredTx.filter(t => t.isPaidConfirmed);
+    const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+    const year = selectedYearNum;
     let runningBal = accounts.reduce((s, a) => s + a.balance, 0);
     // Build per-month aggregations
     const data = months.map((name, i) => {
@@ -70,39 +90,39 @@ const MainDashboard: React.FC = () => {
     let cumBal = runningBal - totalNetBefore;
     data.forEach(d => { cumBal += d.cf; d.bal = cumBal; });
     return data;
-  }, [transactions, accounts]);
+  }, [filteredTx, accounts]);
 
   // Compute pareto from real deal data
   const realParetoData = React.useMemo(() => {
     if (projects.length === 0) return [];
     const projectRevenue = projects.map(p => {
       const dealSum = deals.filter(d => d.projectId === p.id && d.type === 'sale').reduce((s, d) => s + d.amount, 0);
-      const txSum = transactions.filter(t => t.projectId === p.id && t.type === 'income' && t.isPaidConfirmed).reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
+      const txSum = filteredTx.filter(t => t.projectId === p.id && t.type === 'income' && t.isPaidConfirmed).reduce((s, t) => s + (t.baseAmount ?? t.amount), 0);
       return { name: p.name, value: dealSum || txSum };
     }).filter(d => d.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
     if (projectRevenue.length === 0) return [];
     const total = projectRevenue.reduce((s, d) => s + d.value, 0);
     let cum = 0;
     return projectRevenue.map(d => { cum += d.value; return { ...d, cumulative: Math.round((cum / total) * 100) }; });
-  }, [projects, deals, transactions]);
+  }, [projects, deals, filteredTx]);
 
   const realStructureDataRev = React.useMemo(() => {
     const revCats = categories.filter(c => c.type === 'income');
     const data = revCats.map(c => {
-      const value = transactions.filter(t => t.categoryId === c.id && t.isPaidConfirmed).reduce((sum, t) => sum + (t.baseAmount ?? t.amount), 0);
+      const value = filteredTx.filter(t => t.categoryId === c.id && t.isPaidConfirmed).reduce((sum, t) => sum + (t.baseAmount ?? t.amount), 0);
       return { name: c.name, value };
     }).filter(d => d.value > 0);
     return data.length ? data.sort((a, b) => b.value - a.value).slice(0, 5) : [];
-  }, [transactions, categories]);
+  }, [filteredTx, categories]);
 
   const realStructureDataExp = React.useMemo(() => {
     const expCats = categories.filter(c => c.type === 'expense');
     const data = expCats.map(c => {
-      const value = transactions.filter(t => t.categoryId === c.id && t.isPaidConfirmed).reduce((sum, t) => sum + (t.baseAmount ?? t.amount), 0);
+      const value = filteredTx.filter(t => t.categoryId === c.id && t.isPaidConfirmed).reduce((sum, t) => sum + (t.baseAmount ?? t.amount), 0);
       return { name: c.name, value };
     }).filter(d => d.value > 0);
     return data.length ? data.sort((a, b) => b.value - a.value).slice(0, 5) : [];
-  }, [transactions, categories]);
+  }, [filteredTx, categories]);
 
   const dynamicChartData = React.useMemo(() => realMonthlyData /* fake Math.random scramble removed, audit P0 #2 */, [method, realMonthlyData]);
   const dynamicStructureDataRev = realStructureDataRev;
