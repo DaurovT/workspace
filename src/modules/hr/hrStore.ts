@@ -1,25 +1,41 @@
+import { apiFetch } from '../../lib/api';
 import { create } from 'zustand';
-
-const apiFetch = async (url: string, options: RequestInit = {}) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-    ...options.headers,
-  };
-  const res = await fetch(url, { ...options, headers, credentials: 'include' });
-  if (res.status === 401) {
-    localStorage.removeItem('has_session');
-    window.location.href = '/';
-    await new Promise(() => {});
-  }
-  return res;
-};
-
 // --- Types ---
 
 export interface Employee {
   id: string;
-  userId: string;
+  userId: string | null;
+  hasSystemAccess: boolean;
+  orgPositionId?: string | null;
+  orgPosition?: any;
+  lastName?: string | null;
+  firstName?: string | null;
+  middleName?: string | null;
+  birthDate?: string | null;
+  gender?: string | null;
+  nationality?: string | null;
+  passportSeries?: string | null;
+  passportNumber?: string | null;
+  passportIssuedBy?: string | null;
+  passportIssuedDate?: string | null;
+  passportExpiry?: string | null;
+  inn?: string | null;
+  pinfl?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  emergencyContact?: string | null;
+  emergencyPhone?: string | null;
+  scheduleType?: string;
+  scheduleWorkDays?: number;
+  scheduleRestDays?: number;
+  scheduleHours?: number;
+  scheduleStart?: string;
+  scheduleEnd?: string;
+  scheduleCycleDate?: string | null;
+  medicalBookDate?: string | null;
+  medicalBookExpiry?: string | null;
+  uniformSize?: string | null;
+  education?: string | null;
   department?: string;
   position?: string;
   hireDate: string;
@@ -94,7 +110,9 @@ export type HRViewState =
   | 'absences'
   | 'payroll'
   | 'org'
-  | 'my-dashboard';
+  | 'my-dashboard'
+  | 'schedules'
+  | 'calendar';
 
 interface HRState {
   // Navigation
@@ -108,6 +126,7 @@ interface HRState {
   absences: Absence[];
   payrollRuns: PayrollRun[];
   myProfile: any | null;
+  shiftSchedules: any[];
   employeeKPIs: any[];
   _loaded: boolean;
 
@@ -124,6 +143,8 @@ interface HRState {
   updatePayrollRun: (id: string, updates: Partial<PayrollRun>) => Promise<void>;
   deletePayrollRun: (id: string) => Promise<void>;
   fetchKPI: () => Promise<void>;
+  fetchShiftSchedules: () => Promise<void>;
+  setEmployeeSchedule: (employeeId: string, scheduleId: string | null) => Promise<void>;
 }
 
 export const useHRStore = create<HRState>((set, get) => ({
@@ -136,6 +157,7 @@ export const useHRStore = create<HRState>((set, get) => ({
   absences: [],
   payrollRuns: [],
   myProfile: null,
+  shiftSchedules: [],
   employeeKPIs: [],
   _loaded: false,
 
@@ -249,6 +271,25 @@ export const useHRStore = create<HRState>((set, get) => ({
     try {
       await apiFetch(`/api/payroll/${id}`, { method: 'DELETE' });
       set(s => ({ payrollRuns: s.payrollRuns.filter(r => r.id !== id) }));
+    } catch (e) { console.error(e); }
+  },
+
+  fetchShiftSchedules: async () => {
+    try {
+      const res = await apiFetch('/api/shift-schedules');
+      if (res.ok) set({ shiftSchedules: await res.json() });
+    } catch (e) { console.error(e); }
+  },
+
+  setEmployeeSchedule: async (employeeId, scheduleId) => {
+    try {
+      const res = await apiFetch(`/api/employees/${employeeId}`, {
+        method: 'PUT', body: JSON.stringify({ shiftScheduleId: scheduleId }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        set(s => ({ employees: s.employees.map(e => e.id === employeeId ? { ...e, ...updated } : e) }));
+      }
     } catch (e) { console.error(e); }
   },
 

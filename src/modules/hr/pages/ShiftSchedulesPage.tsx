@@ -1,9 +1,8 @@
+import { apiFetch } from '../../../lib/api';
 import { confirmDialog } from '../../../lib/confirm';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Clock, Users } from 'lucide-react';
 
-const apiFetch = (url: string, opts: RequestInit = {}) =>
-  fetch(url, { ...opts, credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...opts.headers } });
 
 const SCHEDULE_TYPES = [
   { value: '5_2',    label: '5/2 — Пятидневка',        workDays: 5, restDays: 2, desc: 'Пн–Пт рабочие, Сб–Вс выходные' },

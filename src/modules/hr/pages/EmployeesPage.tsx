@@ -1,11 +1,10 @@
+import { apiFetch } from '../../../lib/api';
 import { confirmDialog } from '../../../lib/confirm';
 import { useState, useEffect } from 'react';
 import { useHRStore } from '../hrStore';
 import { useStore } from '../../../store';
 import { Plus, Search, Edit2, Trash2, X } from 'lucide-react';
 
-const apiFetch = (url: string, opts: RequestInit = {}) =>
-  fetch(url, { ...opts, credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...opts.headers as any } });
 
 const STATUS_LABELS: Record<string, string> = { active: 'Работает', on_leave: 'В отпуске', terminated: 'Уволен' };
 const STATUS_COLORS: Record<string, string> = { active: '#10b981', on_leave: '#f59e0b', terminated: '#ef4444' };

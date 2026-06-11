@@ -1,24 +1,5 @@
+import { apiFetch } from '../../lib/api';
 import { create } from 'zustand';
-
-const apiFetch = async (url: string, options: RequestInit = {}) => {
-  const headers = {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-    ...options.headers,
-  };
-  
-  const res = await fetch(url, { ...options, headers, credentials: 'include' });
-  
-  if (res.status === 401) {
-    localStorage.removeItem('has_session');
-    window.location.href = '/';
-    await new Promise(() => {}); // Pause forever
-  }
-  
-  return res;
-};
-
-
 // --- Types ---
 export type TransactionType = 'income' | 'expense' | 'transfer' | 'accrual' | 'shipment' | 'delivery';
 export type ActivityFlow = 'operating' | 'investing' | 'financing';
@@ -93,7 +74,7 @@ export interface WorkspaceUser {
   email: string;
   name: string;
   role: 'Владелец' | 'Администратор' | 'Менеджер' | 'Гость';
-  status: 'Подтвержден' | 'Ожидает входа';
+  status: 'Подтверждена' | 'Ожидает входа';
 }
 export interface Project { 
   id: string; 
@@ -142,7 +123,7 @@ export interface Asset {
   id: string;
   name: string;
   category: 'Основное средство' | 'НМА' | 'Запас';
-  type: 'Транспорт' | 'Оборудование' | 'Недвижимость' | 'ПО' | 'Прочее';
+  type: 'Транспорт' | 'Оборудование' | "Недвижимость" | 'ПО' | 'Прочее';
   acquisitionDate: string;
   initialCost: number;
   usefulLifeMonths: number;
@@ -172,7 +153,7 @@ export interface Product {
   vatRate: number;
   costPrice: number;
   stockBalance: number; // For goods only
-  status: 'Активен' | 'В архиве';
+  status: 'Активные' | 'В архиве';
 }
 
 export type DealStatus = 'new' | 'in_progress' | 'completed' | 'cancelled';
@@ -322,7 +303,7 @@ export interface User {
   name: string;
   email: string;
   role: 'Владелец' | 'Администратор' | 'Менеджер' | 'Гость';
-  status: 'Подтвержден' | 'Ожидает входа';
+  status: 'Подтверждена' | 'Ожидает входа';
   permissions: string[];
 }
 

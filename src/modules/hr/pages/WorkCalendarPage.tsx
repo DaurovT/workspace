@@ -1,9 +1,8 @@
+import { apiFetch } from '../../../lib/api';
 import { confirmDialog } from '../../../lib/confirm';
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const apiFetch = (url: string, opts: RequestInit = {}) =>
-  fetch(url, { ...opts, credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...opts.headers } });
 
 const TYPE_LABEL: Record<string, string> = { holiday: 'Праздник', extra_off: 'Доп. выходной', extra_work: 'Доп. рабочий' };
 const TYPE_COLOR: Record<string, string> = { holiday: '#ef4444', extra_off: '#f59e0b', extra_work: '#22c55e' };
