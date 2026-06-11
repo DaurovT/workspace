@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../lib/confirm';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import 'bpmn-js/dist/assets/bpmn-js.css';
@@ -503,7 +504,7 @@ const BpmnApp: React.FC = () => {
   // ── Delete
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Удалить диаграмму?')) return;
+    if (!(await confirmDialog({ message: 'Удалить диаграмму?', danger: true }))) return;
     try {
       await bpmnFetch(`/api/bpmn/diagrams/${id}`, { method: 'DELETE' });
       setDiagrams(prev => prev.filter(d => d.id !== id));

@@ -1,3 +1,5 @@
+import { ToastHost } from './components/ToastHost';
+import { ConfirmHost } from './components/ConfirmHost';
 import { useEffect, lazy, Suspense } from 'react';
 import './index.css';
 import { useStore } from './store';
@@ -199,6 +201,8 @@ function App() {
       <BulkActionsBar />
       <NotificationsModal />
       <GlobalAICopilot />
+      <ToastHost />
+      <ConfirmHost />
     </>
   );
 }

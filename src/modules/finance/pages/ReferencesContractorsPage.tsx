@@ -1,9 +1,11 @@
+import { confirmDialog } from '../../../lib/confirm';
 import React, { useState, useMemo } from 'react';
 import { useFinanceStore } from '../financeStore';
 import { Download, Plus, Building2, User, Briefcase, Landmark, Edit2, Trash2, X, Filter, Phone, Mail, CreditCard, FileText, TrendingUp } from 'lucide-react';
 import type { Contractor } from '../financeStore';
 import { APP_CURRENCY_SYMBOL } from '../config/currency';
 import { exportToCSV } from '../utils/exportData';
+import { useTranslation } from 'react-i18next';
 
 const LEGAL_FORMS = ['МЧЖ','АЖ','ЯТТ','ДК','ХК','ОК','УК','Филиал','Физлицо','Прочее'] as const;
 const GROUPS = ['Все','Поставщики','Клиенты','Банки','Гос. органы','Сотрудники'] as const;
@@ -13,11 +15,12 @@ const LEGAL_FORM_DESC: Record<string,string> = {
   'ЯТТ':'Якка тартибли тадбиркор (ИП)','ДК':'Давлат корхонаси (Гос. пред-е)',
   'ХК':'Хусусий корхона (Частное)','ОК':'Оилавий корхона (Семейное)',
   'УК':'Унитар корхона','Филиал':'Филиал иностр. компании',
-  'Физлицо':'Физическое лицо','Прочее':'Иное',
+  'Физлицо':'Физическое лицо','Прочее':'Прочее',
 };
 
 const FORM_ICON = (lf?: string) => {
-  if (!lf || ['МЧЖ','АЖ','ДК','ХК','ОК','УК'].includes(lf)) return <Building2 size={14}/>;
+  const { t } = useTranslation(); void t;
+    if (!lf || ['МЧЖ','АЖ','ДК','ХК','ОК','УК'].includes(lf)) return <Building2 size={14}/>;
   if (lf === 'Физлицо') return <User size={14}/>;
   if (lf === 'ЯТТ') return <Briefcase size={14}/>;
   return <Landmark size={14}/>;
@@ -43,7 +46,8 @@ const EMPTY: Partial<Contractor> = {
 };
 
 const ReferencesContractorsPage: React.FC = () => {
-  const { contractors, addContractor, updateContractor, deleteContractor, transactions, deals } = useFinanceStore();
+  const { t } = useTranslation();
+    const { contractors, addContractor, updateContractor, deleteContractor, transactions, deals } = useFinanceStore();
 
   const [activeGroup, setActiveGroup] = useState('Все');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -102,12 +106,12 @@ const ReferencesContractorsPage: React.FC = () => {
     if (editingId) updateContractor(editingId, form); else addContractor(form);
     closeModal();
   };
-  const handleDelete = (id: string, name: string) => {
-    if (!window.confirm(`Удалить контрагента "${name}"? Это действие необратимо.`)) return;
+  const handleDelete = async (id: string, name: string) => {
+    if (!(await confirmDialog({ message: `Удалить контрагента "${name}"? Это действие необратимо.`, danger: true }))) return;
     deleteContractor(id); if (selectedId === id) setSelectedId(null);
   };
   const exportCSV = () => {
-    const headers = ['Наименование','ОПФ','Группа','ИНН','Телефон','Email','Доход','Расход','Баланс'];
+    const headers = ['Наименование','ОПФ','Группа','ИНН','Телефон','Email','Выручка (Revenue)',"Расход",'Сальдо'];
     const rows = filtered.map(c => { 
       const t = turnoverMap.get(c.id)||{income:0,expense:0};
       return [c.name,c.legalForm||'',c.group||'',c.inn||'',c.phone||'',c.email||'',String(t.income),String(t.expense),String(t.income-t.expense)]; 
@@ -128,7 +132,7 @@ const ReferencesContractorsPage: React.FC = () => {
           <div style={{height:44,padding:'0 16px',borderBottom:'1px solid var(--border-subtle)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
             <div style={{display:'flex',alignItems:'center',gap:6}}>
               <Filter size={12} color="var(--text-muted)"/>
-              <span style={{fontSize:12,fontWeight:600,color:'var(--text-primary)'}}>Группы</span>
+              <span style={{fontSize:12,fontWeight:600,color:'var(--text-primary)'}}>{t("Группы", "Группы")}</span>
             </div>
             <button onClick={()=>setSidebarOpen(false)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-muted)'}}>✕</button>
           </div>
@@ -164,7 +168,7 @@ const ReferencesContractorsPage: React.FC = () => {
             <button onClick={()=>setSidebarOpen(!isSidebarOpen)} style={{background:isSidebarOpen?'var(--bg-card)':'transparent',border:'1px solid var(--border-subtle)',borderRadius:6,width:26,height:26,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--text-secondary)'}}>
               <Filter size={12}/>
             </button>
-            <span style={{margin:0,fontSize:14,fontWeight:600,color:'var(--text-primary)', whiteSpace: 'nowrap' }}>Контрагенты</span>
+            <span style={{margin:0,fontSize:14,fontWeight:600,color:'var(--text-primary)', whiteSpace: 'nowrap' }}>{t("Контрагенты", "Контрагенты")}</span>
             <span style={{fontSize:11,color:'var(--text-muted)',background:'var(--bg-elevated)',border:'1px solid var(--border-subtle)',padding:'1px 6px',borderRadius:4}}>{filtered.length}</span>
           </div>
           <div style={{display:'flex',gap:8}}>
@@ -172,7 +176,7 @@ const ReferencesContractorsPage: React.FC = () => {
               <Download size={12}/> CSV
             </button>
             <button onClick={openAdd} style={{display:'flex',alignItems:'center',gap:4,padding:'0 12px',height:28,background:'var(--color-primary)',border:'none',borderRadius:6,fontSize:12,fontWeight:600,color:'#fff',cursor:'pointer'}}>
-              <Plus size={11}/> Добавить
+              <Plus size={11}/>  {t("Добавить", "Добавить")}
             </button>
           </div>
         </div>
@@ -183,7 +187,7 @@ const ReferencesContractorsPage: React.FC = () => {
           {/* CONTRACTOR LIST */}
           <div style={{width:310,flexShrink:0,borderRight:'1px solid var(--border-subtle)',overflowY:'auto',background:'var(--bg-surface)'}}>
             {filtered.length === 0 ? (
-              <div style={{padding:32,textAlign:'center',color:'var(--text-muted)',fontSize:13}}>Нет контрагентов</div>
+              <div style={{padding:32,textAlign:'center',color:'var(--text-muted)',fontSize:13}}>{t("Нет контрагентов", "Нет контрагентов")}</div>
             ) : filtered.map(c => {
               const debt = debtMap.get(c.id) || 0;
               const active = selectedId === c.id;
@@ -210,8 +214,8 @@ const ReferencesContractorsPage: React.FC = () => {
                       </div>
                       <div style={{display:'flex',alignItems:'center',gap:6,marginTop:2}}>
                         {c.legalForm && <span style={{fontSize:10,fontWeight:700,color:FORM_TEXT[c.legalForm]||'#6b7280',background:FORM_COLOR[c.legalForm]||'rgba(107,114,128,0.15)',padding:'1px 5px',borderRadius: 4}}>{c.legalForm}</span>}
-                        {c.inn && <span style={{fontSize:10,color:'var(--text-muted)'}}>ИНН {c.inn}</span>}
-                        {c.nds && <span style={{fontSize:10,color:'#10b981',fontWeight:600}}>НДС</span>}
+                        {c.inn && <span style={{fontSize:10,color:'var(--text-muted)'}}>{t("ИНН", "ИНН")} {c.inn}</span>}
+                        {c.nds && <span style={{fontSize:10,color:'#10b981',fontWeight:600}}>{t("НДС", "НДС")}</span>}
                       </div>
                     </div>
                     <div style={{textAlign:'right',flexShrink:0}}>
@@ -231,21 +235,21 @@ const ReferencesContractorsPage: React.FC = () => {
             <div style={{flex:1,overflowY:'auto',padding:24}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:20}}>
                 <div>
-                  <div style={{fontSize:11,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>Карточка контрагента</div>
+                  <div style={{fontSize:11,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:4}}>{t("Карточка контрагента", "Карточка контрагента")}</div>
                   <h2 style={{margin:0,fontSize:18,fontWeight:700,color:'var(--text-primary)'}}>{selected.shortName||selected.name}</h2>
                   {selected.shortName && <div style={{fontSize:13,color:'var(--text-secondary)',marginTop:2}}>{selected.name}</div>}
                   <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
                     {selected.legalForm && <span style={{fontSize:11,fontWeight:700,color:FORM_TEXT[selected.legalForm],background:FORM_COLOR[selected.legalForm],padding:'2px 8px',borderRadius:4}}>{selected.legalForm} — {LEGAL_FORM_DESC[selected.legalForm]}</span>}
                     {selected.group && <span style={{fontSize:11,color:'var(--text-secondary)',background:'var(--bg-elevated)',border:'1px solid var(--border-subtle)',padding:'2px 8px',borderRadius:4}}>{selected.group}</span>}
-                    {selected.nds && <span style={{fontSize:11,fontWeight:600,color:'#10b981',background:'rgba(16,185,129,0.1)',border:'1px solid rgba(16,185,129,0.2)',padding:'2px 8px',borderRadius:4}}>✓ Плательщик НДС</span>}
+                    {selected.nds && <span style={{fontSize:11,fontWeight:600,color:'#10b981',background:'rgba(16,185,129,0.1)',border:'1px solid rgba(16,185,129,0.2)',padding:'2px 8px',borderRadius:4}}>{t("✓ Плательщик НДС", "✓ Плательщик НДС")}</span>}
                   </div>
                 </div>
                 <div style={{display:'flex',gap:6}}>
                   <button onClick={()=>openEdit(selected)} style={{display:'flex',alignItems:'center',gap:5,padding:'0 12px',height:30,background:'var(--bg-elevated)',border:'1px solid var(--border-default)',borderRadius:6,fontSize:12,color:'var(--text-secondary)',cursor:'pointer'}}>
-                    <Edit2 size={12}/> Изменить
+                    <Edit2 size={12}/>  {t("Изменить", "Изменить")}
                   </button>
                   <button onClick={()=>handleDelete(selected.id, selected.name)} style={{display:'flex',alignItems:'center',gap:5,padding:'0 12px',height:30,background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',borderRadius:6,fontSize:12,color:'#ef4444',cursor:'pointer'}}>
-                    <Trash2 size={12}/> Удалить
+                    <Trash2 size={12}/>  {t("Удалить", "Удалить")}
                   </button>
                 </div>
               </div>
@@ -254,7 +258,7 @@ const ReferencesContractorsPage: React.FC = () => {
                 {/* Реквизиты */}
                 <div style={{background: 'var(--bg-elevated)',border:'1px solid var(--border-subtle)',borderRadius:10,padding:16}}>
                   <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12,display:'flex',alignItems:'center',gap:6}}>
-                    <FileText size={13}/> Регистрация
+                    <FileText size={13}/>  {t("Регистрация", "Регистрация")}
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     {[{l:'ИНН / ПИНФЛ',v:selected.inn},{l:'ОКЭД',v:selected.okved}].map(({l,v}) => (
@@ -271,7 +275,7 @@ const ReferencesContractorsPage: React.FC = () => {
                 {/* Банк */}
                 <div style={{background: 'var(--bg-elevated)',border:'1px solid var(--border-subtle)',borderRadius:10,padding:16}}>
                   <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12,display:'flex',alignItems:'center',gap:6}}>
-                    <CreditCard size={13}/> Банковские реквизиты
+                    <CreditCard size={13}/>  {t("Банковские реквизиты", "Банковские реквизиты")}
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     {[{l:'Банк',v:selected.bankName},{l:'МФО',v:selected.bankMfo},{l:'Расчётный счёт',v:selected.bankAccount}].map(({l,v}) => (
@@ -288,11 +292,11 @@ const ReferencesContractorsPage: React.FC = () => {
                 {/* Контакты */}
                 <div style={{background: 'var(--bg-elevated)',border:'1px solid var(--border-subtle)',borderRadius:10,padding:16}}>
                   <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12,display:'flex',alignItems:'center',gap:6}}>
-                    <Phone size={13}/> Контакты
+                    <Phone size={13}/>  {t("Контакты", "Контакты")}
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     {selected.contactPerson && <div>
-                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>Контактное лицо</div>
+                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t("Контактное лицо", "Контактное лицо")}</div>
                       <div style={{fontSize:13,color:'var(--text-primary)',marginTop:2}}>{selected.contactPerson}</div>
                     </div>}
                     {selected.phone && <div style={{display:'flex',alignItems:'center',gap:6}}>
@@ -304,7 +308,7 @@ const ReferencesContractorsPage: React.FC = () => {
                       <span style={{fontSize:13,color:'var(--text-primary)'}}>{selected.email}</span>
                     </div>}
                     {selected.legalAddress && <div>
-                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>Юридический адрес</div>
+                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t("Юридический адрес", "Юридический адрес")}</div>
                       <div style={{fontSize:12,color:'var(--text-secondary)',marginTop:2}}>{selected.legalAddress}</div>
                     </div>}
                   </div>
@@ -313,15 +317,15 @@ const ReferencesContractorsPage: React.FC = () => {
                 {/* Взаиморасчеты */}
                 <div style={{background: 'var(--bg-elevated)',border:'1px solid var(--border-subtle)',borderRadius:10,padding:16}}>
                   <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12,display:'flex',alignItems:'center',gap:6}}>
-                    <Briefcase size={13}/> Взаиморасчеты (Сальдо)
+                    <Briefcase size={13}/>  {t("Взаиморасчеты (Сальдо)", "Взаиморасчеты (Сальдо)")}
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     {(() => {
                       const debt = debtMap.get(selected.id) || 0;
-                      if (debt === 0) return <div style={{fontSize:13,color:'var(--text-muted)'}}>Нет активных задолженностей по сделкам.</div>;
+                      if (debt === 0) return <div style={{fontSize:13,color:'var(--text-muted)'}}>{t("Нет активных задолженностей по сделкам.", "Нет активных задолженностей по сделкам.")}</div>;
                       return (
                         <div style={{paddingTop:4}}>
-                          <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>Текущий долг</div>
+                          <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t("Текущий долг", "Текущий долг")}</div>
                           <div style={{fontSize:18,fontWeight:700,color:debt>0?'#10b981':'#ef4444',marginTop:4}}>
                             {fmt(Math.abs(debt))} {APP_CURRENCY_SYMBOL}
                           </div>
@@ -337,15 +341,15 @@ const ReferencesContractorsPage: React.FC = () => {
                 {/* Оборот */}
                 <div style={{background: 'var(--bg-elevated)',border:'1px solid var(--border-subtle)',borderRadius:10,padding:16}}>
                   <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12,display:'flex',alignItems:'center',gap:6}}>
-                    <TrendingUp size={13}/> Оборот ДДС (все время)
+                    <TrendingUp size={13}/>  {t("Оборот ДДС (все время)", "Оборот ДДС (все время)")}
                   </div>
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     <div>
-                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>Поступления (Нам)</div>
+                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t("Поступления (Нам)", "Поступления (Нам)")}</div>
                       <div style={{fontSize:16,fontWeight:700,color:'#10b981'}}>{fmt(selT?.income||0)} {APP_CURRENCY_SYMBOL}</div>
                     </div>
                     <div>
-                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>Оплаты (От нас)</div>
+                      <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.05em'}}>{t("Оплаты (От нас)", "Оплаты (От нас)")}</div>
                       <div style={{fontSize:16,fontWeight:700,color:'#ef4444'}}>{fmt(selT?.expense||0)} {APP_CURRENCY_SYMBOL}</div>
                     </div>
                   </div>
@@ -354,15 +358,15 @@ const ReferencesContractorsPage: React.FC = () => {
 
               {selected.comment && (
                 <div style={{marginTop:16,background: 'var(--bg-elevated)',border:'1px solid var(--border-subtle)',borderRadius:10,padding:14}}>
-                  <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>Примечание</div>
+                  <div style={{fontSize:10,color:'var(--text-muted)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:6}}>{t("Примечание", "Примечание")}</div>
                   <div style={{fontSize:13,color:'var(--text-secondary)'}}>{selected.comment}</div>
                 </div>
               )}
             </div>
           ) : (
             <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:8}}>
-              <div style={{fontSize:14,color:'var(--text-muted)'}}>Выберите контрагента из списка</div>
-              <div style={{fontSize:12,color:'var(--text-muted)',opacity:0.6}}>Или создайте нового</div>
+              <div style={{fontSize:14,color:'var(--text-muted)'}}>{t("Выберите контрагента из списка", "Выберите контрагента из списка")}</div>
+              <div style={{fontSize:12,color:'var(--text-muted)',opacity:0.6}}>{t("Или создайте нового", "Или создайте нового")}</div>
             </div>
           )}
         </div>
@@ -380,7 +384,7 @@ const ReferencesContractorsPage: React.FC = () => {
 
             {/* TABS */}
             <div style={{display:'flex',borderBottom:'1px solid var(--border-subtle)',background:'var(--bg-base)',flexShrink:0}}>
-              {['Основное','Реквизиты','Контакты'].map((tab,i)=>(
+              {['Основное','Детализация','Контакты'].map((tab,i)=>(
                 <button key={tab} onClick={()=>setModalTab(i)} style={{
                   padding:'8px 16px',fontSize:12,fontWeight:modalTab===i?600:400,
                   color:modalTab===i?'var(--color-primary)':'var(--text-secondary)',
@@ -395,22 +399,22 @@ const ReferencesContractorsPage: React.FC = () => {
               {modalTab === 0 && (
                 <div style={{display:'flex',flexDirection:'column',gap:14}}>
                   <div>
-                    <label style={sLbl}>Полное наименование *</label>
-                    <input value={form.name||''} onChange={e=>setF('name',e.target.value)} placeholder="Название организации или ФИО" style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                    <label style={sLbl}>{t("Полное наименование *", "Полное наименование *")}</label>
+                    <input value={form.name||''} onChange={e=>setF('name',e.target.value)} placeholder={t("Название организации или ФИО", "Название организации или ФИО")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
                   <div>
-                    <label style={sLbl}>Краткое наименование</label>
-                    <input value={form.shortName||''} onChange={e=>setF('shortName',e.target.value)} placeholder='ООО "Компания" → МЧЖ "Компания"' style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                    <label style={sLbl}>{t("Краткое наименование", "Краткое наименование")}</label>
+                    <input value={form.shortName||''} onChange={e=>setF('shortName',e.target.value)} placeholder={t("ООО \"Компания\" → МЧЖ \"Kompaniya\"", "ООО \"Компания\" → МЧЖ \"Kompaniya\"")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                     <div>
-                      <label style={sLbl}>Форма собственности (ОПФ)</label>
+                      <label style={sLbl}>{t("Форма собственности (ОПФ)", "Форма собственности (ОПФ)")}</label>
                       <select value={form.legalForm||'МЧЖ'} onChange={e=>setF('legalForm',e.target.value)} style={{...sInp,height:30}}>
                         {LEGAL_FORMS.map(f=><option key={f} value={f}>{f} — {LEGAL_FORM_DESC[f]}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label style={sLbl}>Группа</label>
+                      <label style={sLbl}>{t("Группа", "Группа")}</label>
                       <select value={form.group||'Поставщики'} onChange={e=>setF('group',e.target.value as any)} style={{...sInp,height:30}}>
                         {GROUPS.filter(g=>g!=='Все').map(g=><option key={g} value={g}>{g}</option>)}
                       </select>
@@ -418,7 +422,8 @@ const ReferencesContractorsPage: React.FC = () => {
                   </div>
                   <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontSize:13,color:'var(--text-primary)'}}>
                     <input type="checkbox" checked={!!form.nds} onChange={e=>setF('nds',e.target.checked)} style={{accentColor:'#10b981',width:14,height:14}}/>
-                    Плательщик НДС
+                    
+                    {t("Плательщик НДС", "Плательщик НДС")}
                   </label>
                 </div>
               )}
@@ -426,28 +431,28 @@ const ReferencesContractorsPage: React.FC = () => {
               {modalTab === 1 && (
                 <div style={{display:'flex',flexDirection:'column',gap:14}}>
                   <div>
-                    <label style={sLbl}>ИНН (9 цифр) / ПИНФЛ (14 цифр)</label>
+                    <label style={sLbl}>{t("ИНН (9 цифр) / ПИНФЛ (14 цифр)", "ИНН (9 цифр) / ПИНФЛ (14 цифр)")}</label>
                     <input value={form.inn||''} onChange={e=>setF('inn',e.target.value)} placeholder="123456789" style={{...sInp,fontFamily:'monospace'}} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
-                    <div style={{fontSize:10,color:'var(--text-muted)',marginTop:3}}>Юрлица и ИП — 9 цифр · Физические лица — 14 цифр (ПИНФЛ)</div>
+                    <div style={{fontSize:10,color:'var(--text-muted)',marginTop:3}}>{t("Юрлица и ИП — 9 цифр · Физические лица — 14 цифр (ПИНФЛ)", "Юрлица и ИП — 9 цифр · Физические лица — 14 цифр (ПИНФЛ)")}</div>
                   </div>
                   <div>
-                    <label style={sLbl}>ОКЭД (вид деятельности)</label>
-                    <input value={form.okved||''} onChange={e=>setF('okved',e.target.value)} placeholder="62010 — Разработка программного обеспечения" style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                    <label style={sLbl}>{t("ОКЭД (вид деятельности)", "ОКЭД (вид деятельности)")}</label>
+                    <input value={form.okved||''} onChange={e=>setF('okved',e.target.value)} placeholder={t("62010 — Разработка программного обеспечения", "62010 — Разработка программного обеспечения")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
                   <div style={{paddingTop:8,borderTop:'1px solid var(--border-subtle)'}}>
-                    <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12}}>Банковские реквизиты</div>
+                    <div style={{fontSize:11,fontWeight:700,color:'var(--text-secondary)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12}}>{t("Банковские реквизиты", "Банковские реквизиты")}</div>
                     <div style={{display:'flex',flexDirection:'column',gap:12}}>
                       <div>
-                        <label style={sLbl}>Банк</label>
-                        <input value={form.bankName||''} onChange={e=>setF('bankName',e.target.value)} placeholder='АКИБ "Ипотека-банк"' style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                        <label style={sLbl}>{t("Банк", "Банк")}</label>
+                        <input value={form.bankName||''} onChange={e=>setF('bankName',e.target.value)} placeholder={t("АКИБ \"Ипотека-банк\"", "АКИБ \"Ипотека-банк\"")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                       </div>
                       <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:10}}>
                         <div>
-                          <label style={sLbl}>МФО (5 цифр)</label>
+                          <label style={sLbl}>{t("МФО (5 цифр)", "МФО (5 цифр)")}</label>
                           <input value={form.bankMfo||''} onChange={e=>setF('bankMfo',e.target.value)} placeholder="00000" maxLength={5} style={{...sInp,fontFamily:'monospace'}} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                         </div>
                         <div>
-                          <label style={sLbl}>Расчётный счёт (20 цифр)</label>
+                          <label style={sLbl}>{t("Расчётный счёт (20 цифр)", "Расчётный счёт (20 цифр)")}</label>
                           <input value={form.bankAccount||''} onChange={e=>setF('bankAccount',e.target.value)} placeholder="20208000000000000000" maxLength={20} style={{...sInp,fontFamily:'monospace'}} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                         </div>
                       </div>
@@ -459,12 +464,12 @@ const ReferencesContractorsPage: React.FC = () => {
               {modalTab === 2 && (
                 <div style={{display:'flex',flexDirection:'column',gap:14}}>
                   <div>
-                    <label style={sLbl}>Контактное лицо (ФИО директора / менеджера)</label>
-                    <input value={form.contactPerson||''} onChange={e=>setF('contactPerson',e.target.value)} placeholder="Иванов Иван Иванович" style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                    <label style={sLbl}>{t("Контактное лицо (ФИО директора / менеджера)", "Контактное лицо (ФИО директора / менеджера)")}</label>
+                    <input value={form.contactPerson||''} onChange={e=>setF('contactPerson',e.target.value)} placeholder={t("Иванов Иван Иванович", "Иванов Иван Иванович")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
                     <div>
-                      <label style={sLbl}>Телефон</label>
+                      <label style={sLbl}>{t("Телефон", "Телефон")}</label>
                       <input value={form.phone||''} onChange={e=>setF('phone',e.target.value)} placeholder="+998 90 000 00 00" style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                     </div>
                     <div>
@@ -473,16 +478,16 @@ const ReferencesContractorsPage: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label style={sLbl}>Юридический адрес</label>
-                    <input value={form.legalAddress||''} onChange={e=>setF('legalAddress',e.target.value)} placeholder="г. Ташкент, ул. Амир Темур, д. 1" style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                    <label style={sLbl}>{t("Юридический адрес", "Юридический адрес")}</label>
+                    <input value={form.legalAddress||''} onChange={e=>setF('legalAddress',e.target.value)} placeholder={t("г. Ташкент, ул. Амир Темур, д. 1", "г. Ташкент, ул. Амир Темур, д. 1")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
                   <div>
-                    <label style={sLbl}>Фактический адрес</label>
-                    <input value={form.actualAddress||''} onChange={e=>setF('actualAddress',e.target.value)} placeholder="Если отличается от юридического" style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
+                    <label style={sLbl}>{t("Фактический адрес", "Фактический адрес")}</label>
+                    <input value={form.actualAddress||''} onChange={e=>setF('actualAddress',e.target.value)} placeholder={t("Если отличается от юридического", "Если отличается от юридического")} style={sInp} onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
                   <div>
-                    <label style={sLbl}>Примечание</label>
-                    <textarea value={form.comment||''} onChange={e=>setF('comment',e.target.value)} placeholder="Дополнительная информация..." rows={3}
+                    <label style={sLbl}>{t("Примечание", "Примечание")}</label>
+                    <textarea value={form.comment||''} onChange={e=>setF('comment',e.target.value)} placeholder={t("Дополнительная информация...", "Дополнительная информация...")} rows={3}
                       style={{width:'100%',padding:'8px',borderRadius:6,background:'var(--bg-elevated)',border:'1px solid var(--border-default)',color:'var(--text-primary)',fontSize:12,outline:'none',resize:'vertical',fontFamily:'inherit',boxSizing:'border-box'}}
                       onFocus={e=>e.target.style.borderColor='var(--color-primary)'} onBlur={e=>e.target.style.borderColor='var(--border-default)'}/>
                   </div>
@@ -491,10 +496,10 @@ const ReferencesContractorsPage: React.FC = () => {
             </div>
 
             <div style={{padding:'12px 20px',background:'var(--bg-base)',borderTop:'1px solid var(--border-subtle)',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
-              <span style={{fontSize:11,color:'var(--text-muted)'}}>* обязательные поля</span>
+              <span style={{fontSize:11,color:'var(--text-muted)'}}>{t("* обязательные поля", "* обязательные поля")}</span>
               <div style={{display:'flex',gap:8}}>
-                <button onClick={closeModal} style={{padding:'0 14px',height:30,borderRadius:6,background:'transparent',border:'1px solid var(--border-default)',color:'var(--text-secondary)',cursor:'pointer',fontSize:12}}>Отмена</button>
-                <button onClick={handleSave} style={{padding:'0 16px',height:30,borderRadius:6,background:'var(--color-primary)',border:'none',color:'#fff',fontWeight:600,cursor:'pointer',fontSize:12}}>Сохранить</button>
+                <button onClick={closeModal} style={{padding:'0 14px',height:30,borderRadius:6,background:'transparent',border:'1px solid var(--border-default)',color:'var(--text-secondary)',cursor:'pointer',fontSize:12}}>{t("Отозвать", "Отозвать")}</button>
+                <button onClick={handleSave} style={{padding:'0 16px',height:30,borderRadius:6,background:'var(--color-primary)',border:'none',color:'#fff',fontWeight:600,cursor:'pointer',fontSize:12}}>{t("Сохранить", "Сохранить")}</button>
               </div>
             </div>
           </div>

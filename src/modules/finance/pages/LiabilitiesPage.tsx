@@ -1,3 +1,4 @@
+import { confirmDialog } from '../../../lib/confirm';
 import React, { useMemo, useState } from 'react';
 import { LiabilitiesTable } from '../components/LiabilitiesTable';
 import { useFinanceStore } from '../financeStore';
@@ -6,9 +7,11 @@ import { APP_CURRENCY } from '../config/currency';
 import { LoanModal } from '../components/LoanModal';
 import { PayLoanModal } from '../components/PayLoanModal';
 import { Filter, Plus, HandCoins } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const LiabilitiesPage: React.FC = () => {
-  const { loans, transactions, deleteLoan } = useFinanceStore();
+  const { t } = useTranslation();
+    const { loans, transactions, deleteLoan } = useFinanceStore();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
   const [searchQuery] = useState('');
@@ -64,25 +67,25 @@ const LiabilitiesPage: React.FC = () => {
         <div style={{ height: 44, padding: '0 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <Filter size={12} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>Обязательства</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{t("ОБЯЗАТЕЛЬСТВА", "ОБЯЗАТЕЛЬСТВА")}</span>
           </div>
           <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
         </div>
 
         <div style={{ flex: 1, padding: 16, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>Тип кредитования</div>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 8 }}>{t("Тип кредитования", "Тип кредитования")}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>
-            <input type="checkbox" checked={selectedTypes.includes('Кредит')} onChange={() => handleTypeToggle('Кредит')} style={{ accentColor: 'var(--color-primary)' }} /> Банковские кредиты
+            <input type="checkbox" checked={selectedTypes.includes('Кредит')} onChange={() => handleTypeToggle('Кредит')} style={{ accentColor: 'var(--color-primary)' }} />  {t("Банковские кредиты", "Банковские кредиты")}
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>
-            <input type="checkbox" checked={selectedTypes.includes('Овердрафт')} onChange={() => handleTypeToggle('Овердрафт')} style={{ accentColor: 'var(--color-primary)' }} /> Овердрафты
+            <input type="checkbox" checked={selectedTypes.includes('Овердрафт')} onChange={() => handleTypeToggle('Овердрафт')} style={{ accentColor: 'var(--color-primary)' }} />  {t("Овердрафты", "Овердрафты")}
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>
-            <input type="checkbox" checked={selectedTypes.includes('Лизинг')} onChange={() => handleTypeToggle('Лизинг')} style={{ accentColor: 'var(--color-primary)' }} /> Лизинг
+            <input type="checkbox" checked={selectedTypes.includes('Лизинг')} onChange={() => handleTypeToggle('Лизинг')} style={{ accentColor: 'var(--color-primary)' }} />  {t("Лизинг", "Лизинг")}
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer' }}>
-            <input type="checkbox" checked={selectedTypes.includes('Займ')} onChange={() => handleTypeToggle('Займ')} style={{ accentColor: 'var(--color-primary)' }} /> Займы партнеров
+            <input type="checkbox" checked={selectedTypes.includes('Займ')} onChange={() => handleTypeToggle('Займ')} style={{ accentColor: 'var(--color-primary)' }} />  {t("Займы партнеров", "Займы партнеров")}
           </label>
         </div>
         </div>
@@ -98,8 +101,8 @@ const LiabilitiesPage: React.FC = () => {
               <Filter size={12} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Кредиты и Займы</span>
-              <span title="Управление долговой нагрузкой и сплит аннуитетных платежей" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Кредиты и Займы", "Кредиты и Займы")}</span>
+              <span title={t("Управление долговой нагрузкой и сплит аннуитетных платежей", "Управление долговой нагрузкой и сплит аннуитетных платежей")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HandCoins size={13} />
               </span>
             </div>
@@ -110,18 +113,20 @@ const LiabilitiesPage: React.FC = () => {
             {selectedLoanIds.length > 0 && (
               <button 
                 onClick={() => {
-                  if (window.confirm('Вы уверены, что хотите удалить выбранные обязательства? Это действие необратимо.')) {
+                  confirmDialog({ message: 'Вы уверены, что хотите удалить выбранные обязательства? Это действие необратимо.', danger: true }).then(ok => {
+                    if (!ok) return;
                     selectedLoanIds.forEach(id => deleteLoan(id));
                     setSelectedLoanIds([]);
-                  }
+                  })
                 }}
                 style={{ background: 'var(--color-danger)', color: '#fff', border: 'none', padding: '0 12px', height: 28, borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', cursor: 'pointer' }}
               >
-                Удалить ({selectedLoanIds.length})
+                
+                {t("Удалить (", "Удалить (")}{selectedLoanIds.length})
               </button>
             )}
             <button onClick={() => setModalOpen(true)} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '0 12px', height: 28, borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-              <Plus size={11} /> Привлечь кредит
+              <Plus size={11} />  {t("Привлечь кредит", "Привлечь кредит")}
             </button>
           </div>
         </div>
@@ -132,11 +137,11 @@ const LiabilitiesPage: React.FC = () => {
         {/* KPI Strip */}
         <div style={{ padding: '16px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 10, padding: '12px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#ef4444', marginBottom: 4, opacity: 0.85 }}>Общий долг (Баланс)</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#ef4444', marginBottom: 4, opacity: 0.85 }}>{t("Общий долг (Баланс)", "Общий долг (Баланс)")}</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#ef4444' }}>{new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(totalDebt)} {APP_CURRENCY}</div>
           </div>
           <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '12px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 4 }}>Суммарные переплаты по %</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-muted)', marginBottom: 4 }}>{t("Суммарные переплаты по %", "Суммарные переплаты по %")}</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{new Intl.NumberFormat('ru-RU', { notation: 'compact' }).format(totalInterestPaid)} {APP_CURRENCY}</div>
           </div>
         </div>

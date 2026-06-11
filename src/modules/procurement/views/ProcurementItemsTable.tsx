@@ -1,3 +1,4 @@
+import { toast } from '../../../lib/toast';
 import React, { useState, useMemo } from 'react';
 import { useProcurementStore, type ProcurementItem } from '../procurementStore';
 import { Plus, Calculator, Settings2, Upload, Search, X, ChevronDown } from 'lucide-react';
@@ -101,7 +102,7 @@ const ProcurementItemsTable: React.FC = () => {
   });
 
   const handleCreate = async () => {
-    if (!formData.requestId || !formData.productName) return alert('Заполните заявку и название продукта');
+    if (!formData.requestId || !formData.productName) { toast.error('Заполните заявку и название продукта'); return; }
     await createItem(formData);
     setShowAddModal(false);
   };

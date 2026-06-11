@@ -1,3 +1,5 @@
+import { confirmDialog } from '../../../lib/confirm';
+import { toast } from '../../../lib/toast';
 import React, { useState, useRef, useEffect } from 'react';
 import { TransactionsTable } from '../components/TransactionsTable';
 import { TransactionsFilter } from '../components/TransactionsFilter';
@@ -7,6 +9,7 @@ import { TransactionFormModal } from '../components/TransactionFormModal';
 
 // ─── CSV Export ───────────────────────────────────────────────────────────────
 import { exportToCSV } from '../utils/exportData';
+import { useTranslation } from 'react-i18next';
 
 const buildRows = (txs: Transaction[], store: ReturnType<typeof useFinanceStore.getState>) =>
   txs.map(t => [
@@ -23,7 +26,8 @@ const buildRows = (txs: Transaction[], store: ReturnType<typeof useFinanceStore.
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const TransactionsPage: React.FC = () => {
-  const store = useFinanceStore();
+  const { t } = useTranslation();
+    const store = useFinanceStore();
   const {
     transactions,
     searchQuery, selectedTxIds,
@@ -85,12 +89,12 @@ const TransactionsPage: React.FC = () => {
     return tx ? isLocked(tx.date) : false;
   });
 
-  const handleMassDelete = () => {
+  const handleMassDelete = async () => {
     if (hasLockedSelected) {
-      alert('Невозможно удалить операции из закрытого периода.');
+      toast.error('Невозможно удалить операции из закрытого периода.');
       return;
     }
-    if (!window.confirm(`Удалить ${selectedTxIds.length} операций? Это действие нельзя отменить.`)) return;
+    if (!(await confirmDialog({ message: `Удалить ${selectedTxIds.length} операций? Это действие нельзя отменить.`, danger: true }))) return;
     selectedTxIds.forEach(id => deleteTransaction(id));
     clearTxSelection();
   };
@@ -115,8 +119,8 @@ const TransactionsPage: React.FC = () => {
               <Filter size={12} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>Операции</span>
-              <span title="Список всех финансовых операций" style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
+              <span style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.01 }}>{t("Операционная деятельность", "Операционная деятельность")}</span>
+              <span title={t("Список всех финансовых операций", "Список всех финансовых операций")} style={{ cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}>
                 <HelpCircle size={13} />
               </span>
             </div>
@@ -134,13 +138,13 @@ const TransactionsPage: React.FC = () => {
 
               {isActionsOpen && (
                 <div style={{ position: 'absolute', top: 38, right: 0, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', width: 220, zIndex: 50, padding: '8px 0' }}>
-                  <div style={{ padding: '4px 16px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Действия</div>
+                  <div style={{ padding: '4px 16px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("Действия", "Действия")}</div>
                   <button onClick={() => { handleExport(); setIsActionsOpen(false); }} style={{ width: '100%', padding: '8px 16px', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left' }}>
-                    <Download size={14} /> Скачать в CSV
+                    <Download size={14} />  {t("Скачать в CSV", "Скачать в CSV")}
                   </button>
 
                   <div style={{ margin: '6px 0', height: 1, background: 'var(--border-subtle)' }} />
-                  <div style={{ padding: '4px 16px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Настройка колонок</div>
+                  <div style={{ padding: '4px 16px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t("Настройка колонок", "Настройка колонок")}</div>
                   {(Object.entries({ contractor: 'Контрагент', category: 'Статья', project: 'Проект', deal: 'Сделка' }) as [keyof typeof columns, string][]).map(([key, label]) => (
                     <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px', cursor: 'pointer', fontSize: 13, color: 'var(--text-primary)' }}>
                       <input type="checkbox" checked={columns[key]} onChange={() => setColumns(prev => ({ ...prev, [key]: !prev[key] }))} style={{ accentColor: 'var(--color-primary)', width: 14, height: 14 }} />
@@ -152,7 +156,7 @@ const TransactionsPage: React.FC = () => {
             </div>
 
             <button onClick={() => { setEditTxId(undefined); setTxModalOpen(true); }} style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '0 14px', height: 28, borderRadius: 6, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', transition: 'transform 100ms' }} onMouseDown={e => e.currentTarget.style.transform = 'scale(0.97)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <Plus size={13} /> <span className="hide-on-mobile">Новая операция</span>
+              <Plus size={13} /> <span className="hide-on-mobile">{t("Новая операция", "Новая операция")}</span>
             </button>
           </div>
         </div>
@@ -165,11 +169,13 @@ const TransactionsPage: React.FC = () => {
               justifyContent: 'space-between', gap: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-primary)' }}>
-                  Выбрано: {selectedTxIds.length}
+                  
+                  {t("Выбрано:", "Выбрано:")} {selectedTxIds.length}
                 </span>
                 <span className="hide-on-mobile" style={{ color: 'var(--border-subtle)' }}>|</span>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                  Сумма: <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 500 }}>
+                  
+                  {t("Сумма:", "Сумма:")} <span style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontWeight: 500 }}>
                     {compactFmt.format(
                       selectedTxIds.reduce((sum, id) => { const tx = transactions.find(t => t.id === id); return sum + ((tx?.baseAmount ?? tx?.amount) ?? 0); }, 0)
                     )}
@@ -178,25 +184,25 @@ const TransactionsPage: React.FC = () => {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 {hasLockedSelected && (
-                  <span style={{ fontSize: 11, color: '#f59e0b', marginRight: 8, fontWeight: 600 }}>Период закрыт</span>
+                  <span style={{ fontSize: 11, color: '#f59e0b', marginRight: 8, fontWeight: 600 }}>{t("Период закрыт", "Период закрыт")}</span>
                 )}
                 <button
                   onClick={() => { if (selectedTxIds.length === 1 && !hasLockedSelected) { setEditTxId(selectedTxIds[0]); setTxModalOpen(true); } }}
                   disabled={selectedTxIds.length !== 1 || hasLockedSelected}
                   style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: selectedTxIds.length === 1 && !hasLockedSelected ? 'var(--text-primary)' : 'var(--text-muted)',
                     padding: '3px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, cursor: selectedTxIds.length === 1 && !hasLockedSelected ? 'pointer' : 'not-allowed' }}>
-                  <Edit2 size={11} /> Изменить
+                  <Edit2 size={11} />  {t("Изменить", "Изменить")}
                 </button>
                 <button
                   style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)',
                     padding: '3px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                  <SplitSquareHorizontal size={11} /> Разъединить
+                  <SplitSquareHorizontal size={11} />  {t("Разъединить", "Разъединить")}
                 </button>
                 <button
                   onClick={handleExport}
                   style={{ background: 'transparent', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)',
                     padding: '3px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                  <Download size={11} /> Экспорт CSV
+                  <Download size={11} />  {t("Экспорт CSV", "Экспорт CSV")}
                 </button>
                 <div style={{ width: 1, height: 14, background: 'var(--border-subtle)', margin: '0 2px' }} />
                 <button
@@ -204,7 +210,7 @@ const TransactionsPage: React.FC = () => {
                   disabled={hasLockedSelected}
                   style={{ background: 'transparent', border: '1px solid #ef4444', color: hasLockedSelected ? 'var(--text-muted)' : '#ef4444', opacity: hasLockedSelected ? 0.5 : 1,
                     padding: '3px 10px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, cursor: hasLockedSelected ? 'not-allowed' : 'pointer' }}>
-                  <Trash2 size={11} /> Удалить
+                  <Trash2 size={11} />  {t("Удалить", "Удалить")}
                 </button>
               </div>
             </div>
@@ -222,7 +228,7 @@ const TransactionsPage: React.FC = () => {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 'max-content' }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{mainTx.length}</span> оп.
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{mainTx.length}</span>  {t("оп.", "оп.")}
             </div>
             <div style={{ width: 1, height: 12, background: 'var(--border-subtle)' }} />
             
